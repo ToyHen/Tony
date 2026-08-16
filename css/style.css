@@ -1,0 +1,1684 @@
+/* ---------- Design tokens ---------- */
+:root {
+  --bg: #0b0b0d;
+  --bg-alt: #141416;
+  --card: #19191c;
+  --card-border: #28282c;
+  --text: #f1efe9;
+  --text-dim: #a8a6a0;
+  --accent: #e8a33d;
+  --accent-dim: #a97728;
+  --max-width: 1100px;
+  --radius: 4px;
+  font-size: 16px;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 {
+  font-family: "Space Grotesk", "Inter", sans-serif;
+  font-weight: 600;
+  line-height: 1.15;
+  margin: 0 0 0.5em;
+  letter-spacing: -0.01em;
+}
+
+h1 { font-size: clamp(2.2rem, 5vw, 3.6rem); }
+h2 { font-size: clamp(1.6rem, 3vw, 2.2rem); }
+h3 { font-size: 1.25rem; }
+
+p { margin: 0 0 1em; color: var(--text-dim); }
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+img { max-width: 100%; display: block; }
+
+.container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.75rem;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* ---------- Header / nav ---------- */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(11, 11, 13, 0.85);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--card-border);
+}
+
+.nav {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nav-brand {
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--text);
+  letter-spacing: 0.02em;
+}
+.nav-brand:hover { text-decoration: none; color: var(--accent); }
+
+.nav-links {
+  display: flex;
+  gap: 2rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-links a {
+  color: var(--text-dim);
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+.nav-links a:hover,
+.nav-links a[aria-current="page"] {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.nav-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 1.6rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+}
+
+@media (max-width: 720px) {
+  .nav-toggle { display: block; }
+  .nav-links {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    gap: 0;
+    background: var(--bg-alt);
+    border-bottom: 1px solid var(--card-border);
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.25s ease;
+  }
+  .nav-links.open { max-height: 300px; }
+  .nav-links li { border-top: 1px solid var(--card-border); }
+  .nav-links a { display: block; padding: 1rem 1.5rem; }
+}
+
+/* ---------- Hero ---------- */
+.hero {
+  position: relative;
+  min-height: 62vh;
+  display: flex;
+  align-items: flex-end;
+  background: var(--bg) center / cover no-repeat;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+/* The background loop. Sits behind the scrim at -2; .hero::before is -1 and the
+   content stays at auto, which `isolation: isolate` keeps scoped to the hero. */
+.hero-media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -2;
+  pointer-events: none;
+}
+
+/* Two scrims, not one. The vertical pass carries most of the legibility — the
+   text sits low, where it is already at 0.85. The horizontal pass then settles
+   the left so the subject on the right holds the eye.
+
+   THE EYEBROW IS THE BINDING CONSTRAINT, not the headings. It is --accent
+   (#e8a33d) over cloud that blows out to (255,159,123): orange on orange. At
+   0.60/0.34, worst case across every frame of the current clip is h1 11.58:1,
+   tagline 5.78:1, eyebrow 5.59:1. A lighter 0.45/0.18 would put the eyebrow at
+   4.53:1 — over the 4.5 line by a hair, which is too thin to ship when the
+   cloud brightness moves. Do not lighten this without re-measuring.
+
+   MEASURE AGAINST REAL GLYPH BOXES, NOT ELEMENT BOXES. .eyebrow and h1 are
+   block elements a full 1052px wide, while the eyebrow's text is only 257px of
+   that — sampling the element box reads the bright cloud far to the right of
+   any actual letter and reports a failure that is not there. Use
+   Range.selectNodeContents(el).getClientRects(), which returns one rect per
+   rendered line.
+
+   RE-MEASURE WHENEVER THE CLIP CHANGES — a warmer or brighter shot moves the
+   eyebrow first, and the eyebrow is what fails first. */
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(11,11,13,0.60) 0%, rgba(11,11,13,0.34) 42%, rgba(11,11,13,0) 75%),
+    linear-gradient(180deg, rgba(11,11,13,0.35) 0%, rgba(11,11,13,0.85) 78%, var(--bg) 100%);
+  z-index: -1;
+}
+
+/* padding-block, NOT the padding shorthand. This element is `container
+   hero-inner`, and .container's `padding: 0 1.5rem` is what keeps the heading
+   off the viewport edge. A shorthand here comes later in the file and silently
+   zeroes that, which only shows up once the viewport is near or below
+   --max-width — above it, margin:auto supplies the inset and hides the bug. */
+.hero-inner {
+  padding-block: 3rem 3.5rem;
+  width: 100%;
+}
+
+.hero-tagline {
+  max-width: 46ch;
+  color: var(--text-dim);
+  font-size: 1.05rem;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius);
+  font-weight: 600;
+  font-size: 0.95rem;
+  border: 1px solid var(--accent);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.btn:hover { text-decoration: none; }
+
+.btn-primary {
+  background: var(--accent);
+  color: #1a1204;
+}
+.btn-primary:hover { background: #f2b654; }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text);
+  border-color: var(--card-border);
+}
+.btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ---------- Sections ---------- */
+section { padding: 4rem 0; }
+.section-tight { padding: 2rem 0; }
+
+.section-head {
+  margin-bottom: 2.5rem;
+  max-width: 60ch;
+}
+
+/* ---------- Video embed ---------- */
+.video-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: var(--card) center / cover no-repeat;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--card-border);
+}
+
+.video-frame iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* ---------- Contact sheet ----------
+   The home page's index of work. A sheet of frames rather than a list of
+   projects: the four films take 2x2 cells, single frames take 1x1, and the mix
+   is the point — it shows range and depth in the vertical space four large
+   tiles used to take, and it grows by adding a cell rather than a row.
+
+   Deliberately NOT a hover-driven component. Every cell is a still with a
+   readable label; a clip on a feature is a bonus. Half of all visitors have no
+   pointer at all, so nothing here may depend on hover to make sense. */
+.sheet {
+  --sheet-gap: 0.5rem;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  /* Rows are sized in vw rather than fr so a 1x1 cell stays roughly 16:9 across
+     widths. A percentage here would resolve against the grid's *height*, which
+     is the classic trap — it cannot be derived from the column width in CSS. */
+  grid-auto-rows: clamp(96px, 12.2vw, 150px);
+  gap: var(--sheet-gap);
+  /* Lets a 1x1 backfill a gap a 2x2 could not use. Without this the sheet grows
+     holes as soon as the cell order stops tiling perfectly. */
+  grid-auto-flow: row dense;
+}
+
+.sheet-cell {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius);
+  border: 1px solid var(--card-border);
+  background: var(--bg-alt);
+  color: var(--text);
+  display: block;
+  transition: border-color 0.18s ease;
+}
+.sheet-cell:hover { text-decoration: none; border-color: var(--accent-dim); }
+.sheet-cell:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-color: var(--accent);
+}
+
+.sheet-cell.is-feature {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+
+/* Absolute, not in flow: the cell's height comes from the grid row, and an
+   in-flow image would keep its natural height and be clipped instead of
+   filling — the same trap the scrubber viewer has. */
+.sheet-cell img,
+.sheet-cell video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+.sheet-cell:hover img { transform: scale(1.04); }
+
+.sheet-cell video { opacity: 0; transition: opacity 0.3s ease; }
+.sheet-cell video.is-playing { opacity: 1; }
+
+/* There is no .sheet-label rule any more. Captions were removed from the frames
+   and then from the features on 14 Aug 2026: the home page is meant to be read
+   on looks alone, and the projects page carries the names. The scrim went with
+   them, which is why the stills sit brighter here than in any other component. */
+
+/* Marks a feature that has a clip, so a cell with motion says so at rest — the
+   same reason the media grid draws a dot per frame. Added by JS only when
+   (hover: hover) matches, so it never advertises what a device cannot play. */
+.sheet-motion {
+  position: absolute;
+  right: 0.5rem;
+  top: 0.5rem;
+  z-index: 3;
+  padding: 0.2rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(11, 11, 13, 0.72);
+  border: 1px solid var(--card-border);
+  color: var(--text-dim);
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+.sheet-cell:hover .sheet-motion { opacity: 0; }
+
+/* 3 columns then 2. A feature stays 2x2 at every step, so it is half the sheet
+   at 4 columns and the full width at 2 — which is the right emphasis on a
+   phone, where a 1x1 is already small. */
+@media (max-width: 900px) {
+  .sheet { grid-template-columns: repeat(3, 1fr); grid-auto-rows: clamp(90px, 15.5vw, 140px); }
+}
+/* Held at 3 columns down to 480px on purpose. Dropping to 2 any earlier makes
+   the sheet enormously tall — at 540px it measured 1578px against 800px at 3
+   columns — because 12 cells over 2 columns is 12 rows. */
+@media (max-width: 480px) {
+  .sheet { grid-template-columns: repeat(2, 1fr); grid-auto-rows: clamp(86px, 26vw, 130px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet-cell img { transition: none; }
+  .sheet-cell:hover img { transform: none; }
+}
+
+/* ---------- Project grid ---------- */
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.75rem;
+}
+
+/* Four cards at the default 280px land 3 up and strand the fourth on its own
+   row. Opt a four-card grid into 2 up, which divides evenly. projects.html has
+   five and is deliberately left on the default. */
+.project-grid.is-four {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+}
+
+.project-card {
+  position: relative;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.18s ease, border-color 0.18s ease;
+}
+.project-card:hover { transform: translateY(-4px); border-color: var(--accent-dim); }
+
+.project-card-media {
+  aspect-ratio: 16 / 10;
+  background: #0f0f11 center / cover no-repeat;
+  position: relative;
+}
+
+.project-card-media.no-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  border-bottom: 1px solid var(--card-border);
+}
+
+.project-card-body {
+  padding: 1.25rem 1.4rem 1.5rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.project-card-body h3 { margin-bottom: 0.35rem; }
+
+.project-card-body a.card-link {
+  color: var(--text);
+  text-decoration: none;
+}
+.project-card-body a.card-link:hover { color: var(--accent); }
+
+/* Stretch the title link to cover the whole card, so clicking anywhere
+   (image, description) navigates — matching the hover animation on
+   .project-card, which already implies the whole card is interactive. */
+.project-card-body a.card-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+.project-card-body a.card-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.project-meta {
+  list-style: none;
+  padding: 0;
+  margin: 0.75rem 0 0;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+.project-meta li { margin-bottom: 0.2rem; }
+.project-meta span { color: var(--text); font-weight: 500; }
+
+/* ---------- Project detail page ---------- */
+.project-hero-media { margin-bottom: 2rem; }
+.project-hero-media img {
+  width: 100%;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+}
+
+.laurels {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.5rem;
+  margin: 0.5rem 0 2rem;
+}
+.laurels img { height: 84px; width: auto; opacity: 0.92; }
+.laurel-invert { filter: invert(1); }
+
+.laurel-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 84px;
+  padding: 0 1.5rem;
+  border: 1px solid var(--accent-dim);
+  border-radius: var(--radius);
+  text-align: center;
+  text-decoration: none;
+  color: var(--text);
+}
+.laurel-badge:hover { border-color: var(--accent); text-decoration: none; }
+.laurel-badge .badge-award {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--accent);
+  white-space: nowrap;
+}
+.laurel-badge .badge-detail {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin-top: 0.2rem;
+}
+
+.meta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  margin-bottom: 2.5rem;
+}
+.meta-item .eyebrow { display: block; margin-bottom: 0.3rem; }
+.meta-item p { margin: 0; color: var(--text); }
+
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+}
+.gallery img {
+  border-radius: var(--radius);
+  border: 1px solid var(--card-border);
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ---------- Progression scrubber ---------- */
+.scrubber { margin-top: 1.5rem; }
+
+.scrub-viewer {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+/* Position out of flow and pin to the box, then let object-fit letterbox.
+   Percentage heights — `max-height: 100%` or `height: 100%` — do NOT resolve
+   against a parent whose height comes from `aspect-ratio`, so an in-flow still
+   kept its natural height and anything taller than 16:10 was clipped by
+   `overflow: hidden`: the storyboard collage lost 93px off the bottom (the
+   last row of page three) and the portrait stills lost more than half their
+   height. Absolute + inset always resolves. Keep the gap stage in flow,
+   though — it needs to be able to scroll inside the box. */
+.scrub-viewer img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.scrub-viewer img.is-shown { opacity: 1; }
+
+/* a stage can be a silent looping clip instead of a still */
+/* same sizing as the stills above, and for the same reason */
+.scrub-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.scrub-video.is-shown { opacity: 1; pointer-events: auto; }
+@media (prefers-reduced-motion: reduce) {
+  .scrub-video { transition: none; }
+}
+/* small "motion" tag so a clip stage is identifiable before you reach it */
+.scrub-node.is-motion .node-dot::after {
+  content: "";
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+  transform: translate(11px, -11px);
+}
+.scrub-node .node-dot { position: relative; }
+@media (prefers-reduced-motion: reduce) {
+  .scrub-viewer img { transition: none; }
+}
+
+/* A gap stage has no image, just a note. The viewer keeps its 16:10 box so
+   the frame never resizes between stages; if a note is ever too tall for
+   that box it scrolls inside it rather than being clipped or forcing a jump. */
+.scrub-gap {
+  grid-area: 1 / 1;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  text-align: center;
+  padding: 1.25rem;
+  color: var(--text-dim);
+  max-height: 100%;
+  overflow-y: auto;
+}
+.scrub-gap.is-shown { display: flex; }
+.scrub-gap .gap-mark {
+  width: 46px;
+  height: 46px;
+  flex: none;
+  border: 2px dashed var(--card-border);
+  border-radius: var(--radius);
+  display: grid;
+  place-items: center;
+  font-size: 1.25rem;
+  color: var(--text-dim);
+}
+.scrub-gap strong { color: var(--text); font-weight: 600; }
+.scrub-gap span { font-size: 0.85rem; max-width: 36ch; }
+
+/* the box is shortest on narrow screens — tighten the note so it still fits */
+@media (max-width: 560px) {
+  .scrub-gap { padding: 0.9rem; gap: 0.4rem; }
+  .scrub-gap .gap-mark { width: 34px; height: 34px; font-size: 1rem; }
+  .scrub-gap strong { font-size: 0.92rem; }
+  .scrub-gap span { font-size: 0.78rem; line-height: 1.45; }
+}
+
+.scrub-stamp {
+  position: absolute;
+  top: 0.65rem;
+  left: 0.8rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The track. overflow-x:auto forces overflow-y to auto as well, so the
+   active dot — which scales up 15% — gets clipped at the top without
+   headroom here. The padding gives it room; margin-top absorbs it so the
+   spacing above is unchanged.
+
+   The native scrollbar is hidden: a second scrollbar under the viewer is
+   visual noise, and it's a poor signal anyway. Instead the edges fade only
+   on the side that actually has more stages (classes set in script.js), and
+   the active stage is always scrolled into view. */
+/* Holds the rail. Not masked and not scrolled, so the line runs edge to edge
+   and reads as continuous even where the dots either side have faded out.
+   top = the track's padding-top (5px) + half a dot (8.5px) = the dot centre. */
+.scrub-trackwrap {
+  position: relative;
+  margin-top: 1.1rem;
+  /* insets so the rail starts and ends at the first/last dot centre. script.js
+     recomputes them on scroll — when an end dot is scrolled off-screen the
+     inset clamps to 0 so the rail still runs to the edge. */
+  --rail-l: 0px;
+  --rail-r: 0px;
+  /* Headroom above the dots. `overflow-x: auto` on the track forces overflow-y
+     to `auto` too, so anything drawn above the dots is clipped rather than
+     overhanging — the motion badge sits ~9px above its dot and needs room, or
+     it shows as a sliver of orange along the top edge. The rail derives its
+     offset from this so the two can't drift apart. */
+  --track-pad-top: 16px;
+}
+.scrub-trackwrap::before {
+  content: "";
+  position: absolute;
+  left: var(--rail-l);
+  right: var(--rail-r);
+  /* dot centre: padding + half the 17px dot */
+  top: calc(var(--track-pad-top) + 8.5px);
+  height: 1px;
+  background: var(--card-border);
+}
+
+.scrub-track {
+  overflow-x: auto;
+  padding-top: var(--track-pad-top);
+  padding-bottom: 0.4rem;
+  scrollbar-width: none;         /* Firefox */
+  -ms-overflow-style: none;      /* legacy Edge */
+  --fade-l: 0px;
+  --fade-r: 0px;
+  -webkit-mask-image: linear-gradient(to right,
+    transparent 0, #000 var(--fade-l),
+    #000 calc(100% - var(--fade-r)), transparent 100%);
+  mask-image: linear-gradient(to right,
+    transparent 0, #000 var(--fade-l),
+    #000 calc(100% - var(--fade-r)), transparent 100%);
+}
+.scrub-track::-webkit-scrollbar { display: none; }
+.scrub-track.fade-start { --fade-l: 56px; }
+.scrub-track.fade-end   { --fade-r: 56px; }
+.scrub-nodes {
+  display: flex;
+  gap: 0.2rem;
+  position: relative;
+  min-width: 100%;
+}
+/* only offer the grab cursor when there is actually somewhere to pan to */
+.scrub-track.fade-start .scrub-nodes,
+.scrub-track.fade-end .scrub-nodes { cursor: grab; }
+.scrub-node {
+  background: none;
+  border: 0;
+  /* bottom padding only — padding-top would push the dot off the track line.
+     Brings the touch target to ~48px tall for comfortable tapping. */
+  padding: 0 0 6px;
+  font: inherit;
+  cursor: pointer;
+  flex: 1 0 74px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+.scrub-node .node-dot {
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 2px solid #3f4048;
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+  cursor: grab;
+  /* claim the gesture so a touch-drag on a dot scrubs instead of
+     scrolling the track sideways */
+  touch-action: none;
+}
+
+/* while dragging: kill the crossfade and dot easing so scrubbing tracks
+   the pointer instantly, and stop labels being text-selected */
+.scrubber.is-dragging { user-select: none; }
+.scrubber.is-dragging .node-dot { cursor: grabbing; }
+.scrubber.is-dragging .scrub-viewer img,
+.scrubber.is-dragging .node-dot { transition: none; }
+
+/* panning the track itself (background drag) */
+.scrubber.is-panning { user-select: none; }
+.scrubber.is-panning .scrub-nodes,
+.scrubber.is-panning .node-dot { cursor: grabbing; }
+.scrub-node .node-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  transition: color 0.15s ease;
+}
+.scrub-node:hover .node-dot { border-color: var(--accent-dim); }
+.scrub-node:hover .node-label { color: var(--text); }
+.scrub-node[aria-current="true"] .node-dot {
+  border-color: var(--accent);
+  background: var(--accent);
+  transform: scale(1.15);
+}
+.scrub-node[aria-current="true"] .node-label { color: var(--text); }
+.scrub-node.is-gap .node-dot { border-style: dashed; }
+.scrub-node:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.scrub-readout {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--card-border);
+}
+.scrub-readout h3 { margin: 0 0 0.25rem; font-size: 1.05rem; }
+.scrub-readout p { margin: 0; font-size: 0.9rem; max-width: 62ch; }
+.scrub-count {
+  color: var(--accent);
+  font-size: 0.8rem;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Before / after shot comparison ----------
+   Two clips of the same shot, played in lockstep. Only plays while on
+   screen (script.js), so a page can carry several without thrashing. */
+/* Two panels for a before/after, three for a layer build-up. auto-fit rather
+   than a fixed column count, so the same class serves both without a modifier;
+   the min width stops three panels squeezing to postage stamps on a laptop and
+   drops them to two rows instead. */
+.compare {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+@media (max-width: 720px) {
+  .compare { grid-template-columns: 1fr; }
+}
+/* A build-up has to be read in order, and stacking on narrow screens loses the
+   left-to-right cue — so number the panels. */
+.compare.is-steps { counter-reset: step; }
+.compare.is-steps .compare-item { counter-increment: step; }
+.compare.is-steps .compare-label strong::before {
+  content: counter(step) ". ";
+  color: var(--accent);
+}
+
+.compare-item {
+  margin: 0;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--card);
+}
+/* The box is declared rather than derived, so the panels don't collapse before
+   `preload="none"` clips report a size. `object-fit: cover` means a ratio that
+   doesn't match the source silently crops it — so a block whose clips aren't
+   16:9 overrides --compare-ratio rather than losing frame edges. */
+.compare-item video,
+.compare-item img {
+  display: block;
+  width: 100%;
+  aspect-ratio: var(--compare-ratio, 16 / 9);
+  object-fit: cover;
+  background: #111;
+}
+/* ---------- frame strip ----------
+   Consecutive captured frames laid out in order. Where .compare stacks layers
+   on one frame, this lays single frames out along time — the stop-motion half
+   of the film has no layers to pull apart, only exposures. A fixed column count
+   rather than auto-fit, because the frames must divide evenly or the sequence
+   reads as a ragged block. Three rather than four: the change between adjacent
+   frames is a few pixels of drift, so panel size is what makes it legible, and
+   at four the increments fall below the threshold of noticing. */
+.framestrip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.55rem;
+  margin-top: 1.5rem;
+}
+@media (max-width: 720px) {
+  .framestrip { grid-template-columns: repeat(2, 1fr); }
+}
+.framestrip figure {
+  position: relative;
+  margin: 0;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--card);
+}
+.framestrip img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+/* frame counter, sat on the image so the frames stay flush to each other */
+.framestrip figcaption {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  color: var(--text);
+  background: rgba(11, 11, 13, 0.74);
+  padding: 0.16rem 0.42rem;
+  border-top-right-radius: var(--radius);
+}
+/* The strip is the argument and the clip is the payoff, so the clip must not
+   outweigh it — at full width the eye goes straight to the moving thing and
+   never returns to the frames. Roughly 1.5 frames wide keeps the order right. */
+/* Full width, deliberately: narrowing this leaves dead space beside it and
+   breaks the alignment with the grid above. */
+/* ---------- media grid ----------
+   Related items that are NOT a sequence and NOT in step: each clip runs on its
+   own, and there is no shared transport, because a single play/pause would
+   imply a correspondence between them that doesn't exist. Click any tile to
+   see it large. */
+.mediagrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+.mediagrid figure {
+  margin: 0;
+  position: relative;   /* anchors .frame-dots on multi-frame tiles */
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--card);
+  transition: border-color 0.15s ease;
+}
+
+/* Multi-frame tiles cross-fade. The next frame sits on .frame-under and the
+   top image fades away to reveal it, so the tile is never transparent over its
+   own background. Both layers inherit the .mediagrid img sizing below. */
+.mediagrid .frame-under {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+.mediagrid .frame-top {
+  position: relative;
+  z-index: 1;
+  /* 0.26s must match FADE_MS in js/script.js — the JS waits exactly that long
+     before repointing the top image, so if the two drift the swap lands
+     mid-fade and flickers. */
+  transition: opacity 0.26s ease;
+}
+.mediagrid .frame-top.is-fading { opacity: 0; }
+.mediagrid .frame-top.no-anim { transition: none; }
+@media (prefers-reduced-motion: reduce) {
+  .mediagrid .frame-top { transition: none; }
+  .mediagrid .frame-top.is-fading { opacity: 1; }
+}
+
+/* Multi-frame tiles (JS adds these from data-frames). A dot per frame, so a
+   tile that has more to show says so before you hover it. */
+.mediagrid .frame-dots {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.45rem;
+  display: flex;
+  gap: 2px;
+  /* above .frame-top, or the fading image sweeps over the dots and they
+     appear to blink on every swap */
+  z-index: 2;
+}
+/* the button is a fat hit target; the visible dot is the ::before */
+.mediagrid .frame-dot {
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 0;
+  background: none;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.mediagrid .frame-dot::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(11, 11, 13, 0.55);
+  box-shadow: 0 0 0 1px rgba(241, 239, 233, 0.45);
+  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+.mediagrid .frame-dot.is-on::before {
+  background: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+.mediagrid .frame-dot:hover::before,
+.mediagrid .frame-dot:focus-visible::before { transform: scale(1.5); }
+.mediagrid .frame-dot:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: -1px;
+  border-radius: 50%;
+}
+@media (prefers-reduced-motion: reduce) {
+  .mediagrid .frame-dot::before { transition: none; }
+}
+.mediagrid figure.is-zoomable { cursor: zoom-in; }
+.mediagrid figure:hover,
+.mediagrid figure:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+}
+.mediagrid video,
+.mediagrid img {
+  display: block;
+  width: 100%;
+  aspect-ratio: var(--tile-ratio, 1 / 1);
+  object-fit: cover;
+  background: #111;
+}
+.mediagrid figcaption {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  padding: 0.6rem 0.8rem 0.7rem;
+  border-top: 1px solid var(--card-border);
+}
+.mediagrid figcaption strong {
+  font-size: 0.72rem;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--text);
+  font-weight: 600;
+}
+.mediagrid figcaption span { font-size: 0.76rem; color: var(--text-dim); }
+
+/* ---------- lightbox ---------- */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  background: rgba(11, 11, 13, 0.93);
+  padding: 6vmin 5vmin;
+}
+.lightbox[hidden] { display: none; }
+.lightbox-inner { max-width: min(1100px, 92vw); }
+.lightbox-inner video,
+.lightbox-inner img {
+  display: block;
+  max-width: 100%;
+  max-height: 78vh;
+  width: auto;
+  height: auto;
+  margin: 0 auto;
+  border-radius: var(--radius);
+  background: #111;
+}
+.lightbox-cap {
+  margin: 0.9rem 0 0;
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  text-align: center;
+}
+
+/* A tile opened from a multi-frame batch steps on click or arrow keys. */
+.lightbox-inner img.is-steppable {
+  cursor: pointer;
+  transition: opacity 0.25s ease;
+}
+.lightbox-inner img.is-swapping { opacity: 0; }
+.lightbox-count {
+  margin: 0.35rem 0 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  color: var(--text-dim);
+  text-align: center;
+}
+.lightbox-count:empty { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  .lightbox-inner img.is-steppable { transition: none; }
+}
+.lightbox-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font: inherit;
+  font-size: 0.78rem;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  color: var(--text);
+  border-radius: 100px;
+  padding: 0.4rem 1rem;
+  cursor: pointer;
+}
+.lightbox-close:hover { border-color: var(--accent-dim); }
+
+/* ---------- frame stepper ----------
+   The strip above is the no-JS floor; script.js replaces it with this. Same
+   deal as .figure-grid: `display: grid` beats the UA [hidden] rule, so the
+   override has to be explicit or the fallback stays visible underneath. */
+.framestrip[hidden] { display: none; }
+
+.stepper { margin-top: 1.5rem; }
+.step-viewer {
+  position: relative;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: #111;
+  line-height: 0;
+}
+.step-viewer video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+.step-stamp,
+.step-count {
+  position: absolute;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.64rem;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  color: var(--text);
+  background: rgba(11, 11, 13, 0.72);
+  padding: 0.3rem 0.5rem;
+}
+.step-stamp { top: 0; left: 0; border-bottom-right-radius: var(--radius); }
+.step-count { bottom: 0; right: 0; border-top-left-radius: var(--radius); color: var(--accent); }
+
+.step-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.85rem;
+}
+.step-btn,
+.step-play {
+  font: inherit;
+  font-size: 0.78rem;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  color: var(--text);
+  border-radius: 100px;
+  padding: 0.4rem 0.9rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.step-btn { padding: 0.4rem 0.75rem; }
+.step-btn:hover,
+.step-play:hover { border-color: var(--accent-dim); }
+.step-btn:disabled { opacity: 0.35; cursor: default; }
+
+/* the track is the point of the component, so give it the room */
+.step-range {
+  flex: 1;
+  min-width: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--card-border);
+  cursor: grab;
+}
+.step-range:active { cursor: grabbing; }
+.step-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: none;
+  cursor: grab;
+}
+.step-range::-moz-range-thumb {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: none;
+  cursor: grab;
+}
+.step-range:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.step-hint {
+  margin-top: 0.6rem;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+}
+
+/* shot picker — auto-fit so adding a fifth shot needs no CSS change */
+.step-shots {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.55rem;
+  margin-top: 1rem;
+}
+/* A one-shot stepper has nothing to pick between, and auto-fit would stretch
+   the single thumbnail to the full width — a big redundant copy of the frame
+   already on screen. Hide the row in that case (Piece It Together's shot 4010).
+   Scoped to :only-child, so multi-shot steppers are untouched. */
+.step-shots:has(.step-shot:only-child) { display: none; }
+.step-shot {
+  padding: 0;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--text-dim);
+  cursor: pointer;
+  overflow: hidden;
+  text-align: left;
+  font: inherit;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.step-shot img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  opacity: 0.55;
+  transition: opacity 0.15s ease;
+}
+.step-shot span {
+  display: block;
+  padding: 0.42rem 0.55rem 0.5rem;
+  font-size: 0.66rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+.step-shot:hover { border-color: var(--accent-dim); color: var(--text); }
+.step-shot:hover img { opacity: 0.8; }
+.step-shot[aria-selected="true"] { border-color: var(--accent); color: var(--text); }
+.step-shot[aria-selected="true"] img { opacity: 1; }
+.step-shot:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (max-width: 520px) {
+  .step-bar { flex-wrap: wrap; }
+  .step-range { order: -1; flex-basis: 100%; }
+}
+
+.framestrip-result {
+  /* all four sides: <figure> carries a 40px UA side margin, which insets this
+     from the grid above and reads as a misalignment rather than a choice */
+  margin: 0.9rem 0 0;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--card);
+}
+@media (max-width: 720px) {
+  .framestrip-result { max-width: 100%; }
+}
+/* Declared, not derived, so the box doesn't collapse before a preload="none"
+   clip reports a size — but `object-fit: cover` means a wrong ratio crops the
+   frame silently. Phone footage is often portrait once its rotation flag is
+   applied, so a block holding one overrides --result-ratio. */
+.framestrip-result video {
+  display: block;
+  width: 100%;
+  aspect-ratio: var(--result-ratio, 16 / 9);
+  object-fit: cover;
+  background: #111;
+}
+/* a portrait clip at full column width is overwhelming; keep it to a strip */
+.framestrip-result.is-portrait { max-width: 380px; }
+.framestrip-result figcaption {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 0.7rem 0.95rem 0.85rem;
+  border-top: 1px solid var(--card-border);
+  font-size: 0.78rem;
+  color: var(--text-dim);
+}
+.framestrip-result figcaption strong {
+  font-size: 0.72rem;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.compare-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 0.7rem 0.95rem 0.85rem;
+  border-top: 1px solid var(--card-border);
+}
+.compare-label strong {
+  font-size: 0.72rem;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--text);
+  font-weight: 600;
+}
+.compare-label span { font-size: 0.78rem; color: var(--text-dim); }
+.compare-item.is-after .compare-label strong { color: var(--accent); }
+
+/* shared playback control under the pair: previous, play/pause, next */
+.compare-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.9rem;
+}
+/* the hint is prose, not part of the button cluster, so give it its own room */
+.compare-bar .compare-hint { margin-left: 0.5rem; }
+.compare-toggle {
+  font: inherit;
+  font-size: 0.78rem;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  color: var(--text);
+  border-radius: 100px;
+  padding: 0.4rem 1rem;
+  cursor: pointer;
+}
+.compare-toggle:hover { border-color: var(--accent); color: var(--accent); }
+.compare-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Frame step buttons, injected by js/script.js either side of the toggle.
+   Same pill as the toggle, narrower, because the glyph carries no width. */
+.compare-step {
+  font: inherit;
+  font-size: 0.78rem;
+  line-height: 1;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  color: var(--text);
+  border-radius: 100px;
+  padding: 0.4rem 0.75rem;
+  cursor: pointer;
+}
+.compare-step:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.compare-step:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.compare-step:disabled { opacity: 0.35; cursor: default; }
+
+/* Still used by the single-clip compare on Piece It Together, where the line
+   says something about the shot rather than restating that it loops. */
+.compare-hint { font-size: 0.78rem; color: var(--text-dim); }
+
+/* Captioned process figures */
+.figure-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+/* `display: grid` above would otherwise beat the UA rule for [hidden],
+   leaving the source list visible after the scrubber replaces it. */
+.figure-grid[hidden] { display: none; }
+
+.figure-grid figure {
+  margin: 0;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.figure-grid img {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  border-bottom: 1px solid var(--card-border);
+}
+
+.figure-grid figcaption {
+  padding: 0.9rem 1.1rem 1.1rem;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+.figure-grid figcaption strong {
+  display: block;
+  color: var(--text);
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+.figure-grid figcaption h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem;
+  letter-spacing: 0;
+}
+.figure-grid figcaption p { margin: 0; font-size: 0.85rem; }
+
+/* placeholder tile for a stage we have no photo of yet (no-JS fallback) */
+.figure-grid .figure-gap {
+  aspect-ratio: 16 / 10;
+  display: grid;
+  place-items: center;
+  border-bottom: 1px dashed var(--card-border);
+  color: var(--text-dim);
+  font-size: 1.3rem;
+}
+
+/* Two-moments feature */
+.moments {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.moment {
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  background: var(--card);
+  border-top: 3px solid var(--moment-accent, var(--accent));
+  overflow: hidden;   /* keeps the still inside the rounded corners */
+}
+.moment img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+.moment-body { padding: 1.35rem 1.6rem 1.6rem; }
+.moment h3 { margin-bottom: 0.15rem; }
+.moment .moment-time {
+  font-size: 0.8rem;
+  color: var(--moment-accent, var(--accent));
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 0.75rem;
+}
+.moment p { margin-bottom: 0; font-size: 0.92rem; }
+.moment.is-night { --moment-accent: #7f9bd4; }
+.moment.is-dawn  { --moment-accent: #e8a33d; }
+
+/* .tag-row / .tag are currently unused - the mood-word rows came out of the
+   moment cards on 10 Aug 2026 when the stills went in. Kept so they can go
+   back without rewriting the styles. */
+.tag-row { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 1rem; }
+.tag {
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  border: 1px solid var(--card-border);
+  border-radius: 100px;
+  padding: 0.22rem 0.7rem;
+}
+
+/* Credits */
+.credits-list {
+  list-style: none;
+  padding: 0;
+  margin: 1.25rem 0 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.6rem 2rem;
+}
+.credits-list li {
+  font-size: 0.9rem;
+  color: var(--text);
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--card-border);
+}
+.credits-list .credit-role {
+  color: var(--text-dim);
+  display: block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.15rem;
+}
+
+.project-nav {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--card-border);
+}
+
+/* ---------- About page ---------- */
+.about-hero {
+  display: flex;
+  gap: 2.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 2.5rem;
+}
+
+.about-portrait {
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  text-align: center;
+  padding: 1rem;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.about-portrait img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+
+.about-intro { max-width: 56ch; }
+
+/* Vision statement. 60ch matches .section-head, so the prose lines up under
+   its heading instead of running the full 1100px container. */
+.about-vision { max-width: 60ch; }
+.about-vision p { margin-bottom: 1.1rem; }
+/* The closing three lines are a stanza, not a paragraph — they are authored as
+   separate lines and the <br>s are load-bearing. Slightly larger and undimmed
+   so the statement lands on them. */
+.about-vision-close {
+  color: var(--text);
+  font-size: 1.05rem;
+  line-height: 1.7;
+  margin-top: 1.75rem;
+}
+
+/* Unused since the About vision statement landed (16 Aug 2026); kept for the
+   remaining portrait placeholder and any future template block. */
+.placeholder-block {
+  border: 1px dashed var(--card-border);
+  border-radius: var(--radius);
+  padding: 1.5rem 1.75rem;
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  background: var(--card);
+}
+.placeholder-block strong { color: var(--text); display: block; margin-bottom: 0.4rem; }
+
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 1.75rem;
+  margin-top: 1.5rem;
+}
+
+.tool-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  text-align: center;
+}
+.tool-item img { width: 52px; height: 52px; object-fit: contain; }
+.tool-item span { font-size: 0.8rem; color: var(--text-dim); }
+
+/* ---------- Case-study components (UI/UX project pages) ---------- */
+
+/* numbered process steps */
+.step-list {
+  list-style: none;
+  counter-reset: step;
+  padding: 0;
+  margin: 1.5rem 0 0;
+  display: grid;
+  gap: 1.1rem;
+}
+.step-list li {
+  counter-increment: step;
+  display: grid;
+  grid-template-columns: 2rem 1fr;
+  gap: 1rem;
+  align-items: start;
+}
+.step-list li::before {
+  content: counter(step, decimal-leading-zero);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  padding-top: 0.15rem;
+  grid-column: 1;
+}
+/* the counter is grid item 1, so without this the <span> wraps onto row 2
+   and gets squeezed into the narrow number column */
+.step-list li strong,
+.step-list li span { grid-column: 2; }
+.step-list strong { display: block; color: var(--text); margin-bottom: 0.15rem; }
+.step-list span { color: var(--text-dim); font-size: 0.9rem; }
+
+/* design-direction previews — the palette is the preview */
+.dir-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 1.25rem;
+  margin-top: 1.5rem;
+}
+.dir-card {
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  background: var(--card);
+  padding: 1.2rem 1.3rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+}
+.dir-card.is-chosen { border-color: var(--accent-dim); }
+.dir-swatches { display: flex; height: 42px; border-radius: 3px; overflow: hidden; margin-bottom: 1rem; }
+.dir-swatches span { flex: 1; }
+.dir-card h3 { font-size: 1rem; margin: 0 0 0.3rem; }
+.dir-card p { font-size: 0.85rem; margin: 0 0 1rem; }
+.dir-verdict {
+  margin-top: auto;
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+.dir-card.is-chosen .dir-verdict { color: var(--accent); }
+
+/* tech chips */
+.chip-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.25rem; }
+.chip {
+  font-size: 0.75rem;
+  border: 1px solid var(--card-border);
+  border-radius: 100px;
+  padding: 0.3rem 0.85rem;
+  color: var(--text-dim);
+}
+
+/* status callout */
+.callout {
+  margin-top: 2.5rem;
+  padding: 1.4rem 1.6rem;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+}
+.callout h3 { font-size: 1rem; margin: 0 0 0.4rem; }
+.callout p { margin: 0; font-size: 0.9rem; }
+
+/* ---------- Contact ---------- */
+.contact {
+  background: var(--bg-alt);
+  border-top: 1px solid var(--card-border);
+}
+
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+}
+
+@media (max-width: 720px) {
+  .contact-grid { grid-template-columns: 1fr; gap: 2rem; }
+}
+
+.contact-details p { margin-bottom: 0.5rem; }
+.contact-details a { color: var(--text); font-weight: 500; }
+.contact-details a:hover { color: var(--accent); }
+
+.social-links {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+.social-links a {
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: 0.4rem 0.9rem;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+.social-links a:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
+
+form.contact-form { display: flex; flex-direction: column; gap: 1rem; }
+
+.contact-form label {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  display: block;
+  margin-bottom: 0.35rem;
+}
+
+.contact-form input,
+.contact-form textarea {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: 0.7rem 0.85rem;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.95rem;
+}
+.contact-form input:focus,
+.contact-form textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.contact-form textarea { resize: vertical; min-height: 110px; }
+
+.form-note {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  margin-top: -0.25rem;
+}
+
+/* ---------- Footer ---------- */
+.site-footer {
+  padding: 1.5rem 0;
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  border-top: 1px solid var(--card-border);
+}

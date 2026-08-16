@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>This Portfolio Site — Tony Chen</title>
+<meta name="description" content="Designing and building this portfolio site by directing an agentic AI — a UI/UX case study by Tony Chen.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <nav class="nav">
+    <a href="../index.html" class="nav-brand">Tony Chen</a>
+    <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">&#9776;</button>
+    <ul class="nav-links">
+      <li><a href="../index.html">Home</a></li>
+      <li><a href="../reel.html">Show Reel</a></li>
+      <li><a href="../projects.html" aria-current="page">Projects</a></li>
+      <li><a href="../about.html">About Me</a></li>
+    </ul>
+  </nav>
+</header>
+
+<section class="section-tight">
+  <div class="container">
+    <p class="eyebrow"><a href="../projects.html">&larr; All Projects</a></p>
+    <h1>This Portfolio Site</h1>
+
+    <div class="meta-grid">
+      <div class="meta-item">
+        <span class="eyebrow">Project Type</span>
+        <p>UI/UX Design &amp; Front-End</p>
+      </div>
+      <div class="meta-item">
+        <span class="eyebrow">Role</span>
+        <p>Design Direction, Art Direction &amp; Review</p>
+      </div>
+      <div class="meta-item">
+        <span class="eyebrow">Date</span>
+        <p>July 2026 &mdash; ongoing</p>
+      </div>
+      <div class="meta-item">
+        <span class="eyebrow">Location</span>
+        <p>Sydney NSW Australia</p>
+      </div>
+      <div class="meta-item">
+        <span class="eyebrow">AI Use</span>
+        <p>Agentic AI (implementation)</p>
+      </div>
+    </div>
+
+    <div class="project-hero-media">
+      <img src="../images/projects/portfolio-site.jpg" alt="The site's progression scrubber: a browser frame showing a project still above a labelled timeline of eleven stages">
+    </div>
+
+    <p>The site you're reading is the project. It replaces a Wix template with a hand-coded static site &mdash; no page builder, no framework, no build step &mdash; designed and built by directing an agentic AI as the implementer while I held the design decisions, the source material and the final say on what shipped.</p>
+
+    <p>The interesting part wasn't asking for code. It was working out which decisions are actually mine: which images represent the work, whether a caption is true, when a pattern is right for the content, and when a "fix" has quietly made something worse.</p>
+
+    <!--
+      TO ADD SCREENSHOTS LATER: this page deliberately uses no imagery yet —
+      the visuals below are the real design system rendered in CSS. When you
+      want screenshots (old Wix site, homepage, the scrubber), drop them in
+      images/projects/ and add a .figure-grid or scrubber block, same as the
+      other project pages.
+    -->
+
+    <div class="section-head" style="margin-top: 3rem;">
+      <p class="eyebrow">Method</p>
+      <h2>How the work was actually split</h2>
+      <p>Not "AI made a website". A loop, repeated dozens of times, with a clear division of labour.</p>
+    </div>
+
+    <ol class="step-list">
+      <li>
+        <strong>I set the direction and supplied the truth</strong>
+        <span>Which projects, which source folders, which photos are worth showing, what actually happened on each shoot. None of that is inferable &mdash; it came from my drives, my process documents and my memory.</span>
+      </li>
+      <li>
+        <strong>The agent mined, built and verified</strong>
+        <span>Reading raw project folders and Drive, selecting and compressing images, writing the HTML and CSS, then testing its own work in a real browser and reporting what broke.</span>
+      </li>
+      <li>
+        <strong>I reviewed against reality</strong>
+        <span>The step that matters most. The agent can describe what a photo <em>looks like</em>; only I know what it <em>was</em>. Several confidently-written captions and credits were wrong until corrected.</span>
+      </li>
+      <li>
+        <strong>Decisions stayed with me</strong>
+        <span>Every visual direction, component pattern and scope cut was presented as options with a recommendation &mdash; then chosen, rejected or reversed by me.</span>
+      </li>
+    </ol>
+
+    <div class="section-head" style="margin-top: 3rem;">
+      <p class="eyebrow">Design Direction</p>
+      <h2>Three routes, one chosen</h2>
+      <p>Rather than iterating on one safe layout, three distinct visual worlds were built as working comps and judged side by side.</p>
+    </div>
+
+    <div class="dir-grid">
+      <div class="dir-card is-chosen">
+        <div class="dir-swatches">
+          <span style="background:#14161a"></span>
+          <span style="background:#1b1e23"></span>
+          <span style="background:#2d3138"></span>
+          <span style="background:#ff5a36"></span>
+          <span style="background:#eef0f2"></span>
+        </div>
+        <h3>Dragonframe</h3>
+        <p>Built from the capture software I actually shoot on. Charcoal ground, recording-orange accent, monospace frame counters, a viewfinder hero and projects as a contact sheet.</p>
+        <span class="dir-verdict">Chosen &mdash; to implement</span>
+      </div>
+      <div class="dir-card">
+        <div class="dir-swatches">
+          <span style="background:#cbb896"></span>
+          <span style="background:#ded1b3"></span>
+          <span style="background:#3f6fa8"></span>
+          <span style="background:#2b241b"></span>
+          <span style="background:#6b5e49"></span>
+        </div>
+        <h3>Workshop Bench</h3>
+        <p>Leaning on the materials instead of the tools &mdash; kraft card, blue painter's-tape labels, torn-paper project swatches, stencilled headlines.</p>
+        <span class="dir-verdict">Not chosen</span>
+      </div>
+      <div class="dir-card">
+        <div class="dir-swatches">
+          <span style="background:#050505"></span>
+          <span style="background:#131313"></span>
+          <span style="background:#e3a548"></span>
+          <span style="background:#b8283f"></span>
+          <span style="background:#f2eee6"></span>
+        </div>
+        <h3>Premiere Night</h3>
+        <p>Leaning on the outcome &mdash; letterboxed black, projector-beam glow, italic serif titles, laurels as ticket stubs, projects listed as a festival programme.</p>
+        <span class="dir-verdict">Not chosen</span>
+      </div>
+    </div>
+
+    <div class="section-head" style="margin-top: 3rem;">
+      <p class="eyebrow">Component Study</p>
+      <h2>Designing the progression scrubber</h2>
+      <p>The hardest interface problem on the site: how do you let someone understand a project's evolution without making them read nine captioned cards?</p>
+    </div>
+
+    <p>Three patterns were prototyped with real project images &mdash; a timeline scrubber, an all-at-once progression strip, and a conventional filmstrip viewer. The filmstrip was rejected precisely <em>because</em> it was the most familiar: a thumbnail rail reads as "pick an image", which is the gallery framing the redesign was trying to escape.</p>
+
+    <p>The timeline scrubber won because the stage <em>names</em> carry the story before you touch anything, and because a timeline is the native metaphor for animation work. It then took five rounds of refinement, most of them prompted by me spotting something wrong on screen &mdash; see the log below.</p>
+
+    <div class="section-head" style="margin-top: 3rem;">
+      <p class="eyebrow">Build</p>
+      <h2>Stack &amp; constraints</h2>
+      <p>Plain HTML, CSS and JavaScript &mdash; chosen over a framework so the site stays hand-editable without a toolchain installed, and so it can be hosted free and indefinitely.</p>
+    </div>
+    <div class="chip-row">
+      <span class="chip">HTML</span>
+      <span class="chip">CSS custom properties</span>
+      <span class="chip">Vanilla JS</span>
+      <span class="chip">No build step</span>
+      <span class="chip">Progressive enhancement</span>
+      <span class="chip">GitHub Pages</span>
+      <span class="chip">YouTube embeds</span>
+      <span class="chip">Formspree</span>
+    </div>
+
+    <p style="margin-top: 1.75rem;">The progression scrubber ships as a plain captioned grid and is upgraded by JavaScript, so every stage stays readable with scripting off. Video lives on YouTube rather than in the repo &mdash; GitHub Pages is a poor host for 80MB files.</p>
+
+    <div class="callout">
+      <h3>Status: in progress</h3>
+      <p>Content is being rewritten in my own voice, the remaining project galleries are being curated, and the Dragonframe direction is yet to be implemented. Targeting launch on 19 August 2026 &mdash; this page will be updated as it lands.</p>
+    </div>
+
+    <div class="project-nav">
+      <a href="piece-it-together.html">&larr; Previous: Piece It Together!</a>
+      <a href="../projects.html">Back to Projects &rarr;</a>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <p><a href="mailto:tonyc.cn.au@gmail.com">tonyc.cn.au@gmail.com</a> &middot; &copy; <span id="year"></span> Tony Chen</p>
+</footer>
+
+<script src="../js/script.js"></script>
+<script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+</body>
+</html>

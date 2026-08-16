@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2025 Show Reel &mdash; Tony Chen</title>
+<meta name="description" content="Tony Chen's 2025 show reel — stop motion, 2D animation and hybrid film making. One minute, four films.">
+<!-- og:image paths are relative. Once the site has a domain, make the four
+     og:/twitter: URLs absolute — some scrapers will not resolve a relative one. -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="2025 Show Reel — Tony Chen">
+<meta property="og:description" content="One minute, four films. Stop motion, 2D animation and hybrid film making.">
+<meta property="og:image" content="images/hero-poster.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <nav class="nav">
+    <a href="index.html" class="nav-brand">Tony Chen</a>
+    <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">&#9776;</button>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="reel.html" aria-current="page">Show Reel</a></li>
+      <li><a href="projects.html">Projects</a></li>
+      <li><a href="about.html">About Me</a></li>
+    </ul>
+  </nav>
+</header>
+
+<section class="section-tight">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow">Show Reel</p>
+      <h1>2025 Show Reel</h1>
+      <p>One minute show reel of some of my highlighted projects through out the years from practical hand made sets, to stop-motion, and 2D animations.</p>
+    </div>
+
+    <div class="video-frame">
+      <iframe src="https://www.youtube.com/embed/3LoakH_G9Og" title="Tony Chen Show Reel 2025"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        referrerpolicy="strict-origin-when-cross-origin" loading="lazy" allowfullscreen></iframe>
+    </div>
+
+    <div class="meta-grid" style="margin-top: 2rem;">
+      <div class="meta-item">
+        <span class="eyebrow">Year</span>
+        <p>2025</p>
+      </div>
+      <div class="meta-item">
+        <span class="eyebrow">Runtime</span>
+        <p>1:02</p>
+      </div>
+      <div class="meta-item">
+        <span class="eyebrow">AI Use</span>
+        <p>None</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section-tight">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow">Credits</p>
+      <h2>My efforts</h2>
+      <p>The shots contains my contribution at the top of the clip. Ones labelled Whole Production, I was heavily involved through out the whole process, either as the director or project lead. Across rest of the shots my roles includes the following.</p>
+    </div>
+
+    <ul class="credits-list">
+      <li><span class="credit-role">Producer</span>Across the cut</li>
+      <li><span class="credit-role">Stop-motion Animator</span>Physical shoots</li>
+      <li><span class="credit-role">Cinematographer</span>Camera and lighting</li>
+      <li><span class="credit-role">Set Designer</span>Practical builds and design</li>
+      <li><span class="credit-role">Storyboarder</span>Rough compositions</li>
+      <li><span class="credit-role">2D Rough Artist</span>Animatic</li>
+      <li><span class="credit-role">Compositor</span>2D over live footage</li>
+    </ul>
+
+    <div class="project-nav">
+      <a href="projects.html">&larr; All Projects</a>
+      <a href="about.html">About &amp; contact &rarr;</a>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <p>&copy; <span id="year"></span> Tony Chen. All rights reserved.</p>
+</footer>
+
+<script src="js/script.js"></script>
+<script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+</body>
+</html>

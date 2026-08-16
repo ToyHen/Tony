@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tony Chen — Stop Motion &amp; Animation Direction</title>
+<meta name="description" content="Portfolio of Tony Chen — stop motion, 2D animation and hybrid film making.">
+<!-- og:image paths are relative. Once the site has a domain, make the og:/twitter:
+     URLs absolute — some scrapers will not resolve a relative one. -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Tony Chen — Stop Motion &amp; Animation Direction">
+<meta property="og:description" content="Hand-crafted stop motion, 2D animation and hybrid film making.">
+<meta property="og:image" content="images/hero-poster.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <nav class="nav">
+    <a href="index.html" class="nav-brand">Tony Chen</a>
+    <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">&#9776;</button>
+    <ul class="nav-links">
+      <li><a href="index.html" aria-current="page">Home</a></li>
+      <li><a href="reel.html">Show Reel</a></li>
+      <li><a href="projects.html">Projects</a></li>
+      <li><a href="about.html">About Me</a></li>
+    </ul>
+  </nav>
+</header>
+
+<!-- Hero loop: LUM_0269, the island deck against cloud. 14.3s, 24fps, 471KB.
+     It loops on a CROSSFADE — the clip's tail is blended into its head, so the
+     footage returns to its own first frame with no cut. That works on any shot
+     and nothing ever plays backwards, which is why it replaced the palindrome
+     the first hero used: a palindrome reversed the shot's propeller and made
+     the cloud breathe in and out.
+
+     NO ZOOM. A sine-eased zoom was tried here and cut on 15 Aug 2026 — Tony
+     found it motion-sickening. The shot is locked off, so what is left is the
+     cloud drifting in the upper right and nothing else. That is deliberate:
+     this is the one clip on the site that plays unasked, so it should be calm.
+
+     The poster is frame 0 of the loop (source t=1.2s), so the still-to-motion
+     swap is invisible and a refused autoplay just leaves a still. It is
+     decorative: aria-hidden, not focusable, no controls.
+     An alternative cut of LUM_0272 is at ../hero-alt-LUM_0272.mp4 (outside the
+     site so it never ships) — drop it in as hero-loop.mp4 to switch. -->
+<section class="hero" data-hero-video>
+  <video class="hero-media" data-src="images/hero-loop.mp4" poster="images/hero-poster.jpg"
+         muted loop playsinline preload="none" aria-hidden="true" tabindex="-1"></video>
+  <div class="container hero-inner">
+    <p class="eyebrow">Stop Motion Director &middot; Sydney</p>
+    <h1>Hand-crafted stop motion &amp; animation, made by Tony Chen</h1>
+    <p class="hero-tagline">Dedicated to exploring the limits and pushing creative visions through hand-crafted stop motion, 2D animation and hybrid film making.</p>
+    <div class="hero-actions">
+      <a href="reel.html" class="btn btn-primary">Watch the 2025 Reel</a>
+      <a href="projects.html" class="btn btn-ghost">View Projects</a>
+    </div>
+  </div>
+</section>
+
+<!-- The reel embed moved to reel.html. The hero carries a silent cut of it and
+     the hero CTA is the way through, so an embed here would only be the same
+     film twice on one page. -->
+
+<section class="section-tight">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow">Featured Work</p>
+      <h2>Selected Work</h2>
+      <p>Finished shots, builds, drawings and tests &mdash; open any frame for
+        the project behind it.</p>
+    </div>
+
+    <!-- CONTACT SHEET.
+         Cells auto-place with `grid-auto-flow: dense`, so the order here is the
+         only thing that decides the layout — no cell is hand-positioned, and
+         adding one does not mean re-planning the grid.
+
+         TILING: a feature is 2x2, a frame is 1x1. The order below is
+         **feature, frame, frame — repeated four times**, which is the one
+         arrangement that tiles with no holes at 4, 3 AND 2 columns. An order
+         tuned for 4 columns alone opened three holes at the 3-column
+         breakpoint. **If you add or remove cells, re-check every breakpoint**:
+         rows x cols must equal features*4 + frames.
+
+         NO CAPTIONS, deliberately. This is the home page and the images are
+         meant to be judged on looks, so nothing is titled here — the projects
+         page carries the names and the detail. That makes each image's `alt`
+         the only accessible name its link has, so **every cell must keep a
+         descriptive alt**.
+
+         Only the features carry data-clip, and even then the still is the
+         point — the clip is a bonus that never loads on touch, where there is
+         no pointer to trigger it. -->
+    <div class="sheet" data-sheet>
+
+      <!-- VINCI'S VOYAGE — finished / build / studio -->
+      <a class="sheet-cell is-feature" href="projects/vincis-voyage.html"
+         data-clip="images/projects/vv-water.mp4">
+        <img src="images/projects/vv-moment-dusk.jpg"
+             alt="The floating island lit from within, drifting in violet cloud" loading="lazy">
+      </a>
+      <a class="sheet-cell" href="projects/vincis-voyage.html">
+        <img src="images/projects/vv-propeller-2.jpg"
+             alt="The propeller laid on cutting mat" loading="lazy">
+      </a>
+      <a class="sheet-cell" href="projects/vincis-voyage.html">
+        <img src="images/projects/vv-shoot-m1-poster.jpg"
+             alt="The island set lit magenta with the camera beside it" loading="lazy">
+      </a>
+
+      <!-- NIGHT VISION — finished night half / the day half / studio -->
+      <a class="sheet-cell is-feature" href="projects/night-vision.html"
+         data-clip="images/projects/nv-shot3.mp4">
+        <img src="images/projects/nv-shot3-poster.jpg"
+             alt="A leaf-winged creature hovering over the forest floor in warm gold light" loading="lazy">
+      </a>
+      <a class="sheet-cell" href="projects/night-vision.html">
+        <img src="images/projects/nv-test-clip-poster.jpg"
+             alt="Early test shot of Night Vision" loading="lazy">
+      </a>
+      <a class="sheet-cell" href="projects/night-vision.html">
+        <img src="images/projects/nv-step-s2-poster.jpg"
+             alt="The forest set under warm light, the paper creature among fallen logs" loading="lazy">
+      </a>
+
+      <!-- TRAMSHEDS JOY RIDE — finished / location / character design -->
+      <a class="sheet-cell is-feature" href="projects/tramsheds-joyride.html"
+         data-clip="images/projects/tj-s060-after.mp4">
+        <img src="images/projects/tj-s060-after-poster.jpg"
+             alt="Hand-drawn characters composited onto the brick wall above the tram line" loading="lazy">
+      </a>
+      <a class="sheet-cell" href="projects/tramsheds-joyride.html">
+        <img src="images/projects/tramsheds-joyride.jpg"
+             alt="The green tram under strings of lights, with the characters composited in" loading="lazy">
+      </a>
+      <a class="sheet-cell" href="projects/tramsheds-joyride.html">
+        <img src="images/projects/tj-character.jpg"
+             alt="Turnarounds for the rabbit, the cat and Ben the Can" loading="lazy">
+      </a>
+
+      <!-- PIECE IT TOGETHER — finished / animatic / studio -->
+      <a class="sheet-cell is-feature" href="projects/piece-it-together.html"
+         data-clip="images/projects/pit-highlight.mp4">
+        <img src="images/projects/pit-highlight.jpg"
+             alt="The wire and paper puppet standing on the workbench under a desk lamp" loading="lazy">
+      </a>
+      <a class="sheet-cell" href="projects/piece-it-together.html">
+        <img src="images/projects/pit-animatic-poster.jpg"
+             alt="A figure drawn in bold line for the animatic" loading="lazy">
+      </a>
+      <a class="sheet-cell" href="projects/piece-it-together.html">
+        <img src="images/projects/pit-shoot-poster.jpg"
+             alt="The workbench set up to shoot, lit by a desk lamp" loading="lazy">
+      </a>
+
+    </div>
+    <p style="margin-top:2rem;"><a href="projects.html" class="btn btn-ghost">See all projects &rarr;</a></p>
+  </div>
+</section>
+
+<!-- All four of these are for Night Vision, so the section says so and links
+     there. They are not a general award shelf and must not read as one. -->
+<section class="section-tight">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow">Recognition</p>
+      <h2>Night Vision (while we sleep)</h2>
+      <p>An AEAF Silver in the student category, and selections at three
+        festivals. <a href="projects/night-vision.html">See the project &rarr;</a></p>
+    </div>
+    <div class="laurels">
+      <a class="laurel-badge" href="https://aeaf.tv/hall-of-fame/aeaf-awardfs-2023-winners" target="_blank" rel="noopener">
+        <span class="badge-award">AEAF 2023 &mdash; Silver</span>
+        <span class="badge-detail">Student Category</span>
+      </a>
+      <img src="images/projects/laurel-animate.png" alt="Semi-Finalist, AniMate Australia Animation Film Festival 2024" loading="lazy">
+      <img src="images/projects/laurel-aotearoa.png" alt="Official Selection, Aotearoa Poetry Film Festival 2024" loading="lazy">
+      <img class="laurel-invert" src="images/projects/laurel-shortsweet.png" alt="Official Selection, Short+Sweet Film Festival Illawarra 2024" loading="lazy">
+    </div>
+  </div>
+</section>
+
+<section class="contact">
+  <div class="container">
+    <div class="contact-grid">
+      <div class="contact-details">
+        <p class="eyebrow">Contact</p>
+        <h2>Tony Chen</h2>
+        <p><a href="mailto:tonyc.cn.au@gmail.com">tonyc.cn.au@gmail.com</a></p>
+        <div class="social-links">
+          <a href="https://www.instagram.com/toy.hen/" target="_blank" rel="noopener">Instagram &mdash; @toy.hen</a>
+        </div>
+      </div>
+      <div>
+        <p>Have a project in mind? Reach out and let's talk.</p>
+        <a href="about.html#contact" class="btn btn-primary">Send a Message</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <p>&copy; <span id="year"></span> Tony Chen. All rights reserved.</p>
+</footer>
+
+<script src="js/script.js"></script>
+<script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+</body>
+</html>
