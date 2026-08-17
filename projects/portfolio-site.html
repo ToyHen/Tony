@@ -53,7 +53,7 @@
     </div>
 
     <div class="project-hero-media">
-      <img src="../images/projects/portfolio-site.jpg" alt="The site's progression scrubber: a browser frame showing a project still above a labelled timeline of eleven stages">
+      <img src="../images/projects/portfolio-site.jpg" alt="The site's progression scrubber: a browser frame showing the finished Vinci's Voyage island lit magenta against cloud, above a timeline of nine stages with the last one selected">
     </div>
 
     <p>The site you're reading is the project. It replaces a Wix template with a hand-coded static site &mdash; no page builder, no framework, no build step &mdash; designed and built by directing an agentic AI as the implementer while I held the design decisions, the source material and the final say on what shipped.</p>
@@ -61,12 +61,110 @@
     <p>The interesting part wasn't asking for code. It was working out which decisions are actually mine: which images represent the work, whether a caption is true, when a pattern is right for the content, and when a "fix" has quietly made something worse.</p>
 
     <!--
-      TO ADD SCREENSHOTS LATER: this page deliberately uses no imagery yet —
-      the visuals below are the real design system rendered in CSS. When you
-      want screenshots (old Wix site, homepage, the scrubber), drop them in
-      images/projects/ and add a .figure-grid or scrubber block, same as the
-      other project pages.
+      MEDIA: the hero is a mockup thumbnail, not a screenshot — dark browser
+      chrome around the component being described. Keep that treatment for any
+      new thumbnail on this page (Tony's call, 17 Aug 2026).
+
+      Still to add: thumbnails of the three design comps and the three
+      progression prototypes. Both sets survive as Claude artifacts —
+      "Portfolio Direction Mockups" and "Progression Gallery — Three
+      Approaches" — so they can be rendered rather than reconstructed.
     -->
+
+    <div class="section-head" style="margin-top: 3rem;">
+      <p class="eyebrow">Component Study</p>
+      <h2>Designing the progression scrubber</h2>
+      <p>The hardest interface problem on the site: how do you let someone understand a project's evolution without making them read nine captioned cards?</p>
+    </div>
+
+    <p>I had three patterns prototyped against real Vinci&rsquo;s Voyage stages rather than placeholder boxes, so the choice rested on material I already knew &mdash; a timeline scrubber, an all-at-once progression strip, and a conventional filmstrip viewer. I threw out the filmstrip precisely <em>because</em> it was the most familiar: a thumbnail rail reads as &ldquo;pick an image&rdquo;, which is the gallery framing I was trying to escape.</p>
+
+    <p>The recommendation that came back was to ship two of them &mdash; the strip as an instant summary, the scrubber underneath it for the detail. I overruled it and built the scrubber on its own. The stage <em>names</em> carry the story before you touch anything, and a timeline is the native metaphor for animation work. It then took five rounds of refinement, most of them prompted by me spotting something wrong on screen.</p>
+
+    <p>One idea survived the prototype intact. A stage with no photograph yet renders as a marked gap rather than quietly disappearing &mdash; the prototype used an empty slot to show what a missing stage costs, and every project page still works that way.</p>
+
+    <p>What shipped is not what the prototype was. The component below is the scrubber itself &mdash; scrub it to step through its own build.</p>
+
+    <!-- Opens on Drag rather than Buttons. Both Drag and Buttons are stills, so
+         this costs no extra load weight; opening on Motion would fetch the clip
+         on page load, since the scrubber has no IntersectionObserver gate. -->
+    <div class="figure-grid" data-scrubber="THE SCRUBBER / WHAT IT DOES" data-scrub-start="Drag">
+      <figure data-label="Buttons">
+        <img src="../images/projects/portfolio-site-scrub-buttons.jpg" alt="The scrubber in its first form: a build photo above a rail of seven stage markers, the third one lit with an arrow cursor beside it, ready to be clicked" loading="lazy">
+        <figcaption><h3>Buttons</h3><p>The track was there from the start &mdash; stage names along a rail, the current one lit, a counter reading position out of total. But the dots were only buttons. You clicked one, waited for the crossfade, clicked the next.</p></figcaption>
+      </figure>
+      <figure data-label="Drag">
+        <img src="../images/projects/portfolio-site-scrub-drag.jpg" alt="The same timeline mid-drag: a grabbing-hand cursor holds the lit marker a stage further along, with a fading orange trail behind it showing how far it has been pulled" loading="lazy">
+        <figcaption><h3>Drag</h3><p>Then the dots became draggable, and clicking through stopped being the only way across. Grab one and scrub; the crossfade is cut while you drag so the picture keeps up with the pointer instead of lagging behind it. Hold near either end and the track pans itself to reach stages sitting off screen.</p></figcaption>
+      </figure>
+      <figure data-label="Motion">
+        <video data-src="../images/projects/portfolio-site-scrub-motion.mp4"
+               poster="../images/projects/portfolio-site-scrub-motion-poster.jpg"
+               data-alt="The scrubber playing a clip in place of a still: the Piece It Together set at night, an animator working over the lit desk with the camera on its tripod. Two markers on the track carry a small orange dot above them, flagging them as clips rather than stills"
+               muted loop playsinline preload="none">
+          <img src="../images/projects/portfolio-site-scrub-motion-poster.jpg" alt="The scrubber with a clip in place of a still: the Piece It Together set at night, camera on its tripod over the lit desk. Two markers on the track carry a small orange dot above them, flagging them as clips rather than stills" loading="lazy">
+        </video>
+        <figcaption><h3>Motion</h3><p>Last, a stage stopped having to be a photograph. It can be a silent looping clip instead, and a small mark above its dot says so before you reach it &mdash; on Piece It Together the animatic and the shoot are both motion. This stage is one: what is playing is the real component, running a real clip.</p></figcaption>
+      </figure>
+    </div>
+
+    <div class="section-head" style="margin-top: 3rem;">
+      <p class="eyebrow">Tooling</p>
+      <h2>Choosing what goes on the page</h2>
+      <p>Four films came to about 173 candidate frames. Picking twelve of them by scrolling a folder was the bottleneck, so I had a tool built for it.</p>
+    </div>
+
+    <p>The problem is not &ldquo;is this a good photograph&rdquo;. It is &ldquo;does this still read at 260 pixels&rdquo; &mdash; and most of the library are multi-panel collages built for a 1600&times;1000 viewer, which turn to mush that small. You cannot tell which from a filename. So the picker renders every asset at exactly the size it will ship at, and nothing bigger; the larger preview is what an image earns by surviving that test.</p>
+
+    <div class="figure-grid">
+      <figure>
+        <img src="../images/projects/portfolio-site-picker-library.jpg" alt="The asset picker: a wall of dozens of small frames filling the window, filter menus across the top, a coloured status dot on every cell, and a preview panel at the right showing the frame under the pointer" loading="lazy">
+        <figcaption><h3>The asset picker</h3><p>Every still and clip in one grid, filtered by project, status, kind and source. The dots flag what each file is doing &mdash; already in the sheet, used elsewhere on the site, referenced by nothing, or off the 16:9 ratio. Clips are in here too, shown through their poster frame.</p></figcaption>
+      </figure>
+      <figure>
+        <img src="../images/projects/portfolio-site-picker-editor.jpg" alt="The sheet editor: the live home-page contact sheet on the left &mdash; four large film frames set among smaller ones &mdash; with one small cell outlined in orange, and a drawer open at the right holding candidate frames, one selected, above an alt-text field and a save button" loading="lazy">
+        <figcaption><h3>The sheet editor</h3><p>The same decision made on the real page instead of next to it. It serves the actual site, wires up every cell of the home-page contact sheet, and opens a drawer of candidates when you click one. Pick a frame and it is written straight into the page &mdash; alt text and all, because a cell with no alt is an unlabelled link.</p></figcaption>
+      </figure>
+    </div>
+
+    <p>It never crawls my drives. Anything dug out by hand gets dragged onto the page and staged in a holding folder, phone photos converted on arrival, and bringing one into the site stays a deliberate second step. Raw footage is the exception: a 281MB camera original is cut to a clip by giving the tool a path, so 99.9% of the file never moves.</p>
+
+    <div class="section-head" style="margin-top: 3rem;">
+      <p class="eyebrow">Component</p>
+      <h2>The media grid</h2>
+      <p>For a set of things that belong together but are not in step and not in order &mdash; a reference clip, a printed guide, two angles on the same build.</p>
+    </div>
+
+    <p>The scrubber would be wrong here: it implies a sequence. A before/after would be wrong too, because a shared play button claims the clips run together. So this one has no shared transport at all, deliberately. Each tile previews on its own when you reach it, and nothing downloads until you do.</p>
+
+    <div class="figure-grid">
+      <figure>
+        <img src="../images/projects/portfolio-site-mediagrid.jpg" alt="The media grid: six tiles of the wing build, each captioned. Three carry a row of small dots in the top corner showing how many frames that tile holds, with the first dot lit orange" loading="lazy">
+        <figcaption><h3>More than one frame per tile</h3><p>A tile can hold several frames of the same subject. The dots say so at rest, so you know there is more before you touch it, and the extra frames are only fetched on the first hover. Leaving a tile keeps the frame you stopped on rather than snapping back.</p></figcaption>
+      </figure>
+      <figure>
+        <img src="../images/projects/portfolio-site-mediagrid-lightbox.jpg" alt="A tile opened large over a dimmed grid, with a close button in the corner and a counter beneath showing which frame of the set is on screen" loading="lazy">
+        <figcaption><h3>Opened up</h3><p>Any tile opens large, on whichever frame was showing, and steps from there &mdash; click, swipe, or the arrow keys. Half of all visitors have no pointer at all, so a dragging finger previews whatever tile it crosses; none of this may depend on hover to make sense.</p></figcaption>
+      </figure>
+    </div>
+
+    <div class="section-head" style="margin-top: 3rem;">
+      <p class="eyebrow">Build</p>
+      <h2>Stack &amp; constraints</h2>
+      <p>I chose plain HTML, CSS and JavaScript over a framework so the site stays hand-editable without a toolchain installed, and so it can be hosted free and indefinitely.</p>
+    </div>
+    <div class="chip-row">
+      <span class="chip">HTML</span>
+      <span class="chip">CSS custom properties</span>
+      <span class="chip">Vanilla JS</span>
+      <span class="chip">No build step</span>
+      <span class="chip">Progressive enhancement</span>
+      <span class="chip">GitHub Pages</span>
+      <span class="chip">YouTube embeds</span>
+      <span class="chip">Formspree</span>
+    </div>
+
+    <p style="margin-top: 1.75rem;">The progression scrubber ships as a plain captioned grid and is upgraded by JavaScript, so every stage stays readable with scripting off. Video lives on YouTube rather than in the repo &mdash; GitHub Pages is a poor host for 80MB files.</p>
 
     <div class="section-head" style="margin-top: 3rem;">
       <p class="eyebrow">Method</p>
@@ -89,14 +187,14 @@
       </li>
       <li>
         <strong>Decisions stayed with me</strong>
-        <span>Every visual direction, component pattern and scope cut was presented as options with a recommendation &mdash; then chosen, rejected or reversed by me.</span>
+        <span>The agent put up every visual direction, component pattern and scope cut as options with a recommendation. I chose, rejected or reversed each one &mdash; including the recommendations I disagreed with.</span>
       </li>
     </ol>
 
     <div class="section-head" style="margin-top: 3rem;">
       <p class="eyebrow">Design Direction</p>
       <h2>Three routes, one chosen</h2>
-      <p>Rather than iterating on one safe layout, three distinct visual worlds were built as working comps and judged side by side.</p>
+      <p>Three visual worlds, built as working comps on the same copy and judged side by side. Nothing here is settled &mdash; the direction is still open, and these are the terms it will be decided on.</p>
     </div>
 
     <div class="dir-grid">
@@ -109,8 +207,8 @@
           <span style="background:#eef0f2"></span>
         </div>
         <h3>Dragonframe</h3>
-        <p>Built from the capture software I actually shoot on. Charcoal ground, recording-orange accent, monospace frame counters, a viewfinder hero and projects as a contact sheet.</p>
-        <span class="dir-verdict">Chosen &mdash; to implement</span>
+        <p>Built from the capture software I actually shoot on &mdash; charcoal ground, recording-orange accent, monospace frame counters, a viewfinder hero and projects as a contact sheet.</p>
+        <span class="dir-verdict">Front runner</span>
       </div>
       <div class="dir-card">
         <div class="dir-swatches">
@@ -121,8 +219,8 @@
           <span style="background:#6b5e49"></span>
         </div>
         <h3>Workshop Bench</h3>
-        <p>Leaning on the materials instead of the tools &mdash; kraft card, blue painter's-tape labels, torn-paper project swatches, stencilled headlines.</p>
-        <span class="dir-verdict">Not chosen</span>
+        <p>The materials instead of the tools &mdash; kraft card, painter&rsquo;s-tape labels, stencilled headlines.</p>
+        <span class="dir-verdict">Still open</span>
       </div>
       <div class="dir-card">
         <div class="dir-swatches">
@@ -133,38 +231,10 @@
           <span style="background:#f2eee6"></span>
         </div>
         <h3>Premiere Night</h3>
-        <p>Leaning on the outcome &mdash; letterboxed black, projector-beam glow, italic serif titles, laurels as ticket stubs, projects listed as a festival programme.</p>
-        <span class="dir-verdict">Not chosen</span>
+        <p>The outcome instead of the making &mdash; letterboxed black, projector glow, projects as a festival programme.</p>
+        <span class="dir-verdict">Still open</span>
       </div>
     </div>
-
-    <div class="section-head" style="margin-top: 3rem;">
-      <p class="eyebrow">Component Study</p>
-      <h2>Designing the progression scrubber</h2>
-      <p>The hardest interface problem on the site: how do you let someone understand a project's evolution without making them read nine captioned cards?</p>
-    </div>
-
-    <p>Three patterns were prototyped with real project images &mdash; a timeline scrubber, an all-at-once progression strip, and a conventional filmstrip viewer. The filmstrip was rejected precisely <em>because</em> it was the most familiar: a thumbnail rail reads as "pick an image", which is the gallery framing the redesign was trying to escape.</p>
-
-    <p>The timeline scrubber won because the stage <em>names</em> carry the story before you touch anything, and because a timeline is the native metaphor for animation work. It then took five rounds of refinement, most of them prompted by me spotting something wrong on screen &mdash; see the log below.</p>
-
-    <div class="section-head" style="margin-top: 3rem;">
-      <p class="eyebrow">Build</p>
-      <h2>Stack &amp; constraints</h2>
-      <p>Plain HTML, CSS and JavaScript &mdash; chosen over a framework so the site stays hand-editable without a toolchain installed, and so it can be hosted free and indefinitely.</p>
-    </div>
-    <div class="chip-row">
-      <span class="chip">HTML</span>
-      <span class="chip">CSS custom properties</span>
-      <span class="chip">Vanilla JS</span>
-      <span class="chip">No build step</span>
-      <span class="chip">Progressive enhancement</span>
-      <span class="chip">GitHub Pages</span>
-      <span class="chip">YouTube embeds</span>
-      <span class="chip">Formspree</span>
-    </div>
-
-    <p style="margin-top: 1.75rem;">The progression scrubber ships as a plain captioned grid and is upgraded by JavaScript, so every stage stays readable with scripting off. Video lives on YouTube rather than in the repo &mdash; GitHub Pages is a poor host for 80MB files.</p>
 
     <div class="callout">
       <h3>Status: live, still moving</h3>

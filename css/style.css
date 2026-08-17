@@ -245,6 +245,11 @@ section { padding: 4rem 0; }
   margin-bottom: 2.5rem;
   max-width: 60ch;
 }
+/* The block's own margin owns the spacing below it. Without this the trailing
+   paragraph adds its 1rem on top of that 2.5rem, so a section head sat 56px
+   clear of its first body paragraph while paragraphs after it sat 16px apart —
+   the head read as detached from the section it introduces. */
+.section-head > p:last-child { margin-bottom: 0; }
 
 /* ---------- Video embed ---------- */
 .video-frame {
@@ -1371,6 +1376,11 @@ section { padding: 4rem 0; }
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 1.5rem;
   margin-top: 1.5rem;
+  /* Matches margin-top. Without it a paragraph following a *visible* grid sat
+     flush against the cards with no gap at all. The scrubber source grids are
+     [hidden] (display:none), so this only affects grids used as real content
+     and the no-JS fallback. */
+  margin-bottom: 1.5rem;
 }
 /* `display: grid` above would otherwise beat the UA rule for [hidden],
    leaving the source list visible after the scrubber replaces it. */
