@@ -1301,11 +1301,16 @@ function initSite() {
        It moves in TWO stages, and the split is what gives it weight rather than
        a constant offset:
 
-       1. The magnets decide where the blob is wanted. MAGNET is how much of the
-          distance back to the stage it gives up; RELEASE is how abruptly that
-          hold gives out as you pull away; GRIP is the point at which the stage
-          lets go COMPLETELY. Past GRIP nothing holds it, so the middle of every
-          gap is a window where the blob simply rides the pointer.
+       1. The magnets decide where the blob is wanted. At MAGNET = 1 a stage
+          keeps the blob exactly on its own dot, so near a stage it does not
+          drift with the cursor at all — it is pinned, and what moves is the
+          stretch reaching out toward your hand. RELEASE sets how abruptly that
+          grip gives out as you pull away, and it is high so the pinned zone
+          stays wide and flat rather than easing off from the first pixel: the
+          blob sits dead on the dot for the first third of the pull, then lets
+          go over the rest. GRIP is where the stage lets go COMPLETELY — past
+          it nothing holds the blob and it simply rides the pointer, so every
+          gap has a pinned end, a release, and a free middle.
        2. The blob then CHASES that position rather than being placed on it,
           approaching it with a time constant of DRAG_TAU. This is where the
           weight comes from. Position alone is memoryless: drag slowly or fast
@@ -1324,37 +1329,45 @@ function initSite() {
        Everything is a ratio of the gap, so it reads identically at 347px
        segments (a three-stage track) and 116px (Vinci's nine).
 
-       - SQUASH conserves the blob's volume. Stretching it sideways without
-         thinning it just inflates it; scaleY = stretch^-0.5 is the ellipsoid
-         that keeps x*y*z constant when y and z move together.
+       - SQUASH thins the blob as it stretches, so it reads as the same amount
+         of goo rather than more of it. It is the SILHOUETTE's area that has to
+         stay constant, which means scaleY = 1 / scaleX. The obvious-looking
+         stretch^-0.5 is the 3D ellipsoid — right for a real object where the
+         third axis absorbs some of it, wrong here, because nothing on screen
+         has a third axis: measured, it still let the blob fatten by 16% from
+         rest to full stretch, and that showed.
        - The stretch measures the gap between the blob and the POINTER, which is
          the thing actually being stretched. Both sources feed it for free: the
          magnet holding it back near a stage, and its own weight while moving.
          It goes round whenever the two meet — resting on a stage, or parked
          mid-gap with the pointer still.
 
-       The stretch itself is one-sided. scaleX grows about the centre, so half
-       the extra length would land in front of the pointer — a blob leading in
-       the direction it is being held BACK from, which is the wrong cue
-       entirely. The centre is shifted by that same half-length so the whole
-       stretch trails behind, pointing at the stage being left. LEAN is the
-       eased sign of travel rather than a raw one, so reversing direction
-       mid-gap swings the tail round instead of flipping it in one frame.
+       The stretch itself is one-sided, and it reaches toward the POINTER: the
+       blob's far edge stays where an unstretched one would be and the whole
+       extra length goes out the other side, so a pinned blob looks like goo
+       anchored on the dot being pulled at. Splitting it evenly, as scaleX does
+       on its own, would push half the smear out behind the dot — away from the
+       hand doing the pulling — which is what it used to do.
 
        The picture still changes at the midpoint, so what you drag is continuous
        and what you see is always a real stage. */
     const MAX_STRETCH = 0.62;   // extra scaleX at full stretch
-    const MAGNET = 0.78;        // how much of your movement a stage holds back
+    const MAGNET = 1;           // how much of your movement a stage holds back.
+                                // 1 means a stage keeps the blob exactly ON its
+                                // dot — it is pinned, not merely slowed
     const GRIP = 0.72;          // how far out it holds on at all, as a fraction
                                 // of half a gap — past this the pointer wins
-    const RELEASE = 2.2;        // how abruptly the hold gives out approaching GRIP
+    const RELEASE = 3.2;        // how abruptly the hold gives out approaching
+                                // GRIP. High keeps the pinned zone wide and flat
     const DRAG_TAU = 28;        // ms — the blob's own weight
     const DRAG_SLIP = 0.5;      // cap on how far its weight alone can throw it
                                 // off the aim, so a flick can't detach it
-    const STRETCH_REF = 0.58;   // distance from the pointer that fully smears it,
+    const STRETCH_REF = 0.75;   // distance from the pointer that fully smears it,
                                 // again as a fraction of half a gap
-    const SQUASH = 0.5;         // scaleY = stretch ** -SQUASH, volume-conserving
-    const LEAN_EASE = 0.25;     // how fast the tail swings round on a reversal
+    const SQUASH = 1;           // scaleY = stretch ** -SQUASH. 1 holds the
+                                // silhouette's AREA constant, which is the thing
+                                // that reads as the blob keeping its volume
+    const LEAN_TAU = 60;        // ms — how fast the reach swings round
     let blob = null;
     let blobLean = 0;           // -1 tail to the right … +1 tail to the left
     let blobRaw = null;         // pointer position, in the nodes' own space
@@ -1390,10 +1403,10 @@ function initSite() {
       });
     }
 
-    /* `x` is where the blob's HEAD goes — the leading edge sits exactly where an
-       unstretched blob centred on x would put it, and every bit of the stretch
-       trails off the other side. `lean` is +1 for a tail to the left (travelling
-       right), -1 for the reverse, 0 for the old symmetric stretch. */
+    /* `x` anchors the blob and `lean` says which way it grows from there: +1
+       extends it in +x, -1 in -x, 0 splits it evenly. The anchored edge lands
+       exactly where an unstretched blob centred on x would have put it, so the
+       stretch only ever adds to one end. */
     function placeBlob(x, stretch, lean) {
       const el = ensureBlob();
       const n = nodes.getBoundingClientRect();
@@ -1402,10 +1415,11 @@ function initSite() {
       const squash = Math.pow(stretch, -SQUASH);
       // scaleX grows the blob about its own centre, so half the extra length
       // lands on each side. Shifting the centre back by that same half-length
-      // puts all of it on the trailing side. Measured at the 1.15 the transform
+      // puts all of it on one side, leaving the far edge exactly where an
+      // unstretched blob would have had it. Measured at the 1.15 the transform
       // already carries, since that scales the extra too.
       const grow = (w * 1.15 * (stretch - 1)) / 2;
-      const cx = x - lean * grow;
+      const cx = x + lean * grow;
       el.style.transform =
         "translate(" + (cx - w / 2).toFixed(2) + "px," + (d.top - n.top).toFixed(2) + "px)" +
         " scale(1.15) scaleX(" + stretch.toFixed(3) + ")" +
@@ -1421,16 +1435,6 @@ function initSite() {
       const cs = dotCentres();
       const raw = Math.max(cs[0], Math.min(cs[total - 1], clientX - n.left));
 
-      /* Which way the tail points follows TRAVEL, not the offset. The offset
-         flips side at the midpoint — the near stage changes from the one behind
-         to the one ahead — and the tail flipping there, at full stretch, is the
-         one frame you would actually notice. Travel direction carries straight
-         through the crossing. Below half a pixel counts as still, so a resting
-         hand does not shuffle the tail about. */
-      if (blobRaw !== null && Math.abs(raw - blobRaw) > 0.5) {
-        const dir = raw > blobRaw ? 1 : -1;
-        blobLean += (dir - blobLean) * LEAN_EASE;
-      }
       blobRaw = raw;
 
       let near = 0;
@@ -1471,9 +1475,24 @@ function initSite() {
       const slip = DRAG_SLIP * blobHalf;
       blobPos = Math.max(blobAim - slip, Math.min(blobAim + slip, blobPos));
 
-      // how far the goo is stretched between the stage and your finger
-      const off = Math.abs(blobPos - blobRaw) / (blobHalf * STRETCH_REF);
-      placeBlob(blobPos, 1 + Math.min(1, off) * MAX_STRETCH, blobLean);
+      /* The goo runs between the blob and your finger, so that gap is both how
+         far it is stretched AND which way. Reaching toward the pointer is the
+         only reading that survives a strong magnet: pinned to a dot with the
+         cursor pulling away, a tail pointing backwards smears the blob out
+         behind the dot, away from the hand doing the pulling.
+
+         Direction from the offset also solves the flip that made travel
+         direction necessary before. The two disagree only past the midpoint,
+         where the next stage has the blob and is pulling it PAST the cursor —
+         and the sign turns over exactly where the offset is zero, which is
+         exactly where there is no stretch to see it in. */
+      const off = blobRaw - blobPos;
+      if (Math.abs(off) > 1) {
+        const dir = off > 0 ? 1 : -1;
+        blobLean += (dir - blobLean) * (1 - Math.exp(-dt / LEAN_TAU));
+      }
+      const smear = Math.abs(off) / (blobHalf * STRETCH_REF);
+      placeBlob(blobPos, 1 + Math.min(1, smear) * MAX_STRETCH, blobLean);
       blobLoop = dragging ? requestAnimationFrame(blobStep) : null;
     }
 
@@ -1552,7 +1571,9 @@ function initSite() {
       // a fixed 14px of overshoot however far it came, capped at the 10% the
       // easing gives on its own — 10% of a full-rail trip would be a bounce
       const k = backConstant(Math.min(0.1, ZIP_OVERSHOOT / dist));
-      const lean = span > 0 ? 1 : -1;
+      // a flight has no cursor to reach for, so it trails: the smear grows
+      // BACKWARDS out of the direction it is travelling, like a comet
+      const lean = span > 0 ? -1 : 1;
       // a longer flight is a faster one, so it smears harder
       const mag = Math.min(1, 0.6 + dist / 900);
       const t0 = performance.now();
