@@ -740,6 +740,48 @@ section { padding: 4rem 0; }
 .scrubber.is-dragging .scrub-viewer img,
 .scrubber.is-dragging .node-dot { transition: none; }
 
+/* The blob that travels the rail while you drag.
+
+   It is a SEPARATE element, not the active dot moved. Dragging the active dot
+   away would leave a hole in the track where that stage should be, because the
+   dots are the timeline, not decoration. So all the dots stay put, and while
+   dragging `.is-blobbing` renders the active one hollow — there is exactly one
+   orange thing on screen and it is the one under your finger.
+
+   Mirrors .node-dot's own box so it matches whatever sizing is in effect. */
+.scrub-blob {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 17px;
+  height: 17px;
+  border: 2px solid var(--accent);
+  background: var(--accent);
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 3;
+}
+.scrubber.is-blobbing .scrub-blob { opacity: 1; }
+.scrubber.is-blobbing .scrub-node[aria-current="true"] .node-dot {
+  background: var(--bg);
+  border-color: #3f4048;
+  transform: none;
+}
+/* Releasing it: springs home to the stage it landed on with a slight
+   overshoot. Only for the ~320ms after release — during the drag the blob has
+   no transition at all so it tracks the pointer exactly. The dots' own
+   transition is killed here so the hand-back (blob hides, dot re-fills) is a
+   single instant swap rather than a 150ms cross-fade with a visible gap. */
+.scrubber.is-settling .scrub-blob {
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.scrubber.is-settling .node-dot { transition: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .scrub-blob { display: none; }
+}
+
 /* panning the track itself (background drag) */
 .scrubber.is-panning { user-select: none; }
 .scrubber.is-panning .scrub-nodes,

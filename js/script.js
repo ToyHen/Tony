@@ -1110,9 +1110,43 @@ function initSite() {
         video.classList.add("is-shown");
         // honour reduced-motion: show the poster frame paused instead
         if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-          video.currentTime = 0;
-          const p = video.play();
-          if (p && p.catch) p.catch(() => { video.controls = true; });
+          /* Wait for frame data before playing. A freshly-set src is still
+             loading, and play() against a pending load request rejects with
+             AbortError — which dropped the stage onto native controls the
+             FIRST time it was ever reached, and only autoplayed once the file
+             was cached. Cold load is the visitor's first impression, so it is
+             the one that has to work.
+
+             preload="metadata" stops before frame data arrives, so readyState
+             stalls at 1 and loadeddata never fires on its own — same trap the
+             stepper and media grid document: ask for the rest with
+             preload="auto" AND call load(), or it sits there.
+
+             The index guard stops a slow load from starting playback on a
+             stage the visitor has already scrubbed away from. */
+          const startAt = i;
+          let attempts = 0;
+          const start = () => {
+            if (current !== startAt) return;
+            video.currentTime = 0;
+            const p = video.play();
+            if (p && p.catch) p.catch(() => {
+              if (current !== startAt) return;
+              /* A pending load(), or the pause() from a fast scrub through
+                 this stage, aborts the attempt. Retry a few times before
+                 handing over to native controls, or a visitor who flicked
+                 past the stage and came back finds it dead. */
+              if (++attempts <= 3) setTimeout(start, 220);
+              else video.controls = true;
+            });
+          };
+          if (video.readyState >= 2) {
+            start();
+          } else {
+            video.addEventListener("loadeddata", start, { once: true });
+            video.preload = "auto";
+            video.load();
+          }
         } else {
           video.controls = true;
         }
@@ -1191,6 +1225,21 @@ function initSite() {
     }
 
     track.addEventListener("scroll", updateFades, { passive: true });
+
+    /* --rail-l is an absolute offset, so it goes stale whenever the track
+       shifts horizontally without a resize event. The one that always bit:
+       the rail is measured before the page is tall enough for a vertical
+       scrollbar, then the scrollbar appears, narrows the container by ~15px
+       and moves every dot left — leaving the rail starting 15px to the right
+       of the first dot, visibly detached from it. Only the left end showed it,
+       because --rail-r is measured from the right edge so the same shift
+       cancels out. Late-loading images and a font swap do the same thing.
+       Setting custom properties does not resize the wrapper, so this cannot
+       feed back on itself. */
+    if ("ResizeObserver" in window) {
+      new ResizeObserver(updateFades).observe(trackWrap);
+    }
+
     let resizeRaf = null;
     window.addEventListener("resize", () => {
       updateFades();
@@ -1224,6 +1273,7 @@ function initSite() {
     let panFromX = 0;
     let panFromScroll = 0;
     let lastX = 0;
+    let downX = 0;          // where a dot press went down, for the zip's deadzone
     let panRaf = null;
 
     function nearestIndex(clientX) {
@@ -1238,6 +1288,325 @@ function initSite() {
         }
       });
       return best;
+    }
+
+    /* ---- the gummy blob ----
+       The blob is a separate element that travels the rail while you drag. It
+       deliberately does NOT sit under the pointer: a stage holds onto it as you
+       pull away, so it lags *behind* the finger, leaning back at the stage it
+       is leaving. That lag is the whole point — it says which stage you are
+       still on and which way you are pulling, and letting go of it as you cross
+       the midpoint is what makes the change land as a snap rather than a slide.
+
+       It moves in TWO stages, and the split is what gives it weight rather than
+       a constant offset:
+
+       1. The magnets decide where the blob is wanted. MAGNET is how much of the
+          distance back to the stage it gives up; RELEASE is how abruptly that
+          hold gives out as you pull away; GRIP is the point at which the stage
+          lets go COMPLETELY. Past GRIP nothing holds it, so the middle of every
+          gap is a window where the blob simply rides the pointer.
+       2. The blob then CHASES that position rather than being placed on it,
+          approaching it with a time constant of DRAG_TAU. This is where the
+          weight comes from. Position alone is memoryless: drag slowly or fast
+          and you get an identical offset, which reads as a blob pinned a fixed
+          distance from the cursor rather than one being dragged. Chasing it
+          means the lag grows with how fast you move (roughly speed x DRAG_TAU)
+          and bleeds off to nothing when you stop — so the same gesture done
+          gently and done hard look different, and letting go of the pointer
+          lets the blob catch up.
+
+       The chase is also what makes GRIP safe. The magnets hand off at ~2.9x the
+       pointer speed on one side of GRIP and 1x on the other; placed directly
+       that kink would read as a stutter, but chased it comes out as the blob
+       lunging and then locking on.
+
+       Everything is a ratio of the gap, so it reads identically at 347px
+       segments (a three-stage track) and 116px (Vinci's nine).
+
+       - SQUASH conserves the blob's volume. Stretching it sideways without
+         thinning it just inflates it; scaleY = stretch^-0.5 is the ellipsoid
+         that keeps x*y*z constant when y and z move together.
+       - The stretch measures the gap between the blob and the POINTER, which is
+         the thing actually being stretched. Both sources feed it for free: the
+         magnet holding it back near a stage, and its own weight while moving.
+         It goes round whenever the two meet — resting on a stage, or parked
+         mid-gap with the pointer still.
+
+       The stretch itself is one-sided. scaleX grows about the centre, so half
+       the extra length would land in front of the pointer — a blob leading in
+       the direction it is being held BACK from, which is the wrong cue
+       entirely. The centre is shifted by that same half-length so the whole
+       stretch trails behind, pointing at the stage being left. LEAN is the
+       eased sign of travel rather than a raw one, so reversing direction
+       mid-gap swings the tail round instead of flipping it in one frame.
+
+       The picture still changes at the midpoint, so what you drag is continuous
+       and what you see is always a real stage. */
+    const MAX_STRETCH = 0.62;   // extra scaleX at full stretch
+    const MAGNET = 0.78;        // how much of your movement a stage holds back
+    const GRIP = 0.72;          // how far out it holds on at all, as a fraction
+                                // of half a gap — past this the pointer wins
+    const RELEASE = 2.2;        // how abruptly the hold gives out approaching GRIP
+    const DRAG_TAU = 28;        // ms — the blob's own weight
+    const DRAG_SLIP = 0.5;      // cap on how far its weight alone can throw it
+                                // off the aim, so a flick can't detach it
+    const STRETCH_REF = 0.58;   // distance from the pointer that fully smears it,
+                                // again as a fraction of half a gap
+    const SQUASH = 0.5;         // scaleY = stretch ** -SQUASH, volume-conserving
+    const LEAN_EASE = 0.25;     // how fast the tail swings round on a reversal
+    let blob = null;
+    let blobLean = 0;           // -1 tail to the right … +1 tail to the left
+    let blobRaw = null;         // pointer position, in the nodes' own space
+    let blobPos = null;         // where the blob actually is, chasing blobAim
+    let blobAim = 0;            // where the magnets want it
+    let blobHalf = 1;           // half a gap, the scale everything is measured in
+    let blobLoop = null;
+    let blobLast = 0;
+
+    function reducedMotion() {
+      return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    }
+
+    function ensureBlob() {
+      if (blob) return blob;
+      blob = document.createElement("span");
+      blob.className = "scrub-blob";
+      blob.setAttribute("aria-hidden", "true");
+      nodes.appendChild(blob);
+      return blob;
+    }
+
+    /* Dot centres in the nodes' own coordinate space. Taken from the BUTTONS,
+       which are never transformed — measuring the dots would fold the blob's
+       own transform back into the next frame if it ever moved one. Read from
+       getBoundingClientRect against the nodes rect so track scrolling is
+       already accounted for. */
+    function dotCentres() {
+      const n = nodes.getBoundingClientRect();
+      return buttons.map((b) => {
+        const r = b.getBoundingClientRect();
+        return r.left + r.width / 2 - n.left;
+      });
+    }
+
+    /* `x` is where the blob's HEAD goes — the leading edge sits exactly where an
+       unstretched blob centred on x would put it, and every bit of the stretch
+       trails off the other side. `lean` is +1 for a tail to the left (travelling
+       right), -1 for the reverse, 0 for the old symmetric stretch. */
+    function placeBlob(x, stretch, lean) {
+      const el = ensureBlob();
+      const n = nodes.getBoundingClientRect();
+      const d = buttons[0].querySelector(".node-dot").getBoundingClientRect();
+      const w = el.offsetWidth || d.width;
+      const squash = Math.pow(stretch, -SQUASH);
+      // scaleX grows the blob about its own centre, so half the extra length
+      // lands on each side. Shifting the centre back by that same half-length
+      // puts all of it on the trailing side. Measured at the 1.15 the transform
+      // already carries, since that scales the extra too.
+      const grow = (w * 1.15 * (stretch - 1)) / 2;
+      const cx = x - lean * grow;
+      el.style.transform =
+        "translate(" + (cx - w / 2).toFixed(2) + "px," + (d.top - n.top).toFixed(2) + "px)" +
+        " scale(1.15) scaleX(" + stretch.toFixed(3) + ")" +
+        " scaleY(" + squash.toFixed(3) + ")";
+    }
+
+    /* Aim only — where the magnets want the blob. Nothing is drawn here; the
+       chase below is what puts it on screen, and it keeps running after the
+       pointer stops so the blob can settle onto whatever it was reaching for. */
+    function aimBlob(clientX) {
+      if (reducedMotion()) return;
+      const n = nodes.getBoundingClientRect();
+      const cs = dotCentres();
+      const raw = Math.max(cs[0], Math.min(cs[total - 1], clientX - n.left));
+
+      /* Which way the tail points follows TRAVEL, not the offset. The offset
+         flips side at the midpoint — the near stage changes from the one behind
+         to the one ahead — and the tail flipping there, at full stretch, is the
+         one frame you would actually notice. Travel direction carries straight
+         through the crossing. Below half a pixel counts as still, so a resting
+         hand does not shuffle the tail about. */
+      if (blobRaw !== null && Math.abs(raw - blobRaw) > 0.5) {
+        const dir = raw > blobRaw ? 1 : -1;
+        blobLean += (dir - blobLean) * LEAN_EASE;
+      }
+      blobRaw = raw;
+
+      let near = 0;
+      for (let i = 1; i < total; i++) {
+        if (Math.abs(raw - cs[i]) < Math.abs(raw - cs[near])) near = i;
+      }
+      const gap = total > 1 ? Math.abs(cs[total - 1] - cs[0]) / (total - 1) : 1;
+      blobHalf = gap / 2 || 1;
+      const dist = Math.min(1, Math.abs(raw - cs[near]) / blobHalf);
+
+      // past GRIP the stage has let go entirely and the aim IS the pointer
+      const hold = dist >= GRIP
+        ? 0
+        : MAGNET * (1 - Math.pow(dist / GRIP, RELEASE));
+      blobAim = raw + (cs[near] - raw) * hold;
+      if (blobPos === null) {
+        // first aim of the gesture: sit on it and paint now rather than a frame
+        // later, or the dot goes hollow with nothing yet in its place
+        blobPos = blobAim;
+        placeBlob(blobPos, 1, blobLean);
+      }
+      startBlobLoop();
+    }
+
+    /* The chase. Runs every frame while a dot is held, not once per pointermove
+       — the blob has to keep converging after the pointer stops, and a
+       pointermove-driven step would tie the physics to how fast the mouse is
+       being moved, which is exactly the thing being measured. */
+    function blobStep(now) {
+      // dt-corrected, so the weight is the same at 60Hz and 120Hz. Clamped
+      // because a backgrounded tab hands back one enormous frame on return,
+      // which should land the blob rather than fling it.
+      const dt = Math.min(50, Math.max(1, now - blobLast));
+      blobLast = now;
+      blobPos += (blobAim - blobPos) * (1 - Math.exp(-dt / DRAG_TAU));
+      // a hard flick would otherwise leave it most of a gap behind, which stops
+      // reading as weight and starts reading as a dropped frame
+      const slip = DRAG_SLIP * blobHalf;
+      blobPos = Math.max(blobAim - slip, Math.min(blobAim + slip, blobPos));
+
+      // how far the goo is stretched between the stage and your finger
+      const off = Math.abs(blobPos - blobRaw) / (blobHalf * STRETCH_REF);
+      placeBlob(blobPos, 1 + Math.min(1, off) * MAX_STRETCH, blobLean);
+      blobLoop = dragging ? requestAnimationFrame(blobStep) : null;
+    }
+
+    function startBlobLoop() {
+      if (blobLoop !== null || !dragging) return;
+      blobLast = performance.now();
+      blobLoop = requestAnimationFrame(blobStep);
+    }
+
+    function stopBlobLoop() {
+      if (blobLoop !== null) cancelAnimationFrame(blobLoop);
+      blobLoop = null;
+    }
+
+    // spring home to whichever stage the drag ended on
+    function settleBlob() {
+      if (reducedMotion() || !blob) return;
+      const cs = dotCentres();
+      if (cs[current] === undefined) return;
+      placeBlob(cs[current], 1, 0);
+    }
+
+    /* ---- clicking a stage: the blob flies there ----
+       Clicking a distant dot used to drop the blob straight onto it, which told
+       you nothing — the one thing the blob is for is showing the selection
+       MOVE. So a click launches it instead: out of the old dot, smeared along
+       the direction of travel, easing into the new one with a small overshoot.
+
+       Driven frame by frame in JS rather than by a CSS transition because the
+       stretch has to vary DURING the flight — it leaves round, smears, and is
+       round again by the time it lands. A transition can only interpolate
+       between two poses, so the stretch would still be there on arrival.
+
+       Distances vary enormously (116px segments on Vinci's nine, 347px on a
+       three-stage track, and a click can cross the whole rail), so duration
+       goes as the square root: a long trip takes longer but travels faster,
+       which is what makes it read as a zip rather than a slide. */
+    const ZIP_MIN = 170;        // ms floor, so a short hop still registers
+    const ZIP_MAX = 460;        // ms cap, for a click across the whole track
+    const ZIP_RATE = 9;         // ms per sqrt(px)
+    const ZIP_OVERSHOOT = 14;   // px past the dot at most, whatever the distance
+    let zipRaf = null;
+    let zipPos = null;          // last position painted, so a re-click takes over
+
+    /* easeOutBack's peak overshoot works out at 4k³ / 27(k+1)², which is CUBIC
+       in k, not linear — scaling the classic k = 1.70158 down pro rata gives a
+       tenth of the bounce you asked for. Inverted by fixed-point iteration
+       instead, run once per flight. (k = 1.70158 recovers the standard 10%.) */
+    function backConstant(over) {
+      let k = Math.cbrt(6.75 * over);
+      for (let i = 0; i < 8; i++) k = Math.cbrt(6.75 * over * (k + 1) * (k + 1));
+      return k;
+    }
+
+    function easeOutBack(t, k) {
+      const u = t - 1;
+      return 1 + (k + 1) * u * u * u + k * u * u;
+    }
+
+    function stopZip() {
+      if (zipRaf !== null) cancelAnimationFrame(zipRaf);
+      zipRaf = null;
+    }
+
+    function zipBlob(from, to) {
+      stopZip();
+      if (reducedMotion()) return;
+      const span = to - from;
+      const dist = Math.abs(span);
+      if (dist < 1) return;
+      ensureBlob();
+      wrap.classList.remove("is-settling");
+      wrap.classList.add("is-blobbing");
+
+      const dur = Math.min(ZIP_MAX, ZIP_MIN + ZIP_RATE * Math.sqrt(dist));
+      // a fixed 14px of overshoot however far it came, capped at the 10% the
+      // easing gives on its own — 10% of a full-rail trip would be a bounce
+      const k = backConstant(Math.min(0.1, ZIP_OVERSHOOT / dist));
+      const lean = span > 0 ? 1 : -1;
+      // a longer flight is a faster one, so it smears harder
+      const mag = Math.min(1, 0.6 + dist / 900);
+      const t0 = performance.now();
+
+      const frame = (now) => {
+        /* Clamped at BOTH ends. rAF hands you the timestamp the frame started,
+           which can predate the performance.now() taken in the click handler
+           that scheduled it — so the first callback arrives with a negative t.
+           Unclamped that ran the easing backwards: the blob launched 23px the
+           wrong way and pinched below its own width on the way out. */
+        const t = Math.max(0, Math.min(1, (now - t0) / dur));
+        /* Stretch tracks how fast it is going, not where it is: a short attack
+           so it leaves the dot round rather than already smeared, then a decay
+           to nothing by the time it arrives. Deliberately reaches 0 before the
+           overshoot is spent — a blob still stretching while it springs back
+           reads as a wobble, not a landing. */
+        const sp = Math.min(1, t / 0.12) * (1 - t) * (1 - t);
+        zipPos = from + span * easeOutBack(t, k);
+        placeBlob(zipPos, 1 + sp * MAX_STRETCH * mag, lean);
+        if (t < 1) {
+          zipRaf = requestAnimationFrame(frame);
+          return;
+        }
+        zipRaf = null;
+        zipPos = to;
+        placeBlob(to, 1, 0);
+        /* Hand back: blob out and dot back in, in the same paint. is-settling
+           is what switches the dots' own transition off, so adding it and
+           dropping is-blobbing have to land together or the dot cross-fades in
+           over 150ms while the blob is already gone. Unlike the drag's release
+           there is nothing left to spring — this arrived under its own power —
+           so is-settling is only here for that one frame.
+
+           A short timeout, NOT requestAnimationFrame: rAF is suspended while
+           the page isn't rendering, which would strand is-settling and leave
+           the dots with their transitions switched off for good. */
+        wrap.classList.add("is-settling");
+        wrap.classList.remove("is-blobbing");
+        setTimeout(() => wrap.classList.remove("is-settling"), 30);
+      };
+      zipRaf = requestAnimationFrame(frame);
+    }
+
+    /* Dot centres are measured against the nodes rect, which the dots sit
+       inside, so they are invariant under track scrolling — a flight can be
+       aimed before show() calls revealNode and still land on the dot. */
+    function zipTo(fromIndex, toIndex) {
+      if (fromIndex === toIndex || reducedMotion()) return;
+      const cs = dotCentres();
+      if (cs[fromIndex] === undefined || cs[toIndex] === undefined) return;
+      // mid-flight a new click takes over from wherever the blob actually is,
+      // rather than snapping back to a dot to set off again
+      const from = zipRaf !== null && zipPos !== null ? zipPos : cs[fromIndex];
+      zipBlob(from, cs[toIndex]);
     }
 
     function maxScroll() {
@@ -1258,6 +1627,9 @@ function initSite() {
         track.scrollLeft = Math.max(0, Math.min(maxScroll(), before + dir * 9));
         if (track.scrollLeft !== before) {
           show(nearestIndex(lastX));
+          // the dots move under a still pointer while auto-panning, so the
+          // blob has to be re-aimed even though nothing was moved by hand
+          aimBlob(lastX);
           updateFades();
         }
         panRaf = requestAnimationFrame(panStep);
@@ -1282,13 +1654,32 @@ function initSite() {
       if (e.target.closest(".node-dot")) {
         dragging = true;
         didDrag = false;
+        downX = e.clientX;
+        // no travel yet, so the blob starts round and symmetric and grows its
+        // tail as the drag commits to a direction
+        blobLean = 0;
+        blobRaw = null;
+        blobPos = null;
         wrap.classList.add("is-dragging");
+        wrap.classList.remove("is-settling");
+        if (!reducedMotion()) wrap.classList.add("is-blobbing");
         try {
           nodes.setPointerCapture(e.pointerId);
         } catch (err) {
           /* capture is best-effort; dragging still works without it */
         }
-        show(nearestIndex(e.clientX));
+        const from = current;
+        const to = nearestIndex(e.clientX);
+        show(to);
+        /* Press a different dot and the blob flies to it. It is only a flight
+           until the pointer actually moves — pointermove hands straight back to
+           the drag model, which is the same gesture the visitor started. */
+        if (to !== from) {
+          zipTo(from, to);
+        } else {
+          stopZip();
+          aimBlob(e.clientX);
+        }
         e.preventDefault();
         return;
       }
@@ -1317,8 +1708,19 @@ function initSite() {
         return;
       }
       if (!dragging) return;
+      /* A flight is in the air, so this press was a click. Don't let a shaky
+         hand shoot it down — only a deliberate drag takes the blob back off the
+         easing curve and onto the pointer. */
+      if (zipRaf !== null) {
+        if (Math.abs(e.clientX - downX) <= 4) return;
+        stopZip();
+        // pick the blob up from where the flight had got to, so taking over
+        // mid-air is a handover rather than a jump
+        blobPos = zipPos;
+      }
       didDrag = true;
       show(nearestIndex(e.clientX));
+      aimBlob(e.clientX);
       startEdgePan();
     });
 
@@ -1342,8 +1744,31 @@ function initSite() {
       dragging = false;
       panning = false;
       stopEdgePan();
+      // before settleBlob, or a frame still in flight repaints over the settle
+      // transform and the CSS spring animates to the wrong place
+      stopBlobLoop();
       wrap.classList.remove("is-dragging");
       wrap.classList.remove("is-panning");
+      /* Let go and the blob springs home to the stage it landed on, then hands
+         back to the dot. The hand-back order matters: is-blobbing goes first,
+         while is-settling still has the dots' transition switched off, so the
+         blob vanishing and the dot re-filling happen in the same frame. Drop
+         is-settling first instead and you get a 150ms cross-fade where neither
+         is fully drawn. */
+      // a flight already owns the blob and ends with its own hand-back; letting
+      // the release settle it too would snap it onto the dot mid-air
+      if (zipRaf === null && wrap.classList.contains("is-blobbing")) {
+        wrap.classList.add("is-settling");
+        settleBlob();
+        setTimeout(() => {
+          wrap.classList.remove("is-blobbing");
+          /* A short timeout, NOT requestAnimationFrame — rAF is suspended
+             entirely while the page isn't rendering, which would strand
+             is-settling and leave the dots with their transitions switched
+             off for good. Same reason the media grid's cross-fade avoids it. */
+          setTimeout(() => wrap.classList.remove("is-settling"), 30);
+        }, 320);
+      }
       try {
         nodes.releasePointerCapture(e.pointerId);
       } catch (err) {
@@ -1360,7 +1785,13 @@ function initSite() {
     buttons.forEach((b, i) => {
       b.addEventListener("click", () => {
         if (didDrag) return;
+        const from = current;
         show(i);
+        /* This is the path for a click on a node's LABEL, which starts no drag
+           at all. A click on the dot itself already flew from pointerdown,
+           which moved `current` — so `from === i` by the time the click lands
+           and nothing fires twice. */
+        zipTo(from, i);
       });
       b.addEventListener("keydown", (e) => {
         let next = null;
