@@ -533,6 +533,13 @@ section { padding: 4rem 0; }
   display: grid;
   place-items: center;
   overflow: hidden;
+  /* Swipe the viewer to change stage (addSwipe in js/script.js). The browser
+     cancels a pointer gesture the moment it claims the touch for scrolling, so
+     it has to be told the horizontal axis belongs to us: pan-y keeps vertical
+     page scrolling native and hands sideways drags to the JS. Without this the
+     swipe works with a mouse and dies on a phone, which is the only place it
+     matters. */
+  touch-action: pan-y;
 }
 /* Position out of flow and pin to the box, then let object-fit letterbox.
    Percentage heights — `max-height: 100%` or `height: 100%` — do NOT resolve
@@ -967,6 +974,14 @@ section { padding: 4rem 0; }
 @media (prefers-reduced-motion: reduce) {
   .mediagrid .frame-dot::before { transition: none; }
 }
+/* Multi-frame tiles swipe between frames, and the enlarged view swipes too.
+   Same reason as .scrub-viewer above: pan-y leaves vertical scrolling to the
+   page and gives the horizontal axis to the JS, which is the difference
+   between the gesture working on a phone and being cancelled on contact.
+   Scoped to [data-frames] so a single still or a clip is untouched. */
+.mediagrid figure[data-frames],
+.lightbox-inner { touch-action: pan-y; }
+
 .mediagrid figure.is-zoomable { cursor: zoom-in; }
 .mediagrid figure:hover,
 .mediagrid figure:focus-visible {

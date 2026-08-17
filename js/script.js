@@ -73,24 +73,135 @@ function initSite() {
     }
   }
 
+  /* ---------- swipe ----------
+     One horizontal drag = one step, used by the scrubber viewer, a multi-frame
+     media-grid tile and the lightbox. Everything these three do was already
+     reachable with a pointer or a keyboard; on a phone the only thing to hand
+     is the media itself, so it has to be the control.
+
+     Pointer events rather than touch events, so a mouse drag works the same
+     way — but the browser has to be told the horizontal axis is ours or it
+     cancels the gesture the moment it decides you are scrolling. That is
+     `touch-action: pan-y` in the stylesheet, on each element wired up here:
+     vertical scrolling still belongs to the page, horizontal comes to us.
+
+     A swipe must not also count as a tap — a tile's click opens the lightbox
+     and the lightbox's own click steps a frame. The capture-phase listener
+     swallows the click that follows a swipe; the flag clears on the next
+     pointerdown rather than on a timer, because the synthetic click can land
+     in the same task as pointerup and a setTimeout(0) would be too late. */
+  function addSwipe(el, onSwipe) {
+    const MIN = 40;      // px of travel before it counts as a swipe
+    const SLOPE = 1.4;   // how much more horizontal than vertical it must be
+    let id = null;
+    let x0 = 0;
+    let y0 = 0;
+    let fired = false;
+    let swallow = false;
+
+    el.addEventListener("pointerdown", (e) => {
+      if (!e.isPrimary) return;
+      id = e.pointerId;
+      x0 = e.clientX;
+      y0 = e.clientY;
+      fired = false;
+      swallow = false;
+    });
+
+    el.addEventListener("pointermove", (e) => {
+      if (e.pointerId !== id || fired) return;
+      const dx = e.clientX - x0;
+      const dy = e.clientY - y0;
+      if (Math.abs(dx) < MIN || Math.abs(dx) < Math.abs(dy) * SLOPE) return;
+      // one step per gesture: lift and swipe again for the next one, which is
+      // steadier than a running total over a long drag
+      fired = true;
+      swallow = true;
+      onSwipe(dx < 0 ? 1 : -1);   // drag left = forward, like a filmstrip
+    });
+
+    const end = (e) => { if (e.pointerId === id) id = null; };
+    el.addEventListener("pointerup", end);
+    el.addEventListener("pointercancel", end);
+
+    el.addEventListener("click", (e) => {
+      if (!swallow) return;
+      e.preventDefault();
+      e.stopPropagation();
+    }, true);
+  }
+
+  /* ---------- touch preview tracking ----------
+     Shared by the media grid and the home page sheet. Both preview a clip under
+     the pointer, and a finger has no pointer to give them: it produces
+     mouseenter/mouseleave only as a synthetic pair *after a tap*, and a tap is
+     already the gesture that opens the lightbox or follows the link. So before
+     this, the only way to see a clip run on a phone was to commit to leaving
+     the page you were on.
+
+     Each component registers its tiles here with their own enter/leave, and the
+     tracker starts whatever a dragging finger arrives on and stops what it
+     left — the same "what's under me" preview a pointer gets for free.
+
+     Declared up here rather than beside the media grid because initSheet runs
+     further up the file, and a `const` below it would still be in its temporal
+     dead zone when the sheet registers its cells. */
+  const tileHandlers = new Map();
+  let touchTile = null;
+  let touchWired = false;
+
+  function wireTouchTracking() {
+    if (touchWired) return;
+    touchWired = true;
+
+    /* Listen on the document, not on the component: touch events target
+       wherever the finger went *down*, so a scroll begun on the text above a
+       grid never reaches the grid at all — which is the common case.
+       elementFromPoint is in viewport coordinates, exactly what a moving
+       finger gives us. */
+    const track = (e) => {
+      const t = e.touches && e.touches[0];
+      if (!t) return;
+      const el = document.elementFromPoint(t.clientX, t.clientY);
+      const tile = el && el.closest ? el.closest("figure, .sheet-cell") : null;
+      const next = tile && tileHandlers.has(tile) ? tile : null;
+      if (next === touchTile) return;
+      if (touchTile) tileHandlers.get(touchTile).leave();
+      touchTile = next;
+      if (next) tileHandlers.get(next).enter();
+    };
+
+    /* Passive: this must never interfere with the scroll that is carrying the
+       finger across the tiles in the first place. Nothing stops on touchend —
+       the tile you lifted on is the one you stopped to look at, so it keeps
+       playing until the next gesture reaches a different tile. */
+    document.addEventListener("touchstart", track, { passive: true });
+    document.addEventListener("touchmove", track, { passive: true });
+  }
+
   /* ---------- contact sheet ----------
      Every cell ships as a still inside a link, and that is the component. A cell
-     carrying data-clip grows a <video> on first hover, which is also when the
-     file is first fetched — so motion costs nothing on load, and nothing at all
-     on a phone, where the pointer never arrives.
+     carrying data-clip grows a <video> the first time a pointer or a finger
+     reaches it, which is also when the file is first fetched — so motion costs
+     nothing on load.
 
      The clip is deliberately a bonus and never the reason a cell is legible:
-     the label is always drawn, and a still-only cell is a complete cell. */
+     a still-only cell is a complete cell.
+
+     The clip is deliberately a bonus and never the reason a cell is legible:
+     a still-only cell is a complete cell. */
   const sheet = document.querySelector("[data-sheet]");
   if (sheet) initSheet(sheet);
 
   function initSheet(grid) {
     const mq = window.matchMedia;
-    /* No pointer means the preview can never be triggered, so on a touch screen
-       the cells stay plain stills — and, more importantly, must not advertise a
-       preview they cannot play. */
-    const canHover = !mq || mq("(hover: hover)").matches;
-    const still = (mq && mq("(prefers-reduced-motion: reduce)").matches) || !canHover;
+    /* The only thing that stops a cell previewing now is a stated preference
+       for less motion. It used to be "no pointer" as well: a touch screen had
+       no way to reach the preview, so the cells stayed plain stills and, more
+       importantly, did not advertise motion they could not play. The touch
+       tracker gives a finger the same reach a pointer has, so the badge is
+       honest on a phone and the gate comes off. */
+    const still = !!(mq && mq("(prefers-reduced-motion: reduce)").matches);
 
     grid.querySelectorAll(".sheet-cell[data-clip]").forEach((tile) => {
       /* Only claim there is motion once we know we will actually play it. */
@@ -127,7 +238,12 @@ function initSite() {
         video.classList.add("is-playing");
       }
 
+      /* Clearing touchTile covers every way a cell can be stopped that the
+         tracker didn't cause — a synthetic mouseleave after a tap most of all.
+         Without it the tracker still believes the finger is on this cell and
+         skips restarting it when the finger comes back. */
       function leave() {
+        if (touchTile === tile) touchTile = null;
         if (!video) return;
         video.classList.remove("is-playing");
         video.pause();
@@ -137,6 +253,13 @@ function initSite() {
       tile.addEventListener("mouseleave", leave);
       tile.addEventListener("focus", enter);
       tile.addEventListener("blur", leave);
+      /* A drag across the sheet previews whatever it passes over. The cell is a
+         link, so a tap still opens the project — this only reads the finger,
+         never swallows it, and a drag that scrolls fires no click. */
+      if (!still) {
+        tileHandlers.set(tile, { enter, leave });
+        wireTouchTracking();
+      }
     });
   }
 
@@ -230,6 +353,10 @@ function initSite() {
         if (e.key === "ArrowRight") { e.preventDefault(); stepBox(1); }
         if (e.key === "ArrowLeft") { e.preventDefault(); stepBox(-1); }
       });
+      /* Swiping the enlarged image steps it, the same as clicking it or using
+         the arrow keys. On the media itself rather than the backdrop, which
+         dismisses. stepBox already ignores a single-frame tile. */
+      addSwipe(box.querySelector(".lightbox-inner"), stepBox);
       document.body.appendChild(box);
     }
 
@@ -378,9 +505,7 @@ function initSite() {
           // the tile itself opens the lightbox on click — a dot must not
           e.stopPropagation();
           e.preventDefault();
-          hold = true;
-          if (timer) { clearTimeout(timer); timer = null; }
-          show(k);
+          pick(k);
         });
         d.addEventListener("keydown", (e) => {
           if (e.key === "Enter" || e.key === " ") e.stopPropagation();
@@ -451,9 +576,19 @@ function initSite() {
         img.classList.remove("no-anim");
       }
 
+      /* Choosing a frame by hand — a dot, or a swipe across the tile — stops
+         the automatic cycle for as long as the tile stays live, so it holds
+         still on whatever you went looking for. */
+      function pick(n) {
+        hold = true;
+        if (timer) { clearTimeout(timer); timer = null; }
+        show(n);
+      }
+
       // the lightbox reads these to step through the same batch
       f.frames = srcs;
       f.frameIndex = 0;
+      f.stepFrame = (d) => pick(i + d);
 
       return function run(on) {
         if (timer) { clearTimeout(timer); timer = null; }
@@ -496,13 +631,25 @@ function initSite() {
         preview(v, true);
         if (cycle) cycle(true);
       };
-      const leave = () => { preview(v, false); if (cycle) cycle(false); };
+      /* Clearing touchTile here covers every way a tile can be stopped that
+         the touch tracker didn't cause — a synthetic mouseleave, the lightbox
+         opening. Without it the tracker still believes the finger is on this
+         tile and skips restarting it when the finger comes back. */
+      const leave = () => {
+        if (touchTile === f) touchTile = null;
+        preview(v, false);
+        if (cycle) cycle(false);
+      };
       tileLeavers.push(leave);
+      tileHandlers.set(f, { enter, leave });
+      wireTouchTracking();
       f.addEventListener("mouseenter", enter);
       f.addEventListener("mouseleave", leave);
       // keyboard parity — tabbing to a tile previews it too
       f.addEventListener("focus", enter);
       f.addEventListener("blur", leave);
+      // a batch of frames steps on a swipe, the touch equivalent of the dots
+      if (cycle && f.frames) addSwipe(f, (d) => f.stepFrame(d));
       f.classList.add("is-zoomable");
       f.tabIndex = 0;
       f.setAttribute("role", "button");
@@ -1226,6 +1373,20 @@ function initSite() {
         buttons[next].focus();
         show(next);
       });
+    });
+
+    /* Swipe the frame itself to move a stage. The track is reachable with a
+       finger but its dots are small and it is the thinnest strip on the page;
+       the viewer is the biggest target there is, and dragging a filmstrip
+       sideways is what the component looks like it should do.
+
+       It clamps rather than wraps — unlike the arrow keys, which cycle. A
+       swipe is a continuous gesture over a linear timeline, so hitting the
+       last stage and landing back on the first would read as a glitch;
+       stopping dead says "that's the end of the track". */
+    addSwipe(viewer, (d) => {
+      const n = current + d;
+      if (n >= 0 && n < total) show(n);
     });
 
     source.setAttribute("hidden", "");
