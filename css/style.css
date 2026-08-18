@@ -824,17 +824,26 @@ section { padding: 4rem 0; }
   border-radius: 4px;
 }
 
+/* The caption is height-locked to the tallest stage (lockReadoutHeight in
+   script.js), so every shorter stage leaves slack under the text. Centring
+   the caption in that box was tried and cut on 18 Aug 2026: it splits the
+   slack, but it also floats the caption away from the track it is describing,
+   and narrow screens have to dock it anyway — the longest caption wraps far
+   taller there, so the box is too big for centring to flatter. The bottom
+   rule stays: it closes the panel, so the reserved height reads as part of
+   the caption block rather than an unexplained gap before the next section. */
 .scrub-readout {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
   gap: 1.5rem;
   margin-top: 1.5rem;
-  padding-top: 1.1rem;
+  padding-block: 1.1rem;
   border-top: 1px solid var(--card-border);
+  border-bottom: 1px solid var(--card-border);
 }
 .scrub-readout h3 { margin: 0 0 0.25rem; font-size: 1.05rem; }
-.scrub-readout p { margin: 0; font-size: 0.9rem; max-width: 62ch; }
+.scrub-readout p { margin: 0; font-size: 0.9rem; max-width: 72ch; }  /* wider measure than the site default: a narrow column wraps the longest caption taller, and the tallest is what every stage reserves */
 .scrub-count {
   color: var(--accent);
   font-size: 0.8rem;
@@ -888,7 +897,7 @@ section { padding: 4rem 0; }
 }
 /* ---------- frame strip ----------
    Consecutive captured frames laid out in order. Where .compare stacks layers
-   on one frame, this lays single frames out along time — the stop-motion half
+   on one frame, this lays single frames out along time — the stop motion half
    of the film has no layers to pull apart, only exposures. A fixed column count
    rather than auto-fit, because the frames must divide evenly or the sequence
    reads as a ragged block. Three rather than four: the change between adjacent
