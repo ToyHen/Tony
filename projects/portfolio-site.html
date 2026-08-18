@@ -83,28 +83,21 @@
 
     <p>One idea survived the prototype intact. A stage with no photograph yet renders as a marked gap rather than quietly disappearing &mdash; the prototype used an empty slot to show what a missing stage costs, and every project page still works that way.</p>
 
-    <p>What shipped is not what the prototype was. The component below is the scrubber itself &mdash; scrub it to step through its own build.</p>
+    <p>What shipped is not what the prototype was. The track below is the real control, stripped of the viewer it normally drives so that the control is the thing you look at. Drag it. On a project page the same track sits under a picture and changes it; here it has only its own caption to change.</p>
 
-    <!-- Opens on Drag rather than Buttons. Both Drag and Buttons are stills, so
-         this costs no extra load weight; opening on Motion would fetch the clip
-         on page load, since the scrubber has no IntersectionObserver gate. -->
-    <div class="figure-grid" data-scrubber="THE SCRUBBER / WHAT IT DOES" data-scrub-start="Drag">
+    <!-- `data-scrub-bare` is used on this instance and nowhere else: it drops the
+         viewer and skips loading any stage media. So the stages carry captions
+         only, and the Motion stage earns its badge from `data-motion` rather
+         than from a clip it would never get to play. Opens on Drag. -->
+    <div class="figure-grid" data-scrubber="THE SCRUBBER / THE CONTROL" data-scrub-start="Drag" data-scrub-bare>
       <figure data-label="Buttons">
-        <img src="../images/projects/portfolio-site-scrub-buttons.jpg" alt="The scrubber in its first form: a build photo above a rail of seven stage markers, the third one lit with an arrow cursor beside it, ready to be clicked" loading="lazy">
-        <figcaption><h3>Buttons</h3><p>The track was there from the start &mdash; stage names along a rail, the current one lit, a counter reading position out of total. But the dots were only buttons. You clicked one, waited for the crossfade, clicked the next.</p></figcaption>
+        <figcaption><h3>Buttons</h3><p>Stage names along a rail, the current one lit, a counter reading position out of total. The rail stops at the first and last dot rather than running to the edge, so it reads as a measured timeline instead of a decorative line. At this point the dots were only buttons: click one, wait, click the next.</p></figcaption>
       </figure>
       <figure data-label="Drag">
-        <img src="../images/projects/portfolio-site-scrub-drag.jpg" alt="The same timeline mid-drag: a grabbing-hand cursor holds the lit marker a stage further along, with a fading orange trail behind it showing how far it has been pulled" loading="lazy">
-        <figcaption><h3>Drag</h3><p>Then the dots became draggable, and clicking through stopped being the only way across. Grab one and scrub; the crossfade is cut while you drag so the picture keeps up with the pointer instead of lagging behind it. Hold near either end and the track pans itself to reach stages sitting off screen.</p></figcaption>
+        <figcaption><h3>Drag</h3><p>Then the dots became draggable and clicking through stopped being the only way across. Grab one and scrub. Hold near either end and the track pans itself to reach stages sitting off screen, and the edges fade only on the side that still has more track &mdash; the fade is a readout, not an ornament.</p></figcaption>
       </figure>
-      <figure data-label="Motion">
-        <video data-src="../images/projects/portfolio-site-scrub-motion.mp4"
-               poster="../images/projects/portfolio-site-scrub-motion-poster.jpg"
-               data-alt="The scrubber playing a clip in place of a still: the Piece It Together set at night, an animator working over the lit desk with the camera on its tripod. Two markers on the track carry a small orange dot above them, flagging them as clips rather than stills"
-               muted loop playsinline preload="none">
-          <img src="../images/projects/portfolio-site-scrub-motion-poster.jpg" alt="The scrubber with a clip in place of a still: the Piece It Together set at night, camera on its tripod over the lit desk. Two markers on the track carry a small orange dot above them, flagging them as clips rather than stills" loading="lazy">
-        </video>
-        <figcaption><h3>Motion</h3><p>Last, a stage stopped having to be a photograph. It can be a silent looping clip instead, and a small mark above its dot says so before you reach it &mdash; on Piece It Together the animatic and the shoot are both motion. This stage is one: what is playing is the real component, running a real clip.</p></figcaption>
+      <figure data-label="Motion" data-motion>
+        <figcaption><h3>Motion</h3><p>What you drag is not the dot. It is a blob with weight &mdash; it chases the pointer rather than tracking it, so lag grows the harder you pull, and it stretches toward your hand while a stage holds it. The dots stay put; they are the timeline. And the small mark above this one flags a stage holding a clip rather than a photograph.</p></figcaption>
       </figure>
     </div>
 

@@ -1024,6 +1024,10 @@ function initSite() {
         title: (fig.querySelector("h3") || {}).textContent || "",
         note: (fig.querySelector("p") || {}).textContent || "",
         kind: vid ? "video" : img ? "image" : "gap",
+        /* The badge normally means "this stage is a clip". `data-motion` sets
+           it directly, for a bare instance that carries no media but still
+           wants to show the badge as part of the track's vocabulary. */
+        motion: !!vid || "motion" in fig.dataset,
         src: vid ? vid.getAttribute("data-src") : img ? img.getAttribute("src") : null,
         poster: vid ? vid.getAttribute("poster") : null,
         alt: vid ? vid.getAttribute("data-alt") || "" : img ? img.getAttribute("alt") : ""
@@ -1033,8 +1037,19 @@ function initSite() {
     const pad = (n) => (n < 10 ? "0" : "") + n;
     const total = stages.length;
 
+    /* `data-scrub-bare` drops the viewer and leaves the track, for the one
+       instance whose subject IS the control: the case study on the site
+       itself. Everywhere else the scrubber exists to change a picture, so this
+       is opt-in and the default is unaffected.
+
+       It also means no media loads at all — with nothing on screen to show it,
+       fetching a stage's still (or worse, its clip) would be pure weight. A
+       stage may still carry a <video> to earn its motion badge; the badge is a
+       property of the track, which is the part that survives here. */
+    const bare = "scrubBare" in source.dataset;
+
     const wrap = document.createElement("div");
-    wrap.className = "scrubber";
+    wrap.className = "scrubber" + (bare ? " is-bare" : "");
     wrap.innerHTML =
       '<div class="scrub-viewer">' +
         '<span class="scrub-stamp"></span>' +
@@ -1075,8 +1090,9 @@ function initSite() {
       const b = document.createElement("button");
       b.type = "button";
       b.className = "scrub-node" +
-        (stage.kind === "gap" ? " is-gap" : "") +
-        (stage.kind === "video" ? " is-motion" : "");
+        // "no photo yet" is meaningless where no photo was ever going to show
+        (!bare && stage.kind === "gap" ? " is-gap" : "") +
+        (stage.motion ? " is-motion" : "");
       b.setAttribute("role", "tab");
       b.setAttribute("aria-label", "Stage " + (i + 1) + " of " + total + ": " + stage.title);
       b.innerHTML =
@@ -1096,7 +1112,11 @@ function initSite() {
       video.pause();
       video.classList.remove("is-shown");
 
-      if (s.kind === "video") {
+      if (bare) {
+        /* No viewer, so nothing to swap and nothing to fetch. Falls through to
+           the readout and the node state below, which is the whole component
+           in this mode. */
+      } else if (s.kind === "video") {
         img.classList.remove("is-shown");
         img.removeAttribute("src");
         img.alt = "";
@@ -1167,7 +1187,7 @@ function initSite() {
         viewer.classList.add("has-gap");
       }
       title.textContent = s.title;
-      note.textContent = s.src ? s.note : "";
+      note.textContent = bare || s.src ? s.note : "";
       count.textContent = pad(i + 1) + " / " + pad(total);
       stamp.textContent = label;
       buttons.forEach((b, j) => {
@@ -1216,7 +1236,7 @@ function initSite() {
       let tallest = 0;
       stages.forEach((s) => {
         title.textContent = s.title;
-        note.textContent = s.src ? s.note : "";
+        note.textContent = bare || s.src ? s.note : "";
         tallest = Math.max(tallest, readout.getBoundingClientRect().height);
       });
       title.textContent = keptTitle;

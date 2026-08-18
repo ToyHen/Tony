@@ -529,6 +529,13 @@ section { padding: 4rem 0; }
 /* ---------- Progression scrubber ---------- */
 .scrubber { margin-top: 1.5rem; }
 
+/* `data-scrub-bare` — the track without its viewer. Only the case study on the
+   site itself uses this, where the control is the subject rather than the
+   thing it drives. The trackwrap's own margin assumes a viewer sits above it,
+   so it is dropped here; script.js also skips loading any stage media. */
+.scrubber.is-bare .scrub-viewer { display: none; }
+.scrubber.is-bare .scrub-trackwrap { margin-top: 0; }
+
 .scrub-viewer {
   position: relative;
   aspect-ratio: 16 / 10;
