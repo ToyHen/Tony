@@ -1918,8 +1918,15 @@ section { padding: 4rem 0; }
 }
 
 /* status callout */
+/* margin-bottom matches margin-top. It was 0 until 20 Aug 2026, which never
+   showed because every callout was the last thing before .project-nav — the
+   case study's "who is writing" note is the first one to sit mid-page, and the
+   paragraph under it started flush against the box edge. The other four are
+   followed by another callout (collapses to 2.5rem, unchanged) or by
+   .project-nav (3rem wins, unchanged), so nothing else moves. */
 .callout {
   margin-top: 2.5rem;
+  margin-bottom: 2.5rem;
   padding: 1.4rem 1.6rem;
   background: var(--card);
   border: 1px solid var(--card-border);
