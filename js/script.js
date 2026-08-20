@@ -32,44 +32,108 @@ function initSite() {
       && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const conn = navigator.connection;
     const saveData = !!(conn && conn.saveData);
-    /* Phones get the poster, not the clip. At 375px the loop is scaled to a
-       fraction of its size for the full download, on the connection least
-       likely to want it — and the poster is frame 0, so the image is identical,
-       just still. Raise or drop this line if the motion matters more than the
-       weight. */
-    const narrow = window.innerWidth < 700;
-    if (reduced || saveData || narrow) return;   // poster stands in; nothing downloads
+    /* 2g only. A phone on 3g gets the clip, because on a phone it no longer
+       competes with anything &mdash; see the deferral below. */
+    const slowLink = !!(conn && /(^|-)2g$/.test(conn.effectiveType || ""));
+    if (reduced || saveData || slowLink) return;   // poster stands in; nothing downloads
 
-    /* preload="none" plus a src alone leaves the element at readyState 0 for
-       ever, so canplay never fires. Set preload AND call load() &mdash; the same
-       trap the stepper and the media grid work around. */
-    video.src = video.dataset.src;
-    delete video.dataset.src;
-    video.preload = "auto";
-    video.load();
+    /* PHONES GET THE CLIP TOO, BUT LAST. It used to be desktop-only on an
+       innerWidth < 700 gate, dropped 20 Aug 2026: the loop is the one thing on
+       the page that says the work is animated, and cutting it left the phone
+       with the least persuasive version of the site.
 
-    video.addEventListener("canplay", () => {
-      const p = video.play();
-      /* Muted autoplay is allowed without a gesture, but if a browser ever
-         refuses there is nothing to recover: the poster is already the frame
-         the clip opens on, so a refusal just leaves the hero as a still. */
-      if (p && p.catch) p.catch(() => {});
-    }, { once: true });
+       What actually made it wrong on a phone was WHEN it loaded, not that it
+       loaded. Measured at 375px: `load` fires after ~1.37MB, because
+       loading="lazy" still pulls ten of the twelve sheet stills in ahead of it
+       &mdash; the threshold is generous, so "below the fold" does not mean
+       "later". Fetched eagerly, the clip's 472KB sat in the middle of that
+       queue competing with the pictures. Deferred, it is the last request the
+       page makes and nothing waits on it.
+
+       Two gates, and the second is the one that saves the data:
+         - wait for `load`, so the clip queues behind everything the page
+           actually needs. A bare timer fires while the stills are still
+           arriving and puts the clip in the queue beside them, which is the
+           problem it was meant to avoid.
+         - only fetch if the hero is STILL ON SCREEN. Somebody who scrolled
+           straight to the sheet never pays for it. If they scroll back up, the
+           observer below starts it then &mdash; deferred, not cancelled.
+
+       There is deliberately NO separate mobile encode. A portrait crop to the
+       band a phone actually shows is the only re-encode that saves anything
+       worth having (620x720 at crf 32 is 305KB, SSIM 0.979), and it over-zooms
+       on a sub-700px LANDSCAPE viewport, where the browser would otherwise show
+       the full width. Full-frame downscales save nothing at all &mdash; 960x540
+       at crf 30 comes out at 441KB against the shipped 483KB, because the
+       shipped file is already only 268kbps. One file, one framing. */
+    const deferred = window.innerWidth < 700;
+    const SETTLE_MS = 1200;   // quiet time after `load` before the clip is asked for
+
+    let started = false;
+    let onScreen = true;
+    let armed = false;   // `load` has fired and the settle time has passed
+
+    function start() {
+      if (started) return;
+      started = true;
+      /* preload="none" plus a src alone leaves the element at readyState 0 for
+         ever, so canplay never fires. Set preload AND call load() &mdash; the
+         same trap the stepper and the media grid work around. */
+      video.src = video.dataset.src;
+      delete video.dataset.src;
+      video.preload = "auto";
+      video.load();
+
+      video.addEventListener("canplay", () => {
+        const p = video.play();
+        /* Muted autoplay is allowed without a gesture, but if a browser ever
+           refuses there is nothing to recover: the poster is already the frame
+           the clip opens on, so a refusal just leaves the hero as a still.
+           iOS Low Power Mode refuses exactly this, so some phones will fetch
+           the clip and show the still anyway &mdash; nothing on the page can
+           know that before asking. */
+        if (p && p.catch) p.catch(() => {});
+      }, { once: true });
+    }
 
     /* Stop it once the hero has scrolled away rather than decode a clip nobody
-       can see, and pick it up again on the way back. */
+       can see, and pick it up again on the way back. On a phone this observer
+       is also what arms the deferred start, so it is set up BEFORE anything
+       loads rather than after. */
     if ("IntersectionObserver" in window) {
       new IntersectionObserver((entries) => {
         entries.forEach((e) => {
-          if (!video.src) return;
-          if (e.isIntersecting) {
-            const p = video.play();
-            if (p && p.catch) p.catch(() => {});
-          } else {
-            video.pause();
+          onScreen = e.isIntersecting;
+          if (!onScreen) {
+            if (started) video.pause();
+            return;
           }
+          if (!started) {
+            /* Only reachable on the deferred path, and only once `load` has
+               fired &mdash; scrolling back to a hero whose settle timer has not
+               run yet leaves `armed` false and the timer still does the work. */
+            if (armed) start();
+            return;
+          }
+          const p = video.play();
+          if (p && p.catch) p.catch(() => {});
         });
       }, { threshold: 0 }).observe(section);
+    }
+
+    function release() {
+      window.setTimeout(() => {
+        armed = true;
+        if (onScreen) start();   // otherwise the observer picks it up on the way back
+      }, SETTLE_MS);
+    }
+
+    if (!deferred) {
+      start();
+    } else if (document.readyState === "complete") {
+      release();
+    } else {
+      window.addEventListener("load", release, { once: true });
     }
   }
 
