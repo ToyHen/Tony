@@ -189,50 +189,6 @@ img { max-width: 100%; display: block; }
   z-index: -1;
 }
 
-/* NARROW SCREENS NEED A HEAVIER SCRIM, and the tagline is why — exactly the
-   reversal already documented for .page-hero on projects.html. The eyebrow is
-   the binding constraint at desktop width; below ~900px the tagline overtakes
-   it, because .hero-tagline's 46ch cap stops binding once the column itself is
-   narrower than that, so the copy spreads to the full width and its lower
-   lines reach right, into where the horizontal pass has faded to nothing.
-
-   Measured against real glyph boxes over 48 frames of the loop, with the
-   shipped 0.60/0.34/75% over 0.35/0.85 scrim:
-
-     width    eyebrow   h1     tagline        after the fix below
-     1280     5.07      5.65   5.64          unchanged, above the query
-      950     5.10      4.40   4.71          unchanged -- the new worst
-      900     4.89      4.51   4.58          5.53 / 6.35 / 5.45
-      700     5.51      5.24   3.83  FAILS   6.08 / 6.61 / 4.93
-      375     5.39      4.86   3.87  FAILS   6.06 / 6.81 / 5.03
-
-   The 375 figure is a REAL FAILURE ON THE POSTER TOO (4.17), so this was a
-   live bug on the phone before the clip was ever enabled there — the clip only
-   made it worse. Checking the headings alone would have missed it in both
-   cases; h1 never drops below 4.5 anywhere in that table.
-
-   The fix is the VERTICAL pass, not the horizontal one. A 64-candidate sweep
-   over both gradients found nothing that clears 4.8 while the vertical pass
-   stays at 0.35/0.85 — extending the horizontal pass all the way to 100% still
-   leaves the tagline short, because at those widths the copy sits low enough
-   that the vertical pass is what is under it. Raising it to 0.45/0.88 and
-   running the horizontal one out to 100% is the lightest passing combination
-   found; it buries 80.7% of the footage against 75.5% before, which is a 5
-   point trade for clearing AA on the two widths that failed.
-
-   The worst figure anywhere is now the TAGLINE AT 4.71, at 950px -- just
-   above the query, on the untouched scrim. It clears AA and the breakpoint
-   stays at 900 because darkening a desktop window further costs the footage
-   for no failure; but that is the number to watch if the clip is ever
-   recut. */
-@media (max-width: 900px) {
-  .hero::before {
-    background:
-      linear-gradient(90deg, rgba(11,11,13,0.60) 0%, rgba(11,11,13,0.34) 42%, rgba(11,11,13,0) 100%),
-      linear-gradient(180deg, rgba(11,11,13,0.45) 0%, rgba(11,11,13,0.88) 78%, var(--bg) 100%);
-  }
-}
-
 /* padding-block, NOT the padding shorthand. This element is `container
    hero-inner`, and .container's `padding: 0 1.5rem` is what keeps the heading
    off the viewport edge. A shorthand here comes later in the file and silently
