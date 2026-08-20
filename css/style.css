@@ -8,6 +8,19 @@
   --text-dim: #a8a6a0;
   --accent: #e8a33d;
   --accent-dim: #a97728;
+
+  /* --- added by redesign-lab/build.ps1 -------------------------------------
+     Channel triplets, so a scrim can follow its token instead of hardcoding
+     the ground.  rgb(var(--bg-rgb) / 0.6) == the old rgba() form.        */
+  --bg-rgb: 11 11 13;
+  --accent-rgb: 232 163 61;
+  --text-rgb: 241 239 233;
+
+  --accent-hi: #f2b654;    /* .btn-primary:hover - accent, lifted            */
+  --on-accent: #1a1204;    /* text ON the accent - near-black, warm          */
+  --rule: #3f4048;         /* the heavier border, above --card-border        */
+  --media-well: #111;      /* ground behind letterboxed media                */
+  --card-well: #0f0f11;    /* project-card media placeholder ground          */
   --max-width: 1100px;
   --radius: 4px;
   font-size: 16px;
@@ -64,7 +77,7 @@ img { max-width: 100%; display: block; }
   position: sticky;
   top: 0;
   z-index: 50;
-  background: rgba(11, 11, 13, 0.85);
+  background: rgb(var(--bg-rgb) / 0.85);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--card-border);
 }
@@ -184,8 +197,8 @@ img { max-width: 100%; display: block; }
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(90deg, rgba(11,11,13,0.60) 0%, rgba(11,11,13,0.34) 42%, rgba(11,11,13,0) 75%),
-    linear-gradient(180deg, rgba(11,11,13,0.35) 0%, rgba(11,11,13,0.85) 78%, var(--bg) 100%);
+    linear-gradient(90deg, rgb(var(--bg-rgb) / 0.60) 0%, rgb(var(--bg-rgb) / 0.34) 42%, rgb(var(--bg-rgb) / 0) 75%),
+    linear-gradient(180deg, rgb(var(--bg-rgb) / 0.35) 0%, rgb(var(--bg-rgb) / 0.85) 78%, var(--bg) 100%);
   z-index: -1;
 }
 
@@ -226,9 +239,9 @@ img { max-width: 100%; display: block; }
 
 .btn-primary {
   background: var(--accent);
-  color: #1a1204;
+  color: var(--on-accent);
 }
-.btn-primary:hover { background: #f2b654; }
+.btn-primary:hover { background: var(--accent-hi); }
 
 .btn-ghost {
   background: transparent;
@@ -347,7 +360,7 @@ section { padding: 4rem 0; }
   z-index: 3;
   padding: 0.2rem 0.45rem;
   border-radius: 999px;
-  background: rgba(11, 11, 13, 0.72);
+  background: rgb(var(--bg-rgb) / 0.72);
   border: 1px solid var(--card-border);
   color: var(--text-dim);
   font-size: 0.62rem;
@@ -428,8 +441,8 @@ section { padding: 4rem 0; }
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(90deg, rgba(11,11,13,0.66) 0%, rgba(11,11,13,0.52) 46%, rgba(11,11,13,0.10) 78%, rgba(11,11,13,0) 100%),
-    linear-gradient(180deg, rgba(11,11,13,0.12) 0%, rgba(11,11,13,0.48) 72%, var(--bg) 100%);
+    linear-gradient(90deg, rgb(var(--bg-rgb) / 0.66) 0%, rgb(var(--bg-rgb) / 0.52) 46%, rgb(var(--bg-rgb) / 0.10) 78%, rgb(var(--bg-rgb) / 0) 100%),
+    linear-gradient(180deg, rgb(var(--bg-rgb) / 0.12) 0%, rgb(var(--bg-rgb) / 0.48) 72%, var(--bg) 100%);
   z-index: -1;
 }
 
@@ -468,8 +481,8 @@ section { padding: 4rem 0; }
 @media (max-width: 900px) {
   .page-hero::before {
     background:
-      linear-gradient(90deg, rgba(11,11,13,0.60) 0%, rgba(11,11,13,0.45) 48%, rgba(11,11,13,0.30) 100%),
-      linear-gradient(180deg, rgba(11,11,13,0.40) 0%, rgba(11,11,13,0.88) 72%, var(--bg) 100%);
+      linear-gradient(90deg, rgb(var(--bg-rgb) / 0.60) 0%, rgb(var(--bg-rgb) / 0.45) 48%, rgb(var(--bg-rgb) / 0.30) 100%),
+      linear-gradient(180deg, rgb(var(--bg-rgb) / 0.40) 0%, rgb(var(--bg-rgb) / 0.88) 72%, var(--bg) 100%);
   }
 }
 @media (max-width: 600px) {
@@ -497,7 +510,7 @@ section { padding: 4rem 0; }
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(70% 42% at 22% 0%, rgba(232,163,61,0.055) 0%, rgba(232,163,61,0) 70%),
+    radial-gradient(70% 42% at 22% 0%, rgb(var(--accent-rgb) / 0.055) 0%, rgb(var(--accent-rgb) / 0) 70%),
     linear-gradient(180deg, var(--bg-alt) 0%, var(--bg) 42%);
 }
 /* ---------- Project grid ---------- */
@@ -569,7 +582,7 @@ section { padding: 4rem 0; }
 
 .project-card-media {
   aspect-ratio: 16 / 10;
-  background: #0f0f11 center / cover no-repeat;
+  background: var(--card-well) center / cover no-repeat;
   position: relative;
   transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.3, 1);
 }
@@ -977,7 +990,7 @@ section { padding: 4rem 0; }
   height: 17px;
   border-radius: 50%;
   background: var(--bg);
-  border: 2px solid #3f4048;
+  border: 2px solid var(--rule);
   transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
   cursor: grab;
   /* claim the gesture so a touch-drag on a dot scrubs instead of
@@ -1017,7 +1030,7 @@ section { padding: 4rem 0; }
 .scrubber.is-blobbing .scrub-blob { opacity: 1; }
 .scrubber.is-blobbing .scrub-node[aria-current="true"] .node-dot {
   background: var(--bg);
-  border-color: #3f4048;
+  border-color: var(--rule);
   transform: none;
 }
 /* Releasing it: springs home to the stage it landed on with a slight
@@ -1133,7 +1146,7 @@ section { padding: 4rem 0; }
   width: 100%;
   aspect-ratio: var(--compare-ratio, 16 / 9);
   object-fit: cover;
-  background: #111;
+  background: var(--media-well);
 }
 /* ---------- frame strip ----------
    Consecutive captured frames laid out in order. Where .compare stacks layers
@@ -1175,7 +1188,7 @@ section { padding: 4rem 0; }
   font-size: 0.6rem;
   letter-spacing: 0.08em;
   color: var(--text);
-  background: rgba(11, 11, 13, 0.74);
+  background: rgb(var(--bg-rgb) / 0.74);
   padding: 0.16rem 0.42rem;
   border-top-right-radius: var(--radius);
 }
@@ -1259,8 +1272,8 @@ section { padding: 4rem 0; }
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: rgba(11, 11, 13, 0.55);
-  box-shadow: 0 0 0 1px rgba(241, 239, 233, 0.45);
+  background: rgb(var(--bg-rgb) / 0.55);
+  box-shadow: 0 0 0 1px rgb(var(--text-rgb) / 0.45);
   transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 .mediagrid .frame-dot.is-on::before {
@@ -1297,7 +1310,7 @@ section { padding: 4rem 0; }
   width: 100%;
   aspect-ratio: var(--tile-ratio, 1 / 1);
   object-fit: cover;
-  background: #111;
+  background: var(--media-well);
 }
 .mediagrid figcaption {
   display: flex;
@@ -1324,7 +1337,7 @@ section { padding: 4rem 0; }
   z-index: 200;
   display: grid;
   place-items: center;
-  background: rgba(11, 11, 13, 0.93);
+  background: rgb(var(--bg-rgb) / 0.93);
   padding: 6vmin 5vmin;
 }
 .lightbox[hidden] { display: none; }
@@ -1338,7 +1351,7 @@ section { padding: 4rem 0; }
   height: auto;
   margin: 0 auto;
   border-radius: var(--radius);
-  background: #111;
+  background: var(--media-well);
 }
 .lightbox-cap {
   margin: 0.9rem 0 0;
@@ -1391,7 +1404,7 @@ section { padding: 4rem 0; }
   border: 1px solid var(--card-border);
   border-radius: var(--radius);
   overflow: hidden;
-  background: #111;
+  background: var(--media-well);
   line-height: 0;
 }
 .step-viewer video {
@@ -1408,7 +1421,7 @@ section { padding: 4rem 0; }
   letter-spacing: 0.1em;
   line-height: 1;
   color: var(--text);
-  background: rgba(11, 11, 13, 0.72);
+  background: rgb(var(--bg-rgb) / 0.72);
   padding: 0.3rem 0.5rem;
 }
 .step-stamp { top: 0; left: 0; border-bottom-right-radius: var(--radius); }
@@ -1543,7 +1556,7 @@ section { padding: 4rem 0; }
   width: 100%;
   aspect-ratio: var(--result-ratio, 16 / 9);
   object-fit: cover;
-  background: #111;
+  background: var(--media-well);
 }
 /* a portrait clip at full column width is overwhelming; keep it to a strip */
 .framestrip-result.is-portrait { max-width: 380px; }
@@ -1723,7 +1736,7 @@ section { padding: 4rem 0; }
 }
 .moment p { margin-bottom: 0; font-size: 0.92rem; }
 .moment.is-night { --moment-accent: #7f9bd4; }
-.moment.is-dawn  { --moment-accent: #e8a33d; }
+.moment.is-dawn  { --moment-accent: var(--accent); }
 
 /* .tag-row / .tag are currently unused - the mood-word rows came out of the
    moment cards on 10 Aug 2026 when the stills went in. Kept so they can go
