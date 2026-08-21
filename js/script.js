@@ -227,7 +227,7 @@ function initSite() {
       const t = e.touches && e.touches[0];
       if (!t) return;
       const el = document.elementFromPoint(t.clientX, t.clientY);
-      const tile = el && el.closest ? el.closest("figure, .sheet-cell") : null;
+      const tile = el && el.closest ? el.closest("figure, .sheet-cell, .project-card") : null;
       const next = tile && tileHandlers.has(tile) ? tile : null;
       if (next === touchTile) return;
       if (touchTile) tileHandlers.get(touchTile).leave();
@@ -325,6 +325,100 @@ function initSite() {
         wireTouchTracking();
       }
     });
+  }
+
+  /* ---------- project cards ----------
+     Same contract as a sheet cell: the card ships as a still and a clip is a
+     bonus that grows on the first hover, which is also when the file is first
+     fetched. A card with no data-clip is a complete card, which is the state
+     four of the five are in.
+
+     THE HANDLER GOES ON THE CARD, NOT ON THE MEDIA DIV. `.card-link::after` is
+     inset:0 over the whole card and paints above the thumbnail, so the pointer
+     is never really over .project-card-media and its mouseenter would never
+     fire. Hovering anywhere on the card is also what already lifts it, so this
+     is the behaviour the card had anyway.
+
+     The <video> goes INSIDE the media div rather than beside it, so the hover
+     zoom on .project-card-media carries the clip and the still together. Put it
+     in .project-card-thumb instead and the still zooms while the clip sits
+     still behind it, which reads as a slip. */
+  document.querySelectorAll(".project-card").forEach(initProjectCard);
+
+  function initProjectCard(card) {
+    const media = card.querySelector(".project-card-media[data-clip]");
+    if (!media) return;
+
+    const mq = window.matchMedia;
+    /* A stated preference for less motion is the one thing that keeps the card
+       a plain still. */
+    if (mq && mq("(prefers-reduced-motion: reduce)").matches) return;
+
+    /* NO MOTION BADGE HERE, and that is deliberate (Tony, 21 Aug 2026). The
+       sheet needs one because it is a caption-less wall of twelve frames where
+       nothing else says a cell can do anything. A project card is the opposite:
+       it is large, it is titled, and it already lifts, lights its border and
+       colours its heading under the pointer. The media grid — the closer
+       analogue, and also a hover-to-preview component — has never had one.
+       A badge here also marked out the cards that DON'T carry a clip, which is
+       the wrong thing to draw the eye to while only some of them do. */
+
+    /* `data-clip-once` plays the clip through once per hover instead of
+       looping. Piece It Together's is a 3x slowed camera move over the
+       materials (Tony, 21 Aug 2026): at speed it was restless, and once it was
+       slowed to six seconds a loop kept yanking the move back to the start
+       under the pointer. A move that is going somewhere wants to arrive. */
+    const once = media.hasAttribute("data-clip-once");
+
+    let video = null;
+
+    function enter() {
+      if (!video) {
+        video = document.createElement("video");
+        video.muted = true;
+        video.loop = !once;
+        video.playsInline = true;
+        /* Decorative: the card's accessible name is its <h3> link and the
+           still underneath is the poster, so the clip must not become a
+           second tab stop or a second thing to describe. */
+        video.setAttribute("aria-hidden", "true");
+        video.tabIndex = -1;
+        /* A src alone leaves preload="none" elements at readyState 0 for ever.
+           Set preload AND load() — the same trap the stepper documents. */
+        video.preload = "auto";
+        video.src = media.dataset.clip;
+        media.appendChild(video);
+        video.load();
+      }
+      /* A play-once clip restarts from the top on every hover rather than
+         resuming where the last one left off — otherwise a second visit to the
+         card shows a clip that is already over, sitting on its last frame. */
+      if (once) {
+        try { video.currentTime = 0; } catch (e) {}
+      }
+      const p = video.play();
+      if (p && p.catch) p.catch(() => {});
+      video.classList.add("is-playing");
+    }
+
+    function leave() {
+      if (touchTile === card) touchTile = null;
+      if (!video) return;
+      video.classList.remove("is-playing");
+      video.pause();
+    }
+
+    card.addEventListener("mouseenter", enter);
+    card.addEventListener("mouseleave", leave);
+    /* focus/blur do not bubble and the focusable element is the <a> inside the
+       body, so the card only ever hears the -in/-out pair. */
+    card.addEventListener("focusin", enter);
+    card.addEventListener("focusout", leave);
+
+    /* A drag down the list previews whatever it passes. The card is a link, so
+       a tap still opens the project — this only reads the finger. */
+    tileHandlers.set(card, { enter, leave });
+    wireTouchTracking();
   }
 
   /* ---------- before / after shot comparison ----------

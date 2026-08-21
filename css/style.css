@@ -589,6 +589,32 @@ section { padding: 4rem 0; }
 .project-card:hover .project-card-media,
 .project-card:focus-within .project-card-media { transform: scale(1.05); }
 
+
+/* A clip on a card is a bonus on top of the still, never the card itself —
+   the same contract a sheet cell has. It lives inside .project-card-media so
+   the hover zoom carries the clip and the still together, with the still
+   showing underneath as its poster: there is no `poster` attribute anywhere
+   here because the card's own background-image IS the poster. That also means
+   a clip should be a moment from the same setup as the still, or the card
+   changes subject under the pointer. */
+.project-card-media video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+.project-card-media video.is-playing { opacity: 1; }
+
+/* The case card presents its screenshot `contain` on a panel rather than
+   cover-cropped, so a clip there has to match or it would jump shape the
+   moment it started. No card uses this yet; it is here so the first one that
+   does not have to rediscover it. */
+.project-card.is-case .project-card-media video { object-fit: contain; }
+
 .project-card-media.no-image {
   display: flex;
   align-items: center;
