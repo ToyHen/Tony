@@ -683,7 +683,14 @@ section { padding: 4rem 0; }
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.75rem 1.25rem;
-  margin: auto 0 0;
+  /* TOP-anchored, not `margin: auto 0 0`. Bottom-anchoring made the card
+     bottoms agree and let the slate's TOP float with however many lines the
+     values wrapped to, so the hairline rule sat at a different height in each
+     card of a row — 19px apart on the first row, 37px on the second. Anchored
+     to the title instead, the rule and the first label row line up across a
+     row whatever the values do; the slack falls at the card's bottom, where it
+     is empty space nobody can see. */
+  margin: 1.15rem 0 0;
   padding: 0.95rem 0 0;
   border-top: 1px solid var(--card-border);
 }
@@ -696,8 +703,19 @@ section { padding: 4rem 0; }
   color: var(--text-dim);
   line-height: 1.4;
 }
+/* RESERVE TWO LINES PER VALUE. With the slate top-anchored the rule and the
+   first label row already line up; this is what lines up the SECOND row too,
+   by stopping a one-line value ("Director") sitting shorter than a two-line one
+   ("Project Leader, Direction & Production") beside it.
+
+   Two lines, not three: three would align the narrow 2-up widths as well, but
+   it costs every card 37px of empty slate at desktop size to fix a band only
+   ~60px wide. A value that runs to three lines drops the second label row by
+   18px in that band and nothing else moves — the rule stays put, which is the
+   part the eye actually reads. */
 .project-meta dd {
   margin: 0;
+  min-height: 2.7em;      /* two lines at the line-height below */
   font-size: 0.85rem;
   font-weight: 500;
   line-height: 1.35;
