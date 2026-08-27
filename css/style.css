@@ -1,26 +1,26 @@
 /* ---------- Design tokens ---------- */
 :root {
-  --bg: #0b0b0d;
-  --bg-alt: #141416;
-  --card: #19191c;
-  --card-border: #28282c;
-  --text: #f1efe9;
-  --text-dim: #a8a6a0;
-  --accent: #e8a33d;
-  --accent-dim: #a97728;
+  --bg: #17181b;
+  --bg-alt: #1e1f23;
+  --card: #232429;
+  --card-border: #34363d;
+  --text: #e8e9ec;
+  --text-dim: #aaadb5;
+  --accent: #f8d08c;
+  --accent-dim: #dfab53;
 
   /* --- added by redesign-lab/build.ps1 -------------------------------------
      Channel triplets, so a scrim can follow its token instead of hardcoding
      the ground.  rgb(var(--bg-rgb) / 0.6) == the old rgba() form.        */
-  --bg-rgb: 11 11 13;
-  --accent-rgb: 232 163 61;
-  --text-rgb: 241 239 233;
+  --bg-rgb: 23 24 27;
+  --accent-rgb: 248 208 140;
+  --text-rgb: 232 233 236;
 
-  --accent-hi: #f2b654;    /* .btn-primary:hover - accent, lifted            */
-  --on-accent: #1a1204;    /* text ON the accent - near-black, warm          */
-  --rule: #3f4048;         /* the heavier border, above --card-border        */
-  --media-well: #111;      /* ground behind letterboxed media                */
-  --card-well: #0f0f11;    /* project-card media placeholder ground          */
+  --accent-hi: #ffd999;    /* .btn-primary:hover - accent, lifted            */
+  --on-accent: #1a0c05;    /* text ON the accent - near-black, warm          */
+  --rule: #474a53;         /* the heavier border, above --card-border        */
+  --media-well: #0d0e10;   /* ground behind letterboxed media                */
+  --card-well: #0d0e10;    /* project-card media placeholder ground          */
   --max-width: 1100px;
   --radius: 4px;
   font-size: 16px;
@@ -176,12 +176,19 @@ img { max-width: 100%; display: block; }
    text sits low, where it is already at 0.85. The horizontal pass then settles
    the left so the subject on the right holds the eye.
 
-   THE EYEBROW IS THE BINDING CONSTRAINT, not the headings. It is --accent
-   (#e8a33d) over cloud that blows out to (255,159,123): orange on orange. At
-   0.60/0.34, worst case across every frame of the current clip is h1 11.58:1,
-   tagline 5.78:1, eyebrow 5.59:1. A lighter 0.45/0.18 would put the eyebrow at
-   4.53:1 — over the 4.5 line by a hair, which is too thin to ship when the
-   cloud brightness moves. Do not lighten this without re-measuring.
+   THE EYEBROW IS THE BINDING CONSTRAINT, not the headings. It is --accent over
+   cloud that blows out to (255,159,123) — warm text on warm cloud. Measured
+   worst-pixel across 58 sampled frames at 0.60/0.34: h1 5.87:1, tagline
+   4.73:1, eyebrow 4.77:1 (4.61 at 375px).
+
+   THE ACCENT IS WHY THE EYEBROW CLEARS, AND IT WAS CHOSEN FOR THAT. 27 Aug
+   2026 the palette moved to redesign-lab's A4. Rec-orange #ff6a2b — the
+   Dragonframe colour this direction started from — measures 3.69 here and
+   fails; #ff9166 is the same hue and saturation 12% lighter and measures 4.77.
+   Nothing that reads as a deeper orange clears the bar: #ff8c3a, barely
+   distinguishable from the old amber, still only reaches 4.47. So DO NOT
+   DARKEN OR SATURATE THE ACCENT without re-measuring the hero — this is the
+   one place on the site where the accent's lightness is load-bearing.
 
    MEASURE AGAINST REAL GLYPH BOXES, NOT ELEMENT BOXES. .eyebrow and h1 are
    block elements a full 1052px wide, while the eyebrow's text is only 257px of
