@@ -545,6 +545,9 @@ section { padding: 4rem 0; }
   background: var(--card-border);
 }
 .project-grid + .project-band { margin-top: 3.25rem; }
+/* A band can follow a lone wide card as well as a grid — "Client Work" sits
+   under the case study, which is an .project-card, not a .project-grid. */
+.project-card + .project-band { margin-top: 3.25rem; }
 
 /* TWO UP, NEVER THREE. Four cards divide evenly at 2 and 1 columns, so this
    grid has no hole at any width — the five-card grid it replaced stranded the
@@ -726,28 +729,103 @@ section { padding: 4rem 0; }
    the fifth card in a row of four. Full width and laid on its side, it reads as
    an appendix to the work instead of a fifth piece of it — and the four films
    above it tile with no hole. */
-.project-card.is-case {
+/* THIS LAYOUT IS SHARED BY TWO BANDS, not just the case study — .is-upcoming
+   uses it too. A band holding ONE card cannot use .project-grid: auto-fit
+   collapses the empty track and the lone card stretches to full width anyway,
+   with none of the panel treatment. So a lone card is wide by construction and
+   the modifier that makes it lone is what carries the meaning. */
+.project-card.is-case,
+.project-card.is-upcoming {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   align-items: stretch;
 }
 /* A UI screenshot is not a film frame: contained on a panel it reads as a
-   screenshot, where a cover-crop reads as a badly framed photograph. */
-.project-card.is-case .project-card-thumb {
+   screenshot, where a cover-crop reads as a badly framed photograph. The same
+   is true of a product sheet — Panda Sports' card is a garment mockup on white,
+   which cover-cropped would read as a badly framed photograph of a shirt. */
+.project-card.is-case .project-card-thumb,
+.project-card.is-upcoming .project-card-thumb {
   background: var(--bg-alt);
   padding: 1.3rem;
   border-right: 1px solid var(--card-border);
 }
-.project-card.is-case .project-card-media { background-size: contain; }
-.project-card.is-case .project-card-body { justify-content: center; }
+.project-card.is-case .project-card-media,
+.project-card.is-upcoming .project-card-media { background-size: contain; }
+.project-card.is-case .project-card-body,
+.project-card.is-upcoming .project-card-body { justify-content: center; }
 .project-card.is-case .project-meta { margin-top: 1.25rem; }
 
 @media (max-width: 820px) {
-  .project-card.is-case { grid-template-columns: 1fr; }
-  .project-card.is-case .project-card-thumb {
+  .project-card.is-case,
+  .project-card.is-upcoming { grid-template-columns: 1fr; }
+  .project-card.is-case .project-card-thumb,
+  .project-card.is-upcoming .project-card-thumb {
     border-right: 0;
     border-bottom: 1px solid var(--card-border);
   }
+}
+
+/* ---------- A project that has no page yet ---------- */
+
+/* A placeholder card, for work that is cleared to show but not written up. It
+   carries NO link and NO meta slate, and both of those are the point rather
+   than omissions: nothing on this site records Panda Sports' role, date or
+   location, and a marked gap beats a confident guess. What the card does say
+   is measured off the files it is built from.
+
+   The border goes dashed to read as a slot not yet filled, and the card is
+   INERT — no lift, no zoom on the media. The other five cards lift because
+   they go somewhere; this one would be promising a click that does not exist.
+   Adding the page later is deleting .is-upcoming, restoring the slate and
+   wrapping the h3 in the usual a.card-link. */
+.project-card.is-upcoming {
+  border-style: dashed;
+}
+.project-card.is-upcoming:hover,
+.project-card.is-upcoming:focus-within {
+  transform: none;
+  border-color: var(--card-border);
+  box-shadow: none;
+}
+.project-card.is-upcoming:hover .project-card-media,
+.project-card.is-upcoming:focus-within .project-card-media { transform: none; }
+
+/* The mockup is a white product sheet — full strength it is the brightest
+   thing on the page by a distance, and it would pull the eye straight past
+   four finished films to the one piece of work that is not ready. Settling it
+   toward the panel is what keeps a placeholder reading as a placeholder. */
+.project-card.is-upcoming .project-card-media { opacity: 0.85; }
+
+/* Same corner-badge vocabulary as .sheet-motion: the marker belongs on the
+   picture, where the eye lands first, not buried in the body copy. */
+.card-status {
+  position: absolute;
+  top: 1.3rem;
+  left: 1.3rem;
+  z-index: 1;
+  margin: 0;
+  padding: 0.3rem 0.6rem;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: var(--on-accent);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+/* Stands in for .project-meta, and takes that block's top rule so the card
+   keeps the same shape as the ones beside it. */
+.project-note {
+  margin: 1.15rem 0 0;
+  padding: 0.95rem 0 0;
+  border-top: 1px solid var(--card-border);
+  max-width: 46ch;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--text-dim);
 }
 
 @media (prefers-reduced-motion: reduce) {
