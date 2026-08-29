@@ -766,7 +766,8 @@ section { padding: 4rem 0; }
 
 @media (max-width: 820px) {
   .project-card.is-case,
-  .project-card.is-upcoming { grid-template-columns: 1fr; }
+  .project-card.is-upcoming,
+  .project-card.is-wide { grid-template-columns: 1fr; }
   .project-card.is-case .project-card-thumb,
   .project-card.is-upcoming .project-card-thumb {
     border-right: 0;
