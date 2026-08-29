@@ -1,0 +1,1372 @@
+/* ============================================================================
+   mini-lab: the floating gallery prototype
+   ----------------------------------------------------------------------------
+   Layered ON TOP of the real portfolio-site/css/style.css, never a fork of it.
+   Everything here is either a new rule or an override of a .mediagrid rule, so
+   what ports to the site is exactly this file.
+
+   The component is a .mediagrid with a second class. That is deliberate and it
+   is the whole trick: initMediaGrid in the shipped js/script.js wires the
+   lightbox, the hover preview, the touch tracker, the keyboard handlers and
+   prefers-reduced-motion for any element with class "mediagrid" and a
+   [data-mediagrid] attribute. This prototype changes the LAYOUT and nothing
+   else, so it costs zero new JavaScript and introduces no second overlay.
+
+   Uses only the site's design tokens. If the redesign lands, this survives it.
+   ========================================================================== */
+
+
+/* A PAGE WHOSE WIDTH DEPENDS ON ITS HEIGHT IS A MEASURING TRAP. Every heap
+   position here is a delta from the flow, so the flow has to be stable -- and
+   without a reserved gutter the container narrows by ~15px the moment the page
+   becomes tall enough to scroll. That is enough to change how many strips fit
+   on a line. mini.js pins the gallery's width while it measures, which is the
+   real fix; this stops the page from twitching in the first place, so opening
+   a heap or a lazily-loaded image landing cannot shift the layout sideways or
+   wake the ResizeObserver for no reason.
+
+   `stable`, not `scroll`: it reserves the gutter without forcing a scrollbar
+   to be drawn, and on a platform with overlay scrollbars it costs nothing. */
+html { scrollbar-gutter: stable; }
+
+
+/* ---------------------------------------------------------- the scatter ----
+   Justified rows, in reading order, with every item at its TRUE aspect ratio.
+
+   Each figure declares --ar (width / height) and gets flex-basis proportional
+   to --ar, with flex-grow ALSO proportional to --ar. Both the basis and the
+   share of free space are then proportional to the same number, so every item
+   in a row lands on the same height while keeping its own shape. Nothing is
+   cropped and nothing is letterboxed -- which is the entire technical argument
+   for building this rather than reaching for another .mediagrid.
+
+   --sc-row is the height a row aims for, and it is deliberately SPLIT in two:
+   --sc-base is the width-dependent part and --sc-scale is the per-section
+   weight, which is what makes the sections unequal.
+
+   The split is not tidiness. A section's weight has to be authored on the
+   section, i.e. inline in the markup, and an inline custom property beats a
+   media query at any specificity -- so a narrow-screen rule setting --sc-row
+   directly is silently overruled and the mobile layout never changes. Setting
+   --sc-scale inline and --sc-base in the query means the two never collide,
+   and it is the better model anyway: a section is a fifth bigger than its
+   neighbour at every width, rather than 300px at every width. */
+.scatter {
+  /* 190, not 280. At 280 the four galleries came to 6887px of media over
+     15 rows -- ten screens to get past nineteen items, which Tony called out
+     and which is the honest failure mode of justified rows: they are as tall
+     as the material is long. 190 puts more items on a line and takes the page
+     from 8430px to 5118px on the same screen, 10.2 screens to 6.2.
+
+     Below about 160 the curve flattens (4206px, 5.1 screens) because what is
+     left is prose and section chrome, roughly a fixed 1500px, not media. So
+     density is worth about half the page and no more -- the rest of the answer
+     is variant C, which stops the page growing with the item count at all. */
+  --sc-base: 190;         /* row height at this viewport, px, unitless       */
+  --sc-scale: 1;          /* the section's weight -- authored in the markup  */
+  --sc-row: calc(var(--sc-base) * var(--sc-scale));
+  --sc-gap: 1.1rem;
+
+  display: flex;          /* beats .mediagrid's display:grid                 */
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--sc-gap);
+  margin-top: 1.6rem;
+}
+
+.scatter figure {
+  --ar: 1;
+  --weight: 1;            /* editorial emphasis: 1.7 makes an item the anchor */
+
+  /* flex-grow is --ar ALONE, deliberately, while the basis carries --weight
+     as well. Grow and basis both proportional to the same number is what makes
+     a row come out level, so an item whose basis is weighted but whose grow is
+     not ends up TALLER than the rest of its line -- which is the entire point
+     of --weight. A perfectly justified row cannot express "this one is the
+     result"; it can only decide how many items fit.
+
+     So: an unweighted row is level to within its own border, and a weighted
+     item breaks the line on purpose. Measured on Fowl Play: 250 / 250 / 376. */
+  flex: var(--ar) 1 calc(var(--ar) * var(--weight) * var(--sc-row) * 1px);
+  min-width: 0;
+
+  /* An item left alone at the end of a line grows to the full container, and
+     for a tall ratio that is ruinous: the 9:16 rig clip measured 470x837 on a
+     768px tablet, taller than the viewport, purely because nothing else fitted
+     beside it. Capping growth at 1.55x the item's own basis holds it to a
+     sane size and leaves the line short instead.
+
+     A short line is the right trade HERE and would not be on a photo grid: a
+     ragged right edge is what a scatter is supposed to look like. It is also
+     why there is no hole check for this component -- there are no holes,
+     only lines that end where the material runs out. */
+  max-width: min(100%, calc(var(--ar) * var(--weight) * var(--sc-row) * 1.55px));
+}
+
+/* .mediagrid img/video are aspect-ratio: var(--tile-ratio, 1/1) with
+   object-fit: cover. Feeding the item's own ratio into that existing hook
+   means the cover-crop crops nothing -- the shipped rule does the work and
+   needs no override. */
+.scatter figure > img,
+.scatter figure > video,
+.scatter figure > .frame-top,
+.scatter figure > .frame-under { --tile-ratio: var(--ar); }
+
+/* The last row would otherwise grow its handful of items to full width and
+   tower over every row above it. One zero-basis spacer with an enormous grow
+   factor absorbs the free space instead, so the last row renders at exactly
+   --sc-row like the others. It is not a <figure>, so initMediaGrid's
+   querySelectorAll("figure") never sees it. */
+.scatter .sc-fill {
+  flex: 9999 9999 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+}
+
+
+/* --------------------------------------------------------------- floated ----
+   The scatter proper: items sit slightly off the row line and slightly off
+   square, and lift straight when you reach one. Nothing here is randomised --
+   a seven-step cycle of tilt/drop pairs runs over DOM order, so the
+   composition is identical on every load and Tony can tune it in one place
+   rather than on nineteen elements.
+
+   Seven rather than four or five because rows hold two to four items: a cycle
+   that divides into the row length lines the tilts up and the scatter reads as
+   a pattern. */
+.scatter figure:nth-child(7n + 1) { --tilt: -0.9deg; --drop:  8px; }
+.scatter figure:nth-child(7n + 2) { --tilt:  0.7deg; --drop: -6px; }
+.scatter figure:nth-child(7n + 3) { --tilt:  1.2deg; --drop: 12px; }
+.scatter figure:nth-child(7n + 4) { --tilt: -0.5deg; --drop: -3px; }
+.scatter figure:nth-child(7n + 5) { --tilt:  0.4deg; --drop: 10px; }
+.scatter figure:nth-child(7n + 6) { --tilt: -1.3deg; --drop:  4px; }
+.scatter figure:nth-child(7n + 7) { --tilt:  0.9deg; --drop: -9px; }
+
+.scatter figure {
+  transform: translateY(var(--drop, 0px)) rotate(var(--tilt, 0deg));
+  transition:
+    transform 0.32s cubic-bezier(0.2, 0.75, 0.3, 1),
+    box-shadow 0.32s ease,
+    border-color 0.15s ease;
+}
+
+/* Picked up off the table: straightened, lifted, and thrown a shadow. The
+   straightening is the part that reads as "picked up" rather than "grown", and
+   it costs nothing because the tilt was a transform to begin with.
+
+   :focus-visible as well as :hover, so this is not a pointer-only affordance
+   -- initMediaGrid makes every figure tabbable with role="button".
+
+   :focus-within IS DELIBERATELY NOT IN THIS LIST, and used to be. It looks
+   like the safer, more generous choice and it is the one that breaks: closeBox
+   hands focus back to the tile it opened from, and :focus-within has no
+   visibility heuristic, so it matches a programmatic restore that :focus-visible
+   correctly ignores. Measured after closing the lightbox on a heaped strip:
+   :focus-visible false, :focus-within TRUE -- so the strip kept the lift's
+   scale(1.06) while every neighbour sat at its heap scale of 0.459, and stayed
+   that way indefinitely. Tony: "the clicked media stays at its exploded size
+   when returning to cluster."
+
+   :focus-visible covers the keyboard, which is the only thing the lift was
+   opened up for; these figures have no focusable children, so :focus-within
+   was buying nothing and costing this. */
+.scatter figure:hover,
+.scatter figure:focus-visible {
+  transform: translateY(calc(var(--drop, 0px) - 7px)) rotate(0deg) scale(1.035);
+  box-shadow: 0 16px 38px rgb(var(--bg-rgb) / 0.85);
+  z-index: 3;             /* .mediagrid figure is already position: relative */
+}
+
+/* prefers-reduced-motion is honoured by turning off the TRANSITION, not the
+   tilt. A static rotation is geometry, not motion, and removing it would give
+   a reduced-motion visitor a different composition rather than a calmer one.
+   The lift still happens, it just happens instantly -- so hover and focus
+   still say "this one", which is the information the effect carries. */
+@media (prefers-reduced-motion: reduce) {
+  .scatter figure { transition: border-color 0.15s ease; }
+}
+
+
+/* ------------------------------------------------------------- captions ----
+   HIDDEN, NOT DELETED. Tony's call, 26 Aug 2026: this page is a visual
+   showcase, so nothing is captioned on the wall -- the same decision the home
+   page's contact sheet already carries, and for the same reason.
+
+   The markup keeps every caption, and that is load-bearing three times over:
+
+   - THE LIGHTBOX IS BUILT FROM IT. openBox() reads the figure's <strong> and
+     its figcaption <span> into .lightbox-cap, so "a lightbox with a little
+     caption on click" is already what happens -- it needed no work, only for
+     the caption to still exist. Delete these elements and that goes with them.
+   - IT IS THE ACCESSIBLE NAME. initMediaGrid sets the figure's aria-label to
+     "Enlarge: " + the <strong>. With no caption in the markup all nineteen
+     tiles announce as "Enlarge" and the component becomes a wall of
+     identical unlabelled buttons. This is the contact sheet's one hard
+     requirement restated: with no visible text anywhere, the hidden text IS
+     the label.
+   - It stays in the accessibility tree. Clipped rather than display:none, so
+     a screen reader still reads what a sighted visitor sees in the picture.
+
+   So this is one rule that changes what is drawn, and nothing that changes
+   what the page means.
+
+   .SECTION-HEAD IS NOT IN THIS LIST, AND IT IS IN THE LAB'S COPY.
+   In mini-lab the lab-bar names the page, so clipping the page heading cost
+   nothing. On the site it left the page with no visible <h1> at all -- every
+   other project page opens with a back-link eyebrow and a heading, the nav
+   marks Projects as current, and a headless page is wrong for both structure
+   and anyone landing on it from a shared link. The clip was only ever aimed at
+   ITEM captions; .section-head got swept in with them. */
+.scatter figcaption,
+.work-head {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* The section prose goes the same way (Tony, 26 Aug 2026) -- the page is
+   pictures and nothing else. Same treatment and the same reasoning: CLIPPED,
+   not deleted.
+
+   The <h1> and the four <h2>s are the document outline. Deleting them leaves a
+   page a screen reader cannot navigate by heading and cannot tell one work
+   from another in, and mini.js reads each work's <h2> to label its band in
+   variant C. Clipping keeps all of that and shows none of it.
+
+   WORTH SAYING OUT LOUD: with these hidden, nothing visible on the page names
+   the four works or says who Fowl Play was co-directed with. That is a
+   decision, not an oversight -- but it is one to make deliberately, and the
+   credits in particular may want somewhere else to live. */
+
+/* A marked gap: an item whose caption cannot be written from the manifest.
+   The project's rule is that a marked gap always beats a confident guess. With
+   the captions off the wall the dashed border is the only thing left saying
+   so, and the question itself is in the lightbox. These are questions for
+   Tony, not a shipping state. */
+.scatter figure[data-gap] { border-style: dashed; }
+
+
+/* ------------------------------------------------------- narrow screens ----
+   Not a breakpoint so much as a smaller row target -- there is no column count
+   to pick and therefore no hole check to re-run when an item is added, which
+   is the thing the contact sheet and the projects grid both have to do.
+
+   140 is measured, not guessed. At 375px .container's padding leaves 327px, so
+   two square items pair only while the row target is at or under
+   (327 - gap) / 2 = 156px. The heaviest section runs at --sc-scale 1.1, so the
+   base has to be at or under 142 for that section to pair as well. Above it
+   every item goes one-up and the page runs to ~8800px of scroll.
+
+   The wide items -- 3:2, 1.41:1, and the 3:1 fox study -- still take a row
+   each at any setting, which is correct: they are wide drawings and one-up is
+   what shows them.
+
+   The drops go to zero: at this size a row holds one or two items, so an
+   offset reads as a misalignment rather than as a scatter. The tilt stays. */
+@media (max-width: 640px) {
+  .scatter { --sc-base: 140; --sc-gap: 0.85rem; }
+  .scatter figure { --drop: 0px; }
+}
+
+
+/* ============================================================================
+   VARIANT B -- "exploded". Everything below is the second direction, and it is
+   the only part of this file that costs JavaScript (mini.js, ~40 lines).
+   Toggled by .is-exploded on <html> from the lab switcher.
+
+   Same markup, same layout engine, same overlay. What it adds is (a) a film
+   strip frame around every item, (b) much stronger drift on both axes, and
+   (c) an entrance -- items settle into place as their section scrolls in.
+   Judge whether the extra reads as range or as gimmick.
+   ========================================================================== */
+
+/* Drift on both axes now, not just vertical: "floating" reads as loose in the
+   plane, and a column of items that are all shifted only up and down still
+   lines up on its left edge, which is what kept the first version looking like
+   a grid someone had nudged. --slip is a translateX and stays small; the
+   container's own padding absorbs it, so nothing overflows sideways.
+
+   Still a fixed seven-step cycle over DOM order rather than anything random:
+   the composition has to be the same on every load or it cannot be judged. */
+.is-exploded .scatter figure:nth-child(7n + 1) { --tilt: -4.2deg; --drop:  34px; --slip: -9px; }
+.is-exploded .scatter figure:nth-child(7n + 2) { --tilt:  3.4deg; --drop: -28px; --slip:  7px; }
+.is-exploded .scatter figure:nth-child(7n + 3) { --tilt:  5.6deg; --drop:  46px; --slip: 11px; }
+.is-exploded .scatter figure:nth-child(7n + 4) { --tilt: -2.4deg; --drop: -14px; --slip: -6px; }
+.is-exploded .scatter figure:nth-child(7n + 5) { --tilt:  2.2deg; --drop:  40px; --slip: 10px; }
+.is-exploded .scatter figure:nth-child(7n + 6) { --tilt: -5.8deg; --drop:  18px; --slip: -11px; }
+.is-exploded .scatter figure:nth-child(7n + 7) { --tilt:  4.4deg; --drop: -36px; --slip:  8px; }
+
+/* ---- the film strip frame ----
+   The item stops being a bordered tile and becomes a frame ON a strip: a
+   lighter film base with sprocket holes punched top and bottom, showing the
+   page ground through them. Both colours are tokens, so it survives a
+   redesign -- the base is --card and the holes are --bg, which is exactly the
+   relationship a punched hole has to the page behind it.
+
+   Holes are a repeating-linear-gradient rather than elements: nineteen items
+   would otherwise need a few hundred divs, and the count has to change with
+   the item's width, which markup cannot do and a gradient does for free. */
+.is-exploded .scatter figure {
+  --film-edge: 15px;
+  --hole: 9px;
+
+  padding: var(--film-edge) 7px;
+  background: var(--card);
+  border-color: transparent;   /* the strip replaces the 1px tile border */
+  border-radius: 3px;
+}
+
+.is-exploded .scatter figure::before,
+.is-exploded .scatter figure::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  right: 5px;
+  height: var(--hole);
+  /* 9px of hole every 21px. The run is clipped by the figure's own
+     overflow: hidden, so a part-hole at the end reads as the strip continuing
+     past the frame rather than as a mistake. */
+  background-image: repeating-linear-gradient(to right,
+    var(--bg) 0 var(--hole), transparent var(--hole) 21px);
+  pointer-events: none;
+  z-index: 1;
+}
+.is-exploded .scatter figure::before { top: 3px; }
+.is-exploded .scatter figure::after { bottom: 3px; }
+
+/* The frame is padding, so it eats into the width the flex basis handed out
+   and the media inside comes back a little shorter than its row-mates. In A
+   that would be a bug; here the rows are meant to be ragged, and the strip
+   would look wrong flush against the picture anyway. */
+
+/* ---- overlap ----
+   Negative margins pull the strips into each other so they genuinely stack,
+   which is the thing Tony picked B for. The flex gap is 17.6px, so -20px of
+   horizontal margin per side leaves a NET overlap of about 22px, and the
+   drift on top of that puts corners across neighbours.
+
+   Margins sit outside flex-basis, so this also fits more items per line --
+   which is why B is not much taller than A despite the far bigger offsets. */
+.is-exploded .scatter figure { margin: -14px -20px; }
+
+/* B runs its rows tighter than A does, and now it has to. Since the box is
+   reserved at the OPEN height and never resizes, the open layout is what every
+   section costs the page at rest -- so a row target of 190 gave Glass Shatter
+   a 1332px box holding a heap half that size. At 150 it is 786px, the page
+   comes back from 4.0 screens to about 3.2, and nothing on screen gets much
+   smaller: the pile scales items to a common width anyway, and the open state
+   is overlapping heavily by design. */
+.is-exploded .scatter { --sc-base: 150; }
+
+/* The bigger offsets need the room paid for, or a 46px drop on the last row
+   runs into whatever follows the section.
+
+   padding-inline pays for the OTHER two: the -20px margins above and the
+   --slip, which between them put the first and last item of a row up to 31px
+   past the container edge and gave the page a horizontal scrollbar the moment
+   a heap opened. Padding the flex container absorbs both -- the items shift in
+   by 34px and their negative margins pull them back to just inside it. */
+.is-exploded .scatter { padding-block: 1rem; padding-inline: 34px; }
+
+/* The heaps sit close together on purpose. The gap was sized when opening one
+   pushed the page around and needed clearance; it spills over its neighbours
+   now, so the only job left for this margin is to say where one pile ends and
+   the next begins. */
+.is-exploded .work + .work { margin-top: 0.6rem; }
+
+
+/* ---- the cluster ----
+   Rest state is a PILE. The strips sit heaped over each other and only open
+   out when a visitor reaches the section -- pointer, keyboard focus or finger.
+
+   The exploded state is the DEFAULT and .is-cluster is what heaps it, so this
+   follows the same rule as everything else here: with JS off, or under a
+   stated preference for less motion, the gallery is simply already open.
+
+   --cx / --cy are per-item and are written by mini.js, because where an item
+   has to travel to reach the pile depends on where the flow put it, which is
+   a measurement and not something CSS can know. Everything else is CSS. */
+/* THE BOX NEVER CHANGES SIZE, AND IT IS THE HEAP'S SIZE. The exploded state
+   spills out of it, above and below, instead of making it taller.
+
+   Both halves of that matter and they were learned one at a time.
+
+   The box has to stop resizing because when opening a heap GREW the section,
+   the page reflowed under the pointer -- scrolling dragged section after
+   section beneath a stationary cursor, each opened, each pushed the rest down,
+   and the enter/leave pairs raced a layout that was still moving. Tony:
+   "extremely buggy and glitched... hovering the projects below will explode
+   everything above as well." A hover target that resizes itself while the page
+   scrolls cannot be fixed by damping events; the layout has to stop moving.
+
+   But reserving the OPEN height to achieve that was the wrong half. It left
+   every pile marooned in a box the size of its own explosion, the heaps far
+   apart, and -- Tony again, and exactly right -- "there's literally no point
+   for the exploding", because nothing was gained by opening something that
+   already had all that room.
+
+   So the box is the heap: compact, and the piles sit close enough together to
+   read as a set. Opening one lifts it over its neighbours rather than shoving
+   them down the page. Nothing reflows and the explosion has somewhere to go. */
+.is-exploded .scatter {
+  height: var(--sc-h, auto);
+  position: relative;
+  z-index: 1;
+}
+
+/* The open one draws over the heaps either side of it. Without this the spill
+   slides UNDER the next section, which reads as clipping rather than as
+   something bursting out. */
+.is-exploded .scatter:not(.is-cluster) { z-index: 5; }
+
+/* The open layout is centred on the heap's box -- mini.js measures the offset
+   as --oy -- so a section opens symmetrically instead of unrolling downwards. */
+/* ---- where each part of the position lives, and why ----
+   THE STATE TRANSLATION IS ON left/top, NOT IN `transform`. That looks like a
+   step backwards -- offsets on the compositor moved to a layout property --
+   and it is the only arrangement that makes the drift rotate correctly.
+
+   The used matrix is `translate x rotate x scale x transform`, outermost to
+   innermost. With the pile translation inside `transform`, the drift's
+   `rotate` sits OUTSIDE it, so it turns a strip that has already been carried
+   hundreds of pixels away -- about the origin it started from, not about
+   itself. Measured: pile offsets run to 452px here, and a 2deg turn at that
+   radius sweeps a 16px arc, twice the whole translation budget. Tony saw it
+   exactly: "they are not rotating relative to their own center, but the
+   cluster center."
+
+   Moving the offset to left/top moves the element's BORDER BOX, and
+   transform-origin goes with it -- so `rotate` turns the strip about its own
+   middle wherever it has been put. It also leaves `transform` carrying only
+   in-place work (tilt, scale, the hover lift), which is what lets the drift
+   keep the whole `translate` and `rotate` pair to itself with no property
+   being both transitioned and animated.
+
+   The cost is honest: left/top are layout properties, so the open/close
+   transition is main-thread rather than composited. It runs for half a second
+   on a deliberate interaction, on nineteen elements, and nothing else on the
+   page moves while it does. The drift -- which runs continuously -- stays on
+   the compositor, which is the half that matters. */
+.is-exploded .scatter figure {
+  left: var(--slip, 0px);
+  top: calc(var(--drop, 0px) + var(--oy, 0px));
+  transform: rotate(var(--tilt, 0deg));
+}
+
+.is-exploded .scatter.is-cluster figure {
+  /* The spiral already scatters the pile, so the heap does not add --slip and
+     --drop on top: these offsets ARE the position. */
+  left: var(--cx, 0px);
+  top: var(--cy, 0px);
+  transform: rotate(calc(var(--tilt, 0deg) * 1.9)) scale(var(--cs, 0.86));
+}
+
+/* ---- the drift ----
+   Every strip breathes: a slow wander of a few pixels and about a degree,
+   around its own centre, never repeating in step with its neighbours.
+
+   IT RIDES ON `translate` AND `rotate`, NOT ON `transform`, and that is the
+   whole reason it can exist. `transform` is already carrying the heap/open
+   state and the hover lift, and it is one property -- an animation on it would
+   simply replace them. The independent transform properties compose instead:
+   the used matrix is translate x rotate x scale x transform, so the drift is a
+   small wander applied inside whatever position the state has put the strip
+   in. Both are compositor properties, so nineteen of them animating at once
+   costs no layout and no paint.
+
+   transform-origin is the centre by default, which is what "relative to their
+   centre" needs, and is also why a rotating strip does not crawl.
+
+   Amplitude, period and phase are per-item, written by mini.js from a hash of
+   the index: deterministic, so the page is identical on every load, but with
+   no two strips sharing a period the pile never falls into step. The delays
+   are NEGATIVE, which starts every strip part-way through its own cycle rather
+   than nineteen of them setting off together on load.
+
+   THREE CHARACTERS OF DRIFT, NOT ONE SPEED. A single keyframe set with
+   per-item periods still has every strip in constant motion -- the pile moves
+   as one restless mass, and Tony's note was that some should be able to sit
+   still, or go much much slower, at times. A hold in a keyframe track is
+   genuinely motionless: equal values across a stretch means nothing moves for
+   that fraction of the cycle. So the difference between a restless strip and a
+   nearly-still one is where its rests are, not how fast it goes -- and with
+   every period and phase different, at any moment some are moving and some
+   are parked.
+
+   mini.js picks the set per item and matches the duration to it. */
+
+/* Restless: never stops. */
+@keyframes sc-drift-a {
+  0%, 100% { translate: 0 0; rotate: 0deg; }
+  22%  { translate: var(--dx, 0px) var(--dy, 0px);
+         rotate: var(--dr, 0deg); }
+  48%  { translate: calc(var(--dx, 0px) * -0.7) calc(var(--dy, 0px) * 0.4);
+         rotate: calc(var(--dr, 0deg) * -0.65); }
+  74%  { translate: calc(var(--dx, 0px) * 0.35) calc(var(--dy, 0px) * -0.9);
+         rotate: calc(var(--dr, 0deg) * 0.85); }
+}
+
+/* Settling: drifts, then holds for a third of its cycle, then comes back. */
+@keyframes sc-drift-b {
+  0%, 100% { translate: 0 0; rotate: 0deg; }
+  16%, 52% { translate: var(--dx, 0px) var(--dy, 0px);
+             rotate: var(--dr, 0deg); }
+  70%      { translate: calc(var(--dx, 0px) * -0.8) calc(var(--dy, 0px) * -0.5);
+             rotate: calc(var(--dr, 0deg) * -0.75); }
+}
+
+/* Nearly still: parked for well over half its cycle, with one slow excursion.
+   On a long period this is a strip that moves once in a minute. */
+@keyframes sc-drift-c {
+  0%, 30%  { translate: 0 0; rotate: 0deg; }
+  46%, 82% { translate: calc(var(--dx, 0px) * 0.65) calc(var(--dy, 0px) * 0.55);
+             rotate: var(--dr, 0deg); }
+  100%     { translate: 0 0; rotate: 0deg; }
+}
+
+/* Declared the way round that leaves reduced motion with NOTHING, rather than
+   as an override that has to remember to switch it off. Ambient motion nobody
+   asked for and nobody can stop is exactly what the preference means. */
+@media (prefers-reduced-motion: no-preference) {
+  .is-exploded .scatter figure {
+    animation: var(--dname, sc-drift-a) var(--dur, 24s)
+               ease-in-out var(--delay, 0s) infinite;
+  }
+}
+
+/* ---- unwinding the drift on hover ----
+   Pausing alone was not enough, and the reason is worth keeping: the hover
+   lift straightens the strip by writing rotate(0deg) into its TRANSFORM, but
+   the drift's rotation is on the independent `rotate` property. Freezing the
+   animation just holds that wherever it happened to be, so a strip picked up
+   mid-drift came up still crooked by as much as 3.6 degrees and offset by
+   several pixels. Tony: "it doesn't straighten properly."
+
+   It is unwound by taking the drift's AMPLITUDE to zero rather than by
+   fighting its output. The animation stays paused, so its phase is untouched
+   and it resumes from exactly where it was -- what changes is how far it
+   reaches, and at zero it reaches nowhere. Both directions are smooth and
+   neither end snaps.
+
+   Two things make that possible:
+   - The amplitudes are @property-registered, so they can be TRANSITIONED. An
+     unregistered custom property is an untyped token and jumps.
+   - The per-item values are written by mini.js as --dx0/--dy0/--dr0 and mapped
+     here, because JS writes them as INLINE styles and an inline declaration
+     beats any stylesheet rule. Overriding --dx directly would have needed
+     !important; overriding the mapping needs nothing. */
+@property --dx { syntax: "<length>"; inherits: false; initial-value: 0px; }
+@property --dy { syntax: "<length>"; inherits: false; initial-value: 0px; }
+@property --dr { syntax: "<angle>";  inherits: false; initial-value: 0deg; }
+
+.is-exploded .scatter figure {
+  --dx: var(--dx0, 0px);
+  --dy: var(--dy0, 0px);
+  --dr: var(--dr0, 0deg);
+}
+
+.is-exploded .scatter figure:hover,
+.is-exploded .scatter figure:focus-visible {
+  animation-play-state: paused;
+  --dx: 0px;
+  --dy: 0px;
+  --dr: 0deg;
+}
+
+/* A RE-MEASURE MUST NOT ANIMATE. .is-measuring below neutralises left/top/
+   transform so the flow can be read, and mini.js forces a style recalc while
+   it is applied -- which commits those neutral values. Taking the class off
+   again then moves every strip from the flow origin back to its heap position
+   with the transition live, i.e. the pile replays its whole gathering
+   animation. Measured on ONE width change: 75 transitions across nineteen
+   strips. Drag a window edge and the ResizeObserver does that continuously.
+
+   .is-snap is held across the restore and dropped a tick later, by which time
+   the new positions are committed and there is nothing left to animate. It has
+   to be 0,3,1 to beat the transition declared at 0,2,1 further down; the
+   attribute-qualified trick this project uses for [hidden] is the same idea. */
+.is-exploded .scatter.is-snap figure { transition: none; }
+
+/* mini.js measures with getBoundingClientRect, which reports where a strip is
+   RIGHT NOW -- drift included. Left running, every re-measure would fold a few
+   pixels of wander into the heap positions and they would creep. */
+.is-exploded .scatter.is-measuring figure {
+  /* Everything neutral, so mini.js measures the pure FLOW position. The offsets
+     it is about to compute are relative to that, and measuring through the
+     previous ones would compound them. Transitions off as well, or the rect
+     read is whatever half-finished state the last change left running. */
+  animation: none;
+  transition: none;
+  left: 0;
+  top: 0;
+  transform: none;
+  translate: none;
+  rotate: none;
+}
+
+/* Heaped, the pile needs a reading order or it is mush: later items sit on
+   top, so the eye lands on the front of the stack and the edges of the ones
+   behind read as depth. The cycle is the same seven-step one, so the pile is
+   identical on every load. */
+.is-exploded .scatter.is-cluster figure { box-shadow: 0 10px 26px rgb(var(--bg-rgb) / 0.75); }
+
+/* Hovering one strip still lifts it clear of the rest -- in the pile that is
+   the only way to see what is underneath, so the z-index matters more here
+   than anywhere else in the file. */
+.is-exploded .scatter figure:hover,
+.is-exploded .scatter figure:focus-visible { z-index: 6; }
+
+@media (prefers-reduced-motion: reduce) {
+  /* Never heaped: an explosion the visitor cannot opt out of is exactly what
+     the preference is about, and a pile they cannot open hides the work. */
+  .is-exploded .scatter.is-cluster figure {
+    transform: translate(var(--slip, 0px), calc(var(--drop, 0px) + var(--oy, 0px)))
+               rotate(var(--tilt, 0deg));
+  }
+}
+
+.is-exploded .scatter figure:hover,
+.is-exploded .scatter figure:focus-visible {
+  /* The lift is a translateY inside `transform` rather than an adjustment to
+     `top`, so one rule covers both states -- heaped or open, the strip rises
+     12px from wherever left/top have put it. */
+  transform: rotate(0deg) scale(1.06) translateY(-12px);
+  box-shadow: 0 22px 55px rgb(var(--bg-rgb) / 0.9);
+}
+
+/* THE SCROLL-IN ENTRANCE THAT USED TO BE HERE IS GONE, and its
+   IntersectionObserver and safety timer went with it. The pile replaced it and
+   is a better idea for the same reason it is a better idea than a plain
+   scatter: an entrance is a thing a visitor sees once, on the way past,
+   whereas the heap is a state they can open, close and open again. Two motions
+   competing for the same transform was also going to be a bug.
+
+   Opening staggers along the pile instead. mini.js writes each figure's index
+   as --i while it measures, so the delay is one custom property rather than a
+   keyframe per item, and it costs nothing on the way back in. */
+.is-exploded .scatter figure {
+  transition:
+    transform 0.52s cubic-bezier(0.16, 0.9, 0.3, 1) calc(var(--i, 0) * 26ms),
+    left 0.52s cubic-bezier(0.16, 0.9, 0.3, 1) calc(var(--i, 0) * 26ms),
+    top 0.52s cubic-bezier(0.16, 0.9, 0.3, 1) calc(var(--i, 0) * 26ms),
+    box-shadow 0.4s ease,
+    border-color 0.15s ease,
+    /* The drift amplitudes, so it unwinds and rewinds rather than snapping.
+       No stagger delay on these: the strip under the pointer answers now. */
+    --dx 0.3s ease,
+    --dy 0.3s ease,
+    --dr 0.3s ease;
+}
+
+/* Reaching for a single strip must not wait behind the stagger -- it is a
+   direct response to the pointer, so it happens at once. */
+.is-exploded .scatter figure:hover,
+.is-exploded .scatter figure:focus-visible {
+  transition-delay: 0s;
+}
+
+@media (max-width: 640px) {
+  /* --slip as well as --drop. A narrow row holds one or two items, so a
+     sideways shift is not a scatter, it is an item that failed to line up --
+     and it is the one that can push past the container edge. The tilt and the
+     film frame both stay; they are what B looks like.
+
+     THE `:nth-child(n)` IS LOAD BEARING AND THIS RULE HAD NEVER FIRED. As
+     `.is-exploded .scatter figure` it is 0,2,1, and the seven-step cycle that
+     sets --drop and --slip is `...figure:nth-child(7n + 1)` at 0,3,1 -- so the
+     cycle won at every width and the narrow-screen case was silently the same
+     as the wide one. A media query loses to specificity like any other rule;
+     it is not a later, stronger context. `:nth-child(n)` matches everything
+     and costs one class-level unit, which ties the cycle and then wins on
+     source order. Same family as the [hidden] vs display:flex clashes this
+     project keeps rediscovering: it does not announce itself, it just does
+     nothing. */
+  .is-exploded .scatter figure:nth-child(n) { --drop: 0px; --slip: 0px; }
+}
+
+
+/* ============================================================================
+   VARIANT C -- "bands". One work, one fixed-height strip you sweep sideways.
+   Toggled by .is-bands on <html>.
+
+   This is the answer to page length rather than a second answer to cropping.
+   A and B are as tall as the material is long: nineteen items is fifteen rows
+   however dense the rows are, and adding a twentieth adds height. A band is a
+   FIXED height per section whatever it holds, so the page becomes four bands
+   and their prose -- and it stays that length when the fifth mini work
+   arrives, which on a page explicitly built to grow is the part that matters.
+
+   Same markup, same figures, same --ar, same lightbox. What changes is that
+   the line does not wrap.
+   ========================================================================== */
+
+.is-bands .scatter {
+  /* 250, not 300. At 300 the band showed 1.7 items of eight in a 591px
+     container and 3.2 in the site's real 1100px one -- which does not read as
+     a strip you sweep, it reads as two big pictures with space to the right.
+     250 puts 3.8 of Glass Shatter's eight and 4.4 of Breakout's seven on
+     screen at 1100px, which is enough for the sweep to look worth making.
+
+     This is the cost of C stated honestly: the finished clip is 288px tall
+     here against 522px in A. A band trades size for reach. */
+  --band-base: 250;
+  --band: calc(var(--band-base) * var(--sc-scale));
+
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;     /* -x auto forces -y to compute to auto anyway     */
+  scroll-snap-type: x proximity;
+  overscroll-behavior-x: contain;   /* don't chain a flick into page history */
+
+  /* The lift has to happen INSIDE the scroll box: once overflow-x is auto,
+     overflow-y computes to auto too and can no longer be visible, so anything
+     the transform pushes past the edge is clipped rather than drawn.
+
+     Budget: a 3% scale on the band's tallest figure adds half its growth above
+     (7.4px on a 490px item) and the translate adds 6 more, so ~14px is needed
+     at the top and 14 was exactly what it had -- measured worst clearance
+     1.2px, which one extra caption line would have eaten. 20/16 leaves real
+     headroom. The shadow is tightened below rather than paid for in padding. */
+  padding-block: 20px 16px;
+
+  /* The native bar is a full-width light slab across the bottom of the band
+     and reads as a browser artefact sitting in the design. It is also half the
+     affordance that the strip scrolls, so it stays -- restyled to the tokens
+     rather than hidden. */
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-dim) var(--card);
+}
+.is-bands .scatter::-webkit-scrollbar { height: 6px; }
+.is-bands .scatter::-webkit-scrollbar-track {
+  background: var(--card);
+  border-radius: 100px;
+}
+.is-bands .scatter::-webkit-scrollbar-thumb {
+  background: var(--accent-dim);
+  border-radius: 100px;
+}
+.is-bands .scatter::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+/* There WAS a band-only caption fix here and taking the captions off the wall
+   deleted the problem it solved, which is worth recording because it is the
+   clearest argument for the decision. A band's caption column is as wide as
+   its item, and item widths in a strip vary enormously -- 192px for a 9:16
+   clip against 794px for the 3:1 fox study -- so the same sentence wrapped to
+   one line under one item and four under another. The band reserved the
+   tallest and every short item sat over a slab of dead space: measured
+   captions of 35px to 108px, and 71px of nothing under the storyboard. It took
+   a fixed-height box and a two-line clamp to hold that to 14px.
+   None of it is needed now. Every figure in a band is exactly its media. */
+
+/* Edge fade, the same device .scrub-trackwrap uses, so the strip reads as
+   continuing past the container rather than stopping at it. With the scrollbar
+   it is the whole affordance that there is more sideways, so do not drop one
+   without the other.
+
+   Only on a band that actually overflows -- mini.js sets .has-overflow from a
+   real scrollWidth measurement. On a strip that fits, the fade is 54px eaten
+   out of a picture to advertise scrolling that cannot happen. */
+.is-bands .scatter.has-overflow {
+  mask-image: linear-gradient(90deg,
+    transparent 0, #000 20px, #000 calc(100% - 34px), transparent 100%);
+}
+
+/* Height is the constant and width follows the ratio -- the exact inverse of
+   the justified row, and the reason a band can hold any mixture of shapes
+   without cropping either. The media's own aspect-ratio does the work; only
+   the figure's width is set. */
+.is-bands .scatter figure {
+  flex: 0 0 auto;
+  width: calc(var(--ar) * var(--band) * 1px);
+  max-width: none;
+  scroll-snap-align: start;
+
+  /* A band is one line. A vertical offset on it is not a scatter, it is a
+     misalignment -- there is no second row for it to read against. The tilt
+     stays, and does more work here than in A because the line is straight. */
+  --drop: 0px;
+}
+
+/* --weight does nothing in a band, deliberately. Every item shares the band's
+   height, so an anchor cannot be taller without breaking the line; weight is
+   carried by --sc-scale, i.e. by the whole section's band height. Glass
+   Shatter's band is a fifth taller than Breakout's and that is the emphasis. */
+
+.is-bands .scatter .sc-fill { display: none; }
+
+/* Tighter than A's: a 38px shadow inside a clipping scroll box is a smear
+   against the edge rather than a lift. */
+.is-bands .scatter figure:hover,
+.is-bands .scatter figure:focus-visible {
+  transform: translateY(-6px) rotate(0deg) scale(1.03);
+  box-shadow: 0 8px 18px rgb(var(--bg-rgb) / 0.8);
+}
+
+/* The scroller is a focus stop so a keyboard can reach it and arrow through --
+   mini.js sets tabindex/role/aria-label, since a focusable div that scrolls
+   nothing would be a wart in the other two variants. */
+.is-bands .scatter:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+
+/* Narrow screens want a shorter band, not a different mechanism: the strip
+   already fits any width by construction, which is the other thing it buys
+   over a wrapping layout -- no breakpoint, no column count, no hole check. */
+@media (max-width: 640px) {
+  .is-bands .scatter { --band-base: 180; }
+}
+
+
+/* ============================================================================
+   VARIANT D -- "light table". One wall, no sections: all nineteen items packed
+   as a single mosaic, and hovering any of them dims the other three works so
+   the grouping stays legible with no headings anywhere.
+
+   QUICK PROTOTYPE. It is the idea made visible, not a finished component.
+
+   The whole thing is display: contents on the two wrappers, which dissolves
+   the four galleries and promotes every figure to a child of .container. The
+   .scatter rules still match -- they are descendant selectors and the DOM is
+   unchanged -- so the justified-row maths, the --ar hook and initMediaGrid all
+   carry over untouched. The .work elements survive in the DOM with no boxes of
+   their own, which is exactly what :has() needs to still know which figure
+   belongs to which work.
+   ========================================================================== */
+
+.is-table .work,
+.is-table .scatter { display: contents; }
+
+.is-table .container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+/* Flat and tight: no tilt, no drift, no film frame. D is the opposite argument
+   to B -- that the range reads hardest when the works are MIXED and nothing
+   decorates them -- so it should not borrow B's character. */
+.is-table .scatter figure {
+  --tilt: 0deg;
+  --drop: 0px;
+  --slip: 0px;
+  --sc-base: 150;
+  margin: 0;
+  transition: opacity 0.25s ease, border-color 0.15s ease;
+}
+
+/* Only the last spacer may absorb a line. The other three sit in the middle of
+   the wall once the galleries dissolve, and a 9999 grow factor there tears a
+   hole across the row it lands on. */
+.is-table .work:not(:last-of-type) .sc-fill { display: none; }
+
+/* Hover one work, the other three fall back. This is what replaces the section
+   headings: grouping shown rather than stated. Pointer-only by nature, which
+   is the honest weakness of the idea and worth weighing -- on a phone the wall
+   is just a wall. */
+.is-table .container:has(figure:hover) .work:not(:has(figure:hover)) figure {
+  opacity: 0.18;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .is-table .scatter figure { transition: border-color 0.15s ease; }
+}
+
+
+/* ============================================================================
+   VARIANT E -- "drawers". Four collapsed slivers, one screen at rest. Click one
+   and that work's wall opens; the others stay shut.
+
+   QUICK PROTOTYPE, same caveat as D.
+
+   Worth noting against B: this layout DOES reflow when it opens, and that is
+   fine here for one reason -- it opens on a CLICK. B's cascade happened
+   because a hover target resized itself while the page was scrolling under a
+   stationary pointer. A deliberate click carries the expectation that the page
+   will move, and nothing opens by accident.
+   ========================================================================== */
+
+.is-drawers .scatter {
+  height: 84px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: height 0.45s cubic-bezier(0.16, 0.9, 0.3, 1);
+  /* The sliver is a cut-off view of the wall, so it says so: the bottom edge
+     fades into the ground rather than stopping on a hard line. */
+  mask-image: linear-gradient(180deg, #000 0, #000 52px, transparent 100%);
+}
+
+.is-drawers .scatter.is-open {
+  height: var(--sc-h, auto);
+  cursor: default;
+  mask-image: none;
+}
+
+.is-drawers .scatter figure {
+  --tilt: 0deg;
+  --drop: 0px;
+  --slip: 0px;
+  margin: 0;
+}
+
+.is-drawers .scatter:hover:not(.is-open) { outline: 1px solid var(--accent-dim); }
+.is-drawers .scatter:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .is-drawers .scatter { transition: none; }
+}
+
+
+/* ============================================================================
+   LAB CHROME -- not part of the component. Everything below stays behind.
+   ========================================================================== */
+
+.lab-bar {
+  position: sticky;
+  top: 0;
+  z-index: 80;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 1.5rem;
+  background: var(--bg-alt);
+  border-bottom: 1px solid var(--accent-dim);
+  font-size: 0.78rem;
+}
+.lab-bar strong {
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.lab-bar span { color: var(--text-dim); }
+.lab-switch {
+  display: flex;
+  gap: 0;
+  margin-left: auto;
+  border: 1px solid var(--card-border);
+  border-radius: 100px;
+  overflow: hidden;
+}
+.lab-switch button {
+  font: inherit;
+  font-size: 0.74rem;
+  padding: 0.3rem 0.9rem;
+  background: transparent;
+  border: 0;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+.lab-switch button[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 600;
+}
+
+.work-head { margin-bottom: 0.4rem; max-width: 62ch; }
+.work-head h2 { margin-bottom: 0.35rem; }
+.work-head .work-credit {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  margin-bottom: 0.8rem;
+}
+/* With the prose hidden, the gap between works IS the only separator, so it
+   has to read as one -- but 4.5rem was sized to sit under a heading and a
+   paragraph that are no longer there, and it left a hole between two piles. */
+.work + .work { margin-top: 2.6rem; }
+
+
+/* ============================================================================
+   VARIANT F -- "constellation". A branch of B, not a replacement for it:
+   .is-constellation is set ALONGSIDE .is-exploded, so the film strip, the
+   drift, the pile, the hover lift and the open transition all arrive
+   unchanged and everything below is the whole of what F costs.
+
+   The idea is Tony's: make the heaps much smaller so a lot more of them --
+   all four, here -- are on screen together. What that buys is that the page
+   stops being a column you scroll through one pile at a time and becomes a
+   set you can see at once, which is the thing a four-work page most needs to
+   say. What it costs is size at rest: a heap this small is a thumbnail of a
+   pile rather than a pile.
+
+   The open state is deliberately untouched. Each section still spans the full
+   container, so exploding one still gets the whole page width -- which is why
+   the sections stay STACKED rather than being laid out two-by-two. A 2x2 grid
+   of heaps would halve the width the explosion has to work in and make it
+   about twice as tall; the constellation gets the same "all four at once"
+   from small heaps plus horizontal anchoring, and pays nothing for it.
+   ========================================================================== */
+
+/* MUCH smaller. B rests at 0.36 of the band capped at 230px; a heap here is a
+   third of that, which is about the size the pile's own strips read at rather
+   than the size of the pictures in them. */
+.is-constellation .scatter {
+  --heap-frac: 0.13;
+  --heap-max: 90;
+  /* WIDE AND FLAT, not merely small. Getting four heaps into one screen by
+     shrinking the strips further costs legibility in every state; flattening
+     the spiral costs only height, which is the thing that is short, and a
+     1000px band has room across it going spare. At 0.30 the pile is a drift
+     of strips along a line rather than a mound, which also reads better at
+     this size -- a mound this small is a smudge. */
+  --heap-wide: 1.34;
+  --heap-tall: 0.30;
+  /* Every strip the same size in its own longest dimension. At a common WIDTH
+     the portrait items are the tallest things in the pile by a factor of five
+     and they, not the spiral, set the heap's height -- which is the one
+     measurement F has to keep down. See the note in mini.js. */
+  --heap-fit: long;
+  /* How far the open state may reach ABOVE its heap. B allows 60px; here the
+     first heap is 190px from the top of the document and 60 put the head of
+     the explosion behind the sticky header. The rest of the spill goes
+     downward, over the next heap, where nothing is chrome. */
+  --heap-rise: 16;
+}
+
+/* The heaps are the whole page now, so the space above the first one is a
+   quarter of the screen spent on nothing -- the section head that used to
+   justify it is clipped. */
+.is-constellation .section-tight { padding-block-start: 1.4rem; }
+
+/* WHERE EACH HEAP SITS ACROSS ITS BAND. Four small piles all centred stack
+   into a column down the middle of a wide page and read as a list; scattered
+   across the width they read as a constellation, which is the whole name.
+   The values alternate sides and are never repeated, so no two consecutive
+   heaps line up vertically. mini.js clamps them to the heap's own half-extent,
+   so on a narrow screen they simply converge on centre.
+
+   AUTHORED INLINE ON EACH GALLERY, not by :nth-of-type here. These four values
+   used to live in this file keyed on position, and that quietly made ADDING A
+   PROJECT a two-file job: a fifth `<article>` matched no rule, fell back to
+   dead centre, and its title landed on top of its own pile. A per-section value
+   belongs on the section, which is the same call --sc-scale already documents.
+   mini.js falls back to a cycle when none is authored, so a copied `<article>`
+   with nothing changed still lands somewhere sensible. */
+
+/* The gap between works was sized for B's piles. At a third of the size it is
+   most of a heap's own height, so the four drift apart again and the density
+   the small heaps just bought is given straight back. */
+.is-constellation .work + .work { margin-top: 0.2rem; }
+
+/* Rest is now much smaller than open, so the explosion travels a long way and
+   the stagger over nineteen strips is what makes that read as unpacking
+   rather than as a jump cut. B's 26ms step is tuned to a shorter journey. */
+.is-constellation .scatter figure {
+  transition-delay: calc(var(--i, 0) * 34ms);
+}
+
+
+/* ============================================================================
+   VARIANT G -- "carousel". Also a branch of B -- .is-carousel sets
+   .is-exploded too -- and also Tony's idea: piles a little smaller than B's,
+   with the four works cycling slowly around a ring from the front to the back.
+
+   Where F puts all four on screen by shrinking them, G puts all four on screen
+   by standing them in a ring: one at the front, one turned away behind it, one
+   to each side. Nobody scrolls to reach the fourth work; it comes round.
+
+   THE RING HOLDS STILL THE MOMENT THE POINTER IS OVER IT. B opens a pile by
+   being pointed at, and this page has already learned once that a hover target
+   which moves under the pointer cannot be reached at all. So the rotation is
+   for a visitor who is not yet pointing at anything.
+
+   Under a stated preference for less motion mini.js never sets .is-carousel,
+   so none of this applies and the variant renders as plain B, already open.
+   A ring is a continuous rotation nobody asked for; a frozen ring is a worse
+   answer than no ring.
+   ========================================================================== */
+
+/* Only a little smaller than B -- the front pile is the subject, and the ring
+   already shrinks the other three by turning them away.
+
+   COMPACT MATTERS MORE HERE THAN SIZE. A pile on a ring has to read as one
+   OBJECT with three others beside it; B's pile is tuned to be looked at on its
+   own, and at that spread four of them simply merge into one mass in the
+   middle of the stage whatever the radius. So the spiral is pulled in on both
+   axes and every strip is capped on its long edge, which stops a portrait clip
+   making one pile twice the height of its neighbours -- a difference the ring
+   would otherwise read as depth. */
+.is-carousel .scatter {
+  --heap-frac: 0.30;
+  --heap-max: 158;
+  --heap-wide: 0.84;
+  --heap-tall: 0.48;
+  --heap-fit: long;
+}
+
+/* ---- the stage ----
+   The four works come out of flow and stand on a fixed-height stage, so the
+   page is one screen whatever the ring is doing and nothing below it moves as
+   the piles turn. .section-head is already clipped and absolutely positioned,
+   so it is out of flow anyway and does not need excluding here. */
+.is-carousel .section-tight > .container {
+  position: relative;
+  height: clamp(430px, 64vh, 640px);
+  margin-block: 2.4rem 3rem;
+  /* FULL BLEED, which the rest of the page is not. The ring's radius is
+     capped by how much room is left once a pile's own box is subtracted, so
+     every pixel the container gives back to its 1100px measure is a pixel the
+     ring cannot use -- and a ring narrower than a pile is not a ring. This is
+     the one variant where the page's own measure is the constraint. */
+  max-width: none;
+  padding-inline: 0;
+  /* Ring radius as a fraction of the stage, read by mini.js. At 0.31 the four
+     piles sat inside each other's width and the stage read as one heap rather
+     than four; the ring has to be wider than a pile is, or there is no ring. */
+  --car-r: 0.42;
+}
+
+.is-carousel .work {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(41%, 470px);
+  margin: 0;
+}
+
+/* THE FRONT LANE IS WIDER THAN THE TURNED ONES. A lane narrow enough that
+   four fit on the ring is not wide enough to explode into -- seven items in
+   470px stack five rows deep and run off the bottom of the screen. The lane
+   the front pile opens into is nearly the whole stage; it is centred, so it
+   costs the ring nothing, and mini.js re-measures the heap when a pile
+   arrives or leaves. */
+.is-carousel .work.is-front { width: min(84%, 980px); }
+
+/* --car-* are written by mini.js as INLINE custom properties and composed
+   here, rather than mini.js writing `transform` itself. That is what lets a
+   later rule in this file win -- .is-flat below, and the fronted opacity --
+   without !important, the same arrangement the drift's --dx0/--dx mapping
+   uses. Scale and opacity both come off the same depth figure, so the size
+   cue and the dimming can never disagree about which pile is nearest. */
+.is-carousel .work {
+  transform: translate(calc(-50% + var(--car-x, 0px)),
+                       calc(-50% + var(--car-y, 0px)))
+             scale(var(--car-s, 1));
+  opacity: var(--car-o, 1);
+  transform-origin: 50% 50%;
+}
+
+/* mini.js measures a heap with getBoundingClientRect, which reports the
+   TRANSFORMED box -- so a work at the back of the ring would be measured at
+   its own 54% and build a heap wrong by that much, and rebuild it differently
+   on every resize. The transform comes off for the duration of the
+   measurement; where the work lands meanwhile is irrelevant, because every
+   figure delta is relative to the container. */
+.is-carousel .work.is-flat { transform: none; }
+
+/* The turned piles are still real targets -- clicking one brings it round --
+   so they say so. The front one is not a target for that and keeps the
+   ordinary cursor its strips already set. */
+.is-carousel .work { cursor: pointer; }
+.is-carousel .work.is-front { cursor: auto; }
+
+/* Full strength at the front regardless of rounding, and the whole point of
+   reaching for a turned pile is to see it, so hovering one lifts its dimming
+   even before it has finished coming round. */
+.is-carousel .work.is-front,
+.is-carousel .work:hover { opacity: 1; }
+
+/* The turn itself is written every frame, so it must NOT be transitioned --
+   a transition restarting sixty times a second is a low-pass filter on the
+   rotation and costs a restart per frame for it. The two things that DO
+   change in steps are dimming, and the transform once the ring has stopped
+   and a pile is being brought round; but transform cannot be transitioned
+   here without dragging the continuous rotation into it as well, so the
+   bring-round is animated by mini.js in the same rAF loop that turns the ring
+   and only opacity is left to CSS. */
+.is-carousel .work { transition: opacity 0.35s ease; }
+
+@media (max-width: 720px) {
+  /* A RING NEEDS WIDTH AND A PHONE HAS NONE. Four lanes cannot sit side by
+     side in 375px, and the geometric clamp -- correctly -- answers that by
+     pulling the radius to nothing, which puts all four piles on top of each
+     other in the middle of the stage. Measured at 375px: the four sat at
+     +-16px and +-50px and read as a single mush.
+
+     So on a narrow stage the clamp is turned off, the radius is widened past
+     what fits, and the stage CLIPS instead: the front pile is centred and
+     whole, and the turned ones hang half off the edges, which is what a
+     carousel on a phone has always looked like. Only the front pile explodes
+     and it is centred in a lane 84% of the stage, so nothing that matters is
+     ever clipped.
+
+     overflow-x: CLIP, not hidden -- hidden on one axis forces the other into
+     a scroll container, which would trap the vertical spill of the explosion
+     inside the stage. clip exists for exactly this. */
+  .is-carousel .section-tight > .container {
+    height: clamp(400px, 74vh, 560px);
+    --car-r: 0.44;
+    --car-fit: 0;
+    overflow-x: clip;
+    overflow-y: visible;
+  }
+  .is-carousel .work { width: min(78%, 420px); }
+  .is-carousel .work.is-front { width: min(92%, 460px); }
+}
+
+
+/* ---- F on a narrow screen ----
+   THE HEAP GOT SMALLER BUT THE EXPLOSION DID NOT, and below about 640px that
+   stops being a trade and becomes a fault. B's row target of 150 is a flex
+   basis of ~172px for these items, and at 375px the container has 259px of
+   usable width -- so exactly one item fits per row and it grows to fill it.
+   Eight items became eight rows: measured, a 1488px explosion inside a 95px
+   heap box, on an 822px page. One gallery covered every other heap and ran
+   900px below the fold.
+
+   At 88 the basis lands near 101px and three fit per row, so the same eight
+   items are three rows and about 300px. The heaps are untouched -- they are
+   sized by --heap-max, not by the row target -- so what changes is only how
+   the open state uses the width it has. */
+@media (max-width: 640px) {
+  .is-constellation .scatter { --sc-base: 88; }
+}
+
+
+/* ---- F: the works get their names back ----
+   Tony, 27 Aug 2026, on the empty space beside each heap: *"I was thinking
+   just adding titles to the projects in these spaces."*
+
+   A TITLE IS NOT A CAPTION, and that distinction is the whole reason this does
+   not reopen his "no captions, just visual showcase" call. A caption describes
+   a picture, and nineteen of those turn a showcase into a list. A title NAMES
+   a project, and right now nothing on this page does -- these four works have
+   no other page carrying their names, which is exactly what the home page's
+   contact sheet can lean on and this one cannot. It also gives Fowl Play's
+   co-direction credit somewhere to live, which has been an open item since the
+   prose was hidden, and crediting people is not decoration.
+
+   The space is NOT being filled. The piles cover 24% of the bands and the rest
+   is what makes them read as four objects rather than one list -- and it is
+   the room the explosion needs. So the block is small, dim, and sits in the
+   clear half beside its own heap; three short lines against 360-550px of free
+   width. Everything else stays empty on purpose.
+
+   The prose paragraph stays clipped. Only the kind, the name and the credit
+   come back. */
+.is-constellation .work { position: relative; }
+
+.is-constellation .work-head {
+  position: absolute;
+  top: 50%;
+  translate: 0 -50%;
+
+  /* undoing the clip, field by field, so the rest of the page keeps it */
+  width: auto;           /* the side rules below pin both edges */
+  height: auto;
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+  clip-path: none;
+  white-space: normal;
+  max-width: none;
+
+  /* UNDER the strips, never over them. An explosion spilling across a title
+     should cover it the way one photograph covers another; a title floating
+     on top of the pictures would be the page captioning itself, which is the
+     thing that was taken out. */
+  z-index: 0;
+  /* And never in the way of the hit test -- a title that could be pointed at
+     would be a hole in the middle of a gallery's own band. */
+  pointer-events: none;
+}
+
+/* Small and quiet. It is a label on a shelf, not a heading on a page. */
+.is-constellation .work-head .eyebrow {
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  margin-bottom: 0.15rem;
+}
+.is-constellation .work-head h2 {
+  font-size: 1.15rem;
+  line-height: 1.25;
+  margin-bottom: 0.3rem;
+}
+/* NO NAMED CREDITS ON THIS PAGE (Tony, 27 Aug 2026). Hidden, not deleted: the
+   names stay in the markup so the record of who worked on what does not leave
+   the file, and putting them back is deleting one selector. Same treatment the
+   section prose gets, for the same reason.
+
+   Nothing else changes -- MINI_WORKS_MANIFEST.md and the consent memory still
+   carry the credits, and the rule that permission to show a face never
+   licenses naming anyone still stands. */
+.is-constellation .work-head > p:not(.eyebrow) { display: none; }
+
+/* THE TITLE SITS ON THE SIDE THE HEAP IS NOT ON, and reads back TOWARD it --
+   left-aligned when it is to the right of the pile, right-aligned when it is
+   to the left, so the gap between name and thing named stays small however
+   wide the page gets. The four --heap-ax values are 0.24 / 0.71 / 0.38 / 0.82,
+   so the sides alternate on their own.
+
+   IT IS POSITIONED OFF THE MEASURED EDGE OF THE PILE, not off a percentage.
+   The first version used hand-tuned percentages and they cannot know where the
+   heap ends: its width follows the item count, the viewport and --heap-max, so
+   a number that clears the pile at one width runs into it at another -- which
+   is exactly what happened. mini.js publishes --heap-l and --heap-r on the
+   .work; the far edge is pinned to the container so the block has a real width
+   to wrap in, and max-width keeps the line length sane on a wide screen.
+
+   WHICH SIDE IT GOES ON IS DERIVED, NOT DECLARED. These were two
+   :nth-of-type rules, which made adding a project a two-file job -- a fifth
+   `<article>` matched neither and its name landed on top of its own pile.
+   mini.js knows which half the heap is in and puts .title-left on the .work;
+   the default below is the other side, so a new section is covered either way
+   with no rule to add. */
+.is-constellation .work .work-head {
+  left: calc(var(--heap-r, 50%) + 2.2rem);
+  right: 0;
+  width: auto;
+  max-width: 32ch;
+}
+.is-constellation .work.title-left .work-head {
+  right: calc(100% - var(--heap-l, 50%) + 2.2rem);
+  left: 0;
+  width: auto;
+  max-width: 32ch;
+  margin-left: auto;      /* max-width shrinks it toward the pile, not away */
+  text-align: right;
+}
+
+@media (max-width: 560px) {
+  /* No clear half left to put it in: at this width the heap is most of the
+     row. The block goes back into the flow above its own pile, full width and
+     centred.
+
+     560, not 700: there is still a clear half beside the heap well below 700
+     (at 640 the band is ~592px and the pile ~200, leaving ~390), and the
+     static fallback COSTS HEIGHT -- four blocks in the flow took the page from
+     1.12 screens to 1.28 at that width. Push the fallback as late as it will
+     go. */
+  .is-constellation .work-head {
+    position: static;
+    translate: none;
+    width: auto;
+    text-align: center;
+    margin-bottom: 0.4rem;
+  }
+  .is-constellation .work.title-left .work-head {
+    text-align: center;
+    margin-left: 0;
+  }
+}
+
+/* Out of the way of an explosion that is about to land on it. Only the titles
+   actually reached are hushed -- see hushTitles() in mini.js. The fade is a
+   touch slower than the strips' flight and has no stagger, so the name is gone
+   before the first picture arrives rather than being wiped mid-word. */
+.is-constellation .work-head {
+  transition: opacity 0.34s ease;
+}
+.is-constellation .work-head.is-hushed { opacity: 0; }

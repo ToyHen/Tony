@@ -734,8 +734,16 @@ section { padding: 4rem 0; }
    collapses the empty track and the lone card stretches to full width anyway,
    with none of the panel treatment. So a lone card is wide by construction and
    the modifier that makes it lone is what carries the meaning. */
+/* .is-wide is the same full-width, two-column card as .is-case and
+   .is-upcoming, and deliberately NOT either of them: it takes the layout and
+   leaves the contained-on-a-panel thumb treatment below, because a mini-works
+   card is a collage of film frames and drawings rather than a screenshot or a
+   product sheet. A card alone in its own band has to be full width — dropped
+   into .project-grid it would sit stranded on a 2-up row, which is the hole
+   the four-film grid exists to avoid. */
 .project-card.is-case,
-.project-card.is-upcoming {
+.project-card.is-upcoming,
+.project-card.is-wide {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   align-items: stretch;

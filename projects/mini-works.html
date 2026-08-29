@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Assorted Works &amp; Studies &mdash; Tony Chen</title>
+<meta name="description" content="My smaller projects and various selected stand alone personal works.">
+<!-- og: URLs are ABSOLUTE and must stay that way &mdash; see the note in index.html. -->
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://toyhen.github.io/Tony/projects/mini-works.html">
+<meta property="og:title" content="Assorted Works &amp; Studies &mdash; Tony Chen">
+<meta property="og:description" content="My smaller projects and various selected stand alone personal works.">
+<meta property="og:image" content="https://toyhen.github.io/Tony/images/projects/mini-works.jpg">
+<meta property="og:image:width" content="1600">
+<meta property="og:image:height" content="1000">
+<meta property="og:image:alt" content="Six frames tiled together: coloured glass panels, a pencil interior sketch, a painted hillside, a dark shooting rig, a fox drawn in wash, and a rusted cog">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/style.css">
+<!-- THE ONE PAGE ON THE SITE WITH A SECOND STYLESHEET AND A SECOND SCRIPT, and
+     it is a deliberate exception to the single-stylesheet convention rather
+     than drift. The gallery component is ~1365 lines of CSS and ~1122 of JS;
+     folded into style.css and script.js it would grow them by 63% and 55%, and
+     those two files have to stay hand-editable -- that is the whole reason
+     this site has no build step. Keeping it beside them costs one extra
+     request on one page and leaves both files a size Tony can work in.
+     mini.js REQUIRES script.js to have run: the gallery is a .mediagrid, so
+     initMediaGrid wires its lightbox, hover preview, touch tracker and
+     keyboard, and this component adds no overlay of its own. -->
+<link rel="stylesheet" href="../css/mini.css">
+</head>
+<body>
+
+<header class="site-header">
+  <nav class="nav">
+    <a href="../index.html" class="nav-brand">Tony Chen</a>
+    <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">&#9776;</button>
+    <ul class="nav-links">
+      <li><a href="../index.html">Home</a></li>
+      <li><a href="../reel.html">Showreel</a></li>
+      <li><a href="../projects.html" aria-current="page">Projects</a></li>
+      <li><a href="../about.html">About Me</a></li>
+    </ul>
+  </nav>
+</header>
+
+<section class="section-tight">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow"><a href="../projects.html">&larr; All Projects</a></p>
+      <h1>Assorted Works &amp; Studies</h1>
+      <p>My smaller projects and various selected stand alone personal works.</p>
+    </div>
+
+    <!-- One shared page, six sections, and the sections are NOT the same size.
+         Weight is --sc-scale on each gallery: 1 / 1.15 / 1 / 0.85 / 1 / 1 in
+         document order, which is
+         row height in A and B and band height in C. --weight on an individual
+         figure is the anchor, and applies in A and B only -- a band gives
+         every item the same height by construction. Never a card count. -->
+
+    <!-- ====================================================== DAILY PROMPTS ==
+         Added 29 Aug 2026, picked by Tony off pick-sheets/ONE.md and PRG.md.
+         Build recipe and provenance are in assets.ps1.
+
+         IT LEADS THE PAGE (Tony, 29 Aug 2026: "move this daily prompts mini
+         works project to above breakout, actually, even above glass shatter").
+         It went in between Reminiscence Reverie and Early Studies and was moved
+         to first in the same session.
+
+         IT WAS ELEVEN FIGURES AND IS NOW SEVEN. Tony cut Fire, Crush, Hax and
+         Flower on sight -- "I don't think they are strong enough" -- which is
+         the second time on this page that seeing the built thing changed a pick
+         that read fine as a filename in a list. The four assets are STILL BUILT
+         by assets.ps1 and still in assets/: he wants them held as backup, or
+         for "a separate cluster of lower quality works" later. Do not delete
+         them.
+
+         TWO 1x2 COLLAGES, NO `data-frames`. Angel and Spike each pair a working
+         stage against the finished piece. The tile COULD have cycled its stages
+         -- the gallery is a .mediagrid, so the component is already there --
+         but Tony's read of this page is that it is a highlights wall, not a
+         case study, and tiles advertising process would have made process look
+         like the theme. `data-frames` also draws a dot per frame at rest, so it
+         is not the quiet option it appears to be. A 1x2 says "same drawing,
+         twice" with no machinery and costs one tile instead of several.
+
+         Bone is a SINGLE for a different reason: his two finished versions are
+         different crops of one picture, 1.776 landscape against 1.000 square,
+         so they cannot share a cell. He chose the landscape.
+
+         NO <span> IN THE FIGCAPTIONS, deliberately (Tony, 29 Aug 2026): "no
+         captions even within the opened light box, just a descriptive title".
+         The <strong> still has to be there and still has to be unique -- it is
+         the tile's aria-label and the lightbox's whole caption. openBox builds
+         that caption with .filter(Boolean).join(" - "), so a missing span
+         degrades to the title alone with no code change.
+
+         EXTENDED TO THE WHOLE PAGE on 30 Aug 2026, so all six sections are
+         title-only and the lightbox reads the same everywhere. Stripping 32
+         spans made the <strong> the ONLY accessible name on those tiles, so
+         uniqueness stopped being a nicety -- checked, all 38 are distinct.
+         Re-check that whenever an item is added or a title is reworded. -->
+    <article class="work">
+      <div class="work-head">
+        <p class="eyebrow">Drawing &middot; Personal Art &amp; Experimental Sketches</p>
+        <h2>Daily Prompts</h2>
+        <!-- Hidden on constellation by mini.css's
+             `.is-constellation .work-head > p:not(.eyebrow)`, so F shows the
+             eyebrow and the title and nothing else. Kept because the other six
+             variants do show it, and because it is the record. Tony's to
+             rewrite whenever -- it is the one paragraph here in his voice. -->
+        <p>A bot posted a word every day and I drew whatever it gave me. These
+          are the ones worth keeping. Where a piece has two panels, that is a
+          working stage next to where it ended up.</p>
+      </div>
+
+      <!-- --heap-ax 0.72 puts this heap in the RIGHT half and its title in the
+           left. It does NOT follow AX_CYCLE's first value (0.24) even though
+           this is now the first article, and that is on purpose: the other four
+           are authored L / R / L / R starting from Glass Shatter at 0.24, so
+           leading with another left would put two heaps in the same column.
+           Going right here alternates the whole page in one number instead of
+           renumbering five sections. Early Studies goes back to its original
+           0.28 for the same reason. Verified R/L/R/L/R/L on screen. -->
+      <div class="mediagrid scatter" data-mediagrid style="--sc-scale: 1; --heap-ax: 0.72;">
+
+        <!-- ANGEL. The WIP cell is Angel_WIP, not the Angel1.7 Tony picked --
+             see assets.ps1 for why, and it is one filename to revert. -->
+        <figure style="--ar: 1.509;">
+          <img src="../images/projects/dp-angel.jpg" loading="lazy"
+               alt="Two panels of the same winged figure. Left: a loose black gesture drawing of a body mid-stride with drapery sweeping behind it. Right: the same pose rebuilt as clockwork &mdash; hinged joints, strut-work limbs and a mechanical wing drawn over a faint blue trace of the original.">
+          <figcaption><strong>Clockwork angel concept</strong></figcaption>
+        </figure>
+
+        <figure style="--ar: 2.008;">
+          <img src="../images/projects/dp-spike.jpg" loading="lazy"
+               alt="Two panels of a figure lunging forward with one leg thrown out behind. Left: a grey value study on a flat grey ground, the head only roughed in. Right: the same figure finished in warm skin tones against deep red, with a turquoise ribbon curving through the pose and gold hair.">
+          <figcaption><strong>Anatomy practice</strong></figcaption>
+        </figure>
+
+        <figure style="--ar: 1.773;">
+          <img src="../images/projects/dp-bone.jpg" loading="lazy"
+               alt="A wide painting in a rough dry-brush texture: an ochre mound under a pale, heavily clouded sky, with a dark bone-shaped cross standing on the crest and a red cloth knotted around it. More bones lie half-buried on the slope, and dark green foliage fills the top right corner.">
+          <figcaption><strong>Rustic hill concept art</strong></figcaption>
+        </figure>
+
+        <figure style="--ar: 0.708;">
+          <img src="../images/projects/dp-band.jpg" loading="lazy"
+               alt="A clean black line drawing of two hands, one above the other, with a red elastic band pulled taut in a long loop between a finger of the upper hand and the thumb of the lower one.">
+          <figcaption><strong>Hand perspective</strong></figcaption>
+        </figure>
+
+        <figure style="--ar: 1;">
+          <img src="../images/projects/dp-gear.jpg" loading="lazy"
+               alt="A 3D render of a heavily rusted cog with a bolt through its polished steel hub, lying on a rusted metal surface with two streaks of light crossing it.">
+          <figcaption><strong>Gear 3D render</strong></figcaption>
+        </figure>
+
+        <figure style="--ar: 1.413;">
+          <img src="../images/projects/dp-universe.jpg" loading="lazy"
+               alt="A near-black field crossed by pale diagonal streaks of light running from lower left to upper right, with drifts of fine white speckle between them and one brighter point near the left edge.">
+          <figcaption><strong>Space concept art</strong></figcaption>
+        </figure>
+
+        <figure style="--ar: 1.778; --weight: 1.4;">
+          <img src="../images/projects/dp-rink.jpg" loading="lazy"
+               alt="A loose black line drawing on white of a skater leaning far forward mid-stride, arms swept back and one leg extended behind, with ice spraying up from the blade of the leading skate.">
+          <figcaption><strong>Rink</strong></figcaption>
+        </figure>
+
+        <i class="sc-fill" aria-hidden="true"></i>
+      </div>
+    </article>
+
+    <!-- =================================================== GLASS SHATTER ==
+         Leads with process. The portfolio value here is that three materials
+         were tried and one was rejected on Tony's own judgement, so the
+         four-second payoff is the LAST item in the section, not the first.
+
+         OPEN QUESTION for Tony: "Glass Shatter" is the sound effect the group
+         was handed. Is it also the piece's title? The heading below assumes
+         yes. See FINDINGS.md. -->
+    <article class="work">
+      <div class="work-head">
+        <p class="eyebrow">Stop Motion &middot; Animating to Sound</p>
+        <h2>Glass Shatter</h2>
+        <p class="work-credit">With Brandon Pen and Jasper Ly</p>
+        <p>The class was split into groups, each making one stop motion
+          segment, and the segments were assembled into a single animated
+          music-video experience for the cylindrical 360-degree screen at UTS.
+          Our group was handed the glass shatter sound effect. Everything below
+          is the search for a material that could carry it &mdash; three of
+          them, one of which I threw out.</p>
+      </div>
+
+      <div class="mediagrid scatter" data-mediagrid style="--sc-scale: 1.15; --heap-ax: 0.24;">
+
+        <figure style="--ar: 1;">
+          <img src="../images/projects/gs-storyboard.jpg" loading="lazy"
+               alt="Nine storyboard panels: a black square outlined in colour, a red and blue U shape, a small starburst, then a grid of coloured window shapes.">
+          <figcaption><strong>Storyboard</strong></figcaption>
+        </figure>
+
+        <figure style="--ar: 1;">
+          <img src="../images/projects/gs-paper.jpg" loading="lazy"
+               alt="Yellow, cyan, pink and violet paper triangles laid out on the black shooting table under the camera.">
+          <figcaption><strong>Card paper test</strong></figcaption>
+        </figure>
+
+        <figure style="--ar: 1;">
+          <video data-src="../images/projects/gs-interim.mp4" poster="../images/projects/gs-interim-poster.jpg"
+                 muted loop playsinline preload="none"
+                 aria-label="A coloured frame draws itself in the dark, flashes white at the centre, and breaks into a leadlight grid of red, cyan and yellow panes."></video>
+          <figcaption><strong>First complete stop motion attempt</strong></figcaption>
+        </figure>
+
+        <figure style="--ar: 1;">
+          <img src="../images/projects/gs-dye-rig.jpg" loading="lazy"
+               alt="A segmented clear plastic container on a light box, each segment holding yellow, blue or red food-coloured water.">
+          <figcaption><strong>Dyed water in my DIY container</strong></figcaption>
+        </figure>
+
+        <figure style="--ar: 0.667;">
+          <video data-src="../images/projects/gs-dye-shoot.mp4" poster="../images/projects/gs-dye-shoot-poster.jpg"
+                 muted loop playsinline preload="none"
+                 aria-label="Filming from above: black card cut into thin lines is laid across the lit container of coloured water."></video>
+          <figcaption><strong>Shooting the shatter</strong></figcaption>
+        </figure>
+
+        <figure style="--ar: 1;">
+          <img src="../images/projects/gs-tile-rig.jpg" loading="lazy"
+               alt="An orange and blue triangle of light projected onto glazed ceramic tiles in a dark room.">
+          <figcaption><strong>Light instead of physical cuts</strong></figcaption>
+        </figure>
+
+        <figure style="--ar: 1.331;">
+          <video data-src="../images/projects/gs-shadow-rig.mp4" poster="../images/projects/gs-shadow-rig-poster.jpg"
+                 muted loop playsinline preload="none"
+                 aria-label="A pitch black room: one lamp beside the camera, both aimed down at the shooting table, with lit coloured shapes standing out of the dark."></video>
+          <figcaption><strong>Shooting with light in the dark room</strong></figcaption>
+        </figure>
+
+        <!-- The payoff, and the only item in this section carrying a --weight.
+             It is about four seconds of unique animation, so it earns the size
+             by being the result, not by being long. -->
+        <figure style="--ar: 1; --weight: 1.7;">
+          <video data-src="../images/projects/gs-final.mp4" poster="../images/projects/gs-final-poster.jpg"
+                 muted loop playsinline preload="none"
+                 aria-label="The finished segment: a coloured frame builds in the dark, bursts at the centre, and breaks into a grid of red, cyan and yellow shapes."></video>
+          <figcaption><strong>The finished final clip</strong></figcaption>
+        </figure>
+
+        <i class="sc-fill" aria-hidden="true"></i>
+      </div>
+    </article>
+
+
+    <!-- ======================================================== BREAKOUT ==
+         NO PHOTOGRAPH CONTAINING PEOPLE SHIPS FROM THIS PROJECT. Tony's flat
+         rule, 26 Aug 2026 -- not a per-face consent check. Nothing in this
+         section is a photograph at all; everything is a drawing or a scan. -->
+    <article class="work">
+      <div class="work-head">
+        <p class="eyebrow">Concept Art &middot; Illustration</p>
+        <h2>Breakout</h2>
+        <p>Everyone was given an animal from the zoo and had to put it into an
+          urban environment. Mine was the fennec fox, so the work started at
+          the zoo with a sketchbook and ended with hand-drawn textures laid
+          over the final art.</p>
+      </div>
+
+      <div class="mediagrid scatter" data-mediagrid style="--sc-scale: 1; --heap-ax: 0.71;">
+
+        <figure style="--ar: 3.008;">
+          <img src="../images/projects/br-fox-study.jpg" loading="lazy"
+               alt="Pencil study of a fennec fox lying down, drawn wide across the page, ears large and eyes closed.">
+          <figcaption><strong>Fox study</strong></figcaption>
+        </figure>
+
+        <figure style="--ar: 1.498;">
+          <img src="../images/projects/br-comp-a.jpg" loading="lazy"
+               alt="Greyscale composition: the fox hangs underneath a bus shelter rail on a city street, with a bench and a tree behind.">
+          <figcaption><strong>Composition one</strong></figcaption>
+        </figure>
+
+        <figure style="--ar: 1.498;">
+          <img src="../images/projects/br-comp-b.jpg" loading="lazy"
+               alt="Greyscale composition: the fox stands upright and dark against the street, the shelter rail cutting across behind it.">
+          <figcaption><strong>Composition two</strong></figcaption>
+        </figure>
+
+        <figure style="--ar: 1.498;">
+          <img src="../images/projects/br-colour-a.jpg" loading="lazy"
+               alt="Colour test of the second composition: gold ground, olive buildings, the fox in deep maroon and mauve.">
+          <figcaption><strong>Colour test, referenced colours from a Dune book poster</strong></figcaption>
+        </figure>
+
+        <figure style="--ar: 1.498;">
+          <img src="../images/projects/br-colour-b.jpg" loading="lazy"
+               alt="Colour test of the same composition in lavender and pale green, much lighter than the gold version.">
+          <figcaption><strong>Colour test, lavender</strong></figcaption>
+        </figure>
+
+        <!-- MARKED GAP. The manifest lists the four "Color N" files as colour
+             tests but says nothing about "Colour print 1", so there is no
+             verified fact that this is the finished piece rather than one more
+             test. Rendered as a gap rather than guessed at. -->
+        <figure style="--ar: 1.414;" data-gap>
+          <img src="../images/projects/br-print.jpg" loading="lazy"
+               alt="A scan of a printed version of the fox composition, gold and olive with visible paper texture.">
+          <figcaption><strong>Final work, a colour print on canvas</strong></figcaption>
+        </figure>
+
+        <!-- GAP RESOLVED, 27 Aug 2026. This scan was staged as br-Page_1.jpg
+             with nothing recorded about it. Tony asked for pages 2, 3 and 4 of
+             "100 ways", and Page 1 of that set is byte-for-byte the same file
+             (18,101,284 bytes, 4944x6992) -- so the page has a name now. The
+             four run in order below. -->
+        <figure style="--ar: 0.707;">
+          <img src="../images/projects/br-page.jpg" loading="lazy"
+               alt="A page of small thumbnail compositions in pencil and ink, ruled into a loose grid.">
+          <figcaption><strong>Composition thumbnails page 1</strong></figcaption>
+        </figure>
+
+        <figure style="--ar: 0.707;">
+          <img src="../images/projects/br-page-2.jpg" loading="lazy"
+               alt="A ruled grid of thumbnails: the fox's face large at the top left, dark inked interiors, an orange-washed panel, and the fox curled in several small frames.">
+          <figcaption><strong>Composition thumbnails page 2</strong></figcaption>
+        </figure>
+
+        <figure style="--ar: 1.414;">
+          <img src="../images/projects/br-page-3.jpg" loading="lazy"
+               alt="A landscape grid of line thumbnails, with one panel washed orange and another framed by heavy black curtains.">
+          <figcaption><strong>Composition thumbnails page 3</strong></figcaption>
+        </figure>
+
+        <figure style="--ar: 1.414;">
+          <img src="../images/projects/br-page-4.jpg" loading="lazy"
+               alt="A landscape grid of grey-wash thumbnails: park trees, benches, birds taking off, and figures under streetlight.">
+          <figcaption><strong>Composition thumbnails page 4</strong></figcaption>
+        </figure>
+
+        <i class="sc-fill" aria-hidden="true"></i>
+      </div>
+    </article>
+
+
+    <!-- ======================================================= FOWL PLAY == -->
+    <article class="work">
+      <div class="work-head">
+        <p class="eyebrow">2D Animation &middot; Director</p>
+        <h2>Fowl Play</h2>
+        <p class="work-credit">Co-directed with Jasmine Lai and Nikita Sutedjo</p>
+        <p>A short animated loop with no brief to answer to, so it became a
+          personal one. A dark, dystopian future in which the world is actually
+          run by plushie ducks &mdash; played light. I drew the backgrounds and
+          worked across the storyboard, the roughs, the timing and the colour.</p>
+      </div>
+
+      <div class="mediagrid scatter" data-mediagrid style="--sc-scale: 0.85; --heap-ax: 0.38;">
+
+        <figure style="--ar: 1;">
+          <img src="../images/projects/fp-room-cot.jpg" loading="lazy"
+               alt="Background art: a nursery with a wooden cot, an orange floor, a hanging plant and a framed picture of a duck.">
+          <figcaption><strong>Coloured background</strong></figcaption>
+        </figure>
+
+        <figure style="--ar: 1;">
+          <img src="../images/projects/fp-room-side.jpg" loading="lazy"
+               alt="Background art of the same nursery from the side: a mobile, a low toy table and the cot at the edge of frame.">
+          <figcaption><strong>Coloured side background</strong></figcaption>
+        </figure>
+
+        <!-- The same two rooms as the drawings they started as: V1 / V1.1,
+             before the digital colour that made fp-room-side and fp-room-cot
+             above. -->
+        <figure style="--ar: 1;">
+          <img src="../images/projects/fp-line-side.jpg" loading="lazy"
+               alt="Pencil line drawing of the nursery from the side: a hanging lamp, a low stool, a framed picture and the cot at the edge of frame.">
+          <figcaption><strong>Side background sketch</strong></figcaption>
+        </figure>
+
+        <figure style="--ar: 1;">
+          <img src="../images/projects/fp-line-back.jpg" loading="lazy"
+               alt="Pencil line drawing of the nursery from the back: a hanging plant, a framed duck picture and the cot seen end on.">
+          <figcaption><strong>Background sketch</strong></figcaption>
+        </figure>
+
+        <figure style="--ar: 1; --weight: 1.5;">
+          <video data-src="../images/projects/fp-loop.mp4" poster="../images/projects/fp-loop-poster.jpg"
+                 muted loop playsinline preload="none"
+                 aria-label="The finished loop: a baby and a plushie duck in the nursery, the duck growing until it fills the frame."></video>
+          <figcaption><strong>The finished animation loop</strong></figcaption>
+        </figure>
+
+        <i class="sc-fill" aria-hidden="true"></i>
+      </div>
+    </article>
+
+
+    <!-- ========================================== REMINISCENCE REVERIE ==
+         DO NOT CREDIT AMNAH on this clip. The folder and the filename carry
+         her name because the roughs were meant to be handed over; that did not
+         happen and the shot is Tony's. Manifest, 26 Aug 2026. -->
+    <article class="work">
+      <div class="work-head">
+        <p class="eyebrow">2D Animation &middot; Roughs</p>
+        <h2>Reminiscence Reverie</h2>
+        <p>An installation project &mdash; make an animation, then exhibit it
+          somewhere physical. One shot came out of it that I still like: the
+          roughs for a figure dancing through a forest, a hundred and one
+          drawings that loop.</p>
+      </div>
+
+      <div class="mediagrid scatter" data-mediagrid style="--sc-scale: 1; --heap-ax: 0.82;">
+
+        <figure style="--ar: 1.779;">
+          <video data-src="../images/projects/rr-forest-run.mp4" poster="../images/projects/rr-forest-run-poster.jpg"
+                 muted loop playsinline preload="none"
+                 aria-label="Rough line animation of a figure in a dress dancing and turning, with the animator's exposure chart drawn at the left of frame."></video>
+          <figcaption><strong>Forest run roughs and timing</strong></figcaption>
+        </figure>
+
+        <!-- The same shot finished. Four files in that folder hold it and all
+             four are 1920x1080 / 25fps / ~100 frames, so only the picture
+             separates them: this is the coloured one over the painted
+             background. Still Tony's shot -- do not credit Amnah. -->
+        <figure style="--ar: 1.779; --weight: 1.4;">
+          <video data-src="../images/projects/rr-forest-final.mp4" poster="../images/projects/rr-forest-final-poster.jpg"
+                 muted loop playsinline preload="none"
+                 aria-label="The finished shot: a figure in a grey cape and orange shoes walks through a pale green forest, a butterfly crossing ahead of her."></video>
+          <figcaption><strong>Finished forest run shot</strong></figcaption>
+        </figure>
+
+        <i class="sc-fill" aria-hidden="true"></i>
+      </div>
+    </article>
+
+
+    <!-- ====================================================== EARLY STUDIES ==
+         The fifth article, added 29 Aug 2026, and it is the test of CLAUDE.md's
+         "adding a project is one <article>" claim -- nothing in mini.js or
+         mini.css was touched to put it here.
+
+         THIRTY-TWO SHEETS BECOME SEVEN FIGURES. Six of these are collages
+         built by tools/collage.ps1; the recipe is in assets.ps1. A run of daily
+         practice is about VOLUME, and eight separate gesture pages in a scatter
+         read as eight interchangeable white rectangles -- grouping them by
+         month says "he did this every day for months", which is the only thing
+         the run actually claims.
+
+         What is NOT collaged by month is the material that is not a gesture
+         page: the 7 Aug sheet of three larger studies stands alone, and the two
+         anatomy sheets are stacked together as one. Tony cut it from eight
+         figures to seven on 29 Aug 2026 -- "a little too many images".
+
+         The dates are Tony's own file names and the Discord post dates, not
+         inferences. Thirteen of the thirty-two exist ONLY because they were
+         posted to the drawing club channel; there is no local copy. -->
+    <article class="work">
+      <div class="work-head">
+        <p class="eyebrow">Drawing &middot; Figure &amp; Anatomy Practice</p>
+        <h2>Early Studies</h2>
+        <p>Not a project so much as a habit. For three and a half months in 2023
+          I drew a page of figures most days and posted it to the drawing club
+          channel &mdash; which is the only reason a third of these still exist.
+          Thirty-two sheets survive, 25 June to 12 October: mostly A3 gesture
+          pages done digitally, one sitting with a physical sketchbook, and two
+          pages at the end where I stopped drawing whole figures and went at
+          hands, feet and heads instead.</p>
+      </div>
+
+      <div class="mediagrid scatter" data-mediagrid style="--sc-scale: 1; --heap-ax: 0.28;">
+
+        <figure style="--ar: 2.12;">
+          <img src="../images/projects/fig-june.jpg" loading="lazy"
+               alt="Six pages of pencil-line gesture drawings tiled together: standing, seated, reclining and reaching figures, some clothed in coats and long skirts. The first page has 6/25/2023 written on it.">
+          <figcaption><strong>June</strong></figcaption>
+        </figure>
+
+        <!-- THE 7 AUGUST SHEET WAS HERE AND IS OUT (Tony, 30 Aug 2026). It was
+             a lone sparse sheet at 1.5% ink against 3.0-3.5% for its
+             neighbours; splitting it into three cells took it to 3.1% and he
+             looked again: "the 3 figures drawing are not very detailed or good
+             works, they read bad at big size, especially the first figure". So
+             the density fix worked and the drawings were still the problem --
+             a reminder that a measurement can only tell you a tile is thin,
+             never that it is good. `fig-larger.jpg` is still built by
+             assets.ps1 and held in assets/. -->
+        <figure style="--ar: 2.12;">
+          <img src="../images/projects/fig-aug-a.jpg" loading="lazy"
+               alt="Six A3 gesture sheets tiled together, each crowded with small quick figures: lunging, kicking, robed and cloaked poses, a figure with a shield, an archer.">
+          <figcaption><strong>August, first half</strong></figcaption>
+        </figure>
+
+        <figure style="--ar: 2.12;">
+          <img src="../images/projects/fig-aug-b.jpg" loading="lazy"
+               alt="Six more A3 gesture sheets: standing figures with arms raised, seated and lying poses, figures in hats, bending and twisting studies.">
+          <figcaption><strong>August, second half</strong></figcaption>
+        </figure>
+
+        <figure style="--ar: 2.12;">
+          <img src="../images/projects/fig-sep.jpg" loading="lazy"
+               alt="Six A3 sheets tiled together, the line more confident and some figures filled in with tone: staffs, leaps, reclining poses and a dense band of small gestures.">
+          <figcaption><strong>September into October</strong></figcaption>
+        </figure>
+
+        <figure style="--ar: 3.219;">
+          <img src="../images/projects/fig-book.jpg" loading="lazy"
+               alt="Five photographed sketchbook pages in a row: pencil figure drawings on white paper, shaded and worked further than the digital sheets &mdash; a reclining figure, a foreshortened leap, standing pairs, a kick, and a bending figure.">
+          <figcaption><strong>On paper quick sketches</strong></figcaption>
+        </figure>
+
+        <!-- The two anatomy sheets are ONE figure, stacked. Both are A3 at
+             1.413, so 1x2 lands on 0.704 -- the A-series portrait ratio, and
+             the only tall item in a gallery that is otherwise all wide
+             collages. A 2x1 would have made a sixth wide one. -->
+        <figure style="--ar: 0.704; --weight: 1.5;">
+          <img src="../images/projects/fig-anatomy.jpg" loading="lazy"
+               alt="Two sheets stacked. Above: feet and hands drawn from several angles, no whole figures on the page. Below: heads &mdash; light construction sketches across the top, and three inked faces with real expressions, a bearded man, a face in three-quarter view, and a woman shouting.">
+          <figcaption><strong>Extra anatomy and expressions</strong></figcaption>
+        </figure>
+
+        <i class="sc-fill" aria-hidden="true"></i>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+<footer class="site-footer">
+  <p><a href="mailto:tonyc.cn.au@gmail.com">tonyc.cn.au@gmail.com</a> &middot; &copy; <span id="year"></span> Tony Chen</p>
+</footer>
+
+<script src="../js/script.js"></script>
+<script src="../js/mini.js"></script>
+</body>
+</html>
