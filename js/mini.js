@@ -505,6 +505,15 @@
     hushTitles(sc);
   }
 
+  /* The lightbox is modal, so the cluster behind it is paused visually as
+     well as interactively. In particular, focusing the lightbox's close
+     button must not read as "focus left the galleries" and retract the pile
+     that supplied the enlarged item. */
+  function lightboxIsOpen() {
+    var lightbox = document.querySelector(".lightbox");
+    return !!(lightbox && !lightbox.hidden);
+  }
+
   /* WHICH GALLERY IS UNDER THE POINTER -- and for the stacked variants that is
      a question about BANDS, not about which picture happens to be on top.
 
@@ -616,7 +625,7 @@
   var lastX = -1, lastY = -1;
 
   document.addEventListener("pointermove", function (e) {
-    if (!root.classList.contains("is-exploded") || reduced) return;
+    if (!root.classList.contains("is-exploded") || reduced || lightboxIsOpen()) return;
     lastX = e.clientX;
     lastY = e.clientY;
     setOpen(fromPoint(lastX, lastY));
@@ -644,19 +653,30 @@
     return null;
   }
 
+  /* A mouse needs the open gallery to own the gaps between its strips so the
+     explosion stays stable while the pointer crosses it. A finger has a more
+     deliberate signal: the rendered media strip it actually landed on. Let
+     that strip win first, even when it belongs to a different pile peeking
+     through the open one; fall back to the stable broad hit-test in a gap. */
+  function fromTouchPoint(x, y, target) {
+    var el = target || document.elementFromPoint(x, y);
+    var fig = el && el.closest ? el.closest(".scatter figure") : null;
+    return fig ? fig.closest(".scatter") : fromPoint(x, y);
+  }
+
   document.addEventListener("touchstart", function (e) {
     /* Also clear explicitly for older touch implementations that do not emit
        Pointer Events before their Touch Events. */
     root.classList.remove("is-keyboard-nav");
     blockedClickSc = null;
-    if (!root.classList.contains("is-exploded") || reduced ||
+    if (!root.classList.contains("is-exploded") || reduced || lightboxIsOpen() ||
         !e.touches || e.touches.length !== 1) {
       touchGesture = null;
       return;
     }
 
     var t = e.touches[0];
-    var next = fromPoint(t.clientX, t.clientY);
+    var next = fromTouchPoint(t.clientX, t.clientY, e.target);
     var switched = next !== openSc;
     setOpen(next);
     touchGesture = {
@@ -680,7 +700,7 @@
     var dy = t.clientY - touchGesture.y;
     if (dx * dx + dy * dy > TOUCH_SLOP * TOUCH_SLOP) touchGesture.moved = true;
 
-    var next = fromPoint(t.clientX, t.clientY);
+    var next = fromTouchPoint(t.clientX, t.clientY);
     if (next !== openSc) setOpen(next);
     /* A real drag is a cluster/scroll gesture even if it finishes in the same
        pile it began in. Do not let its release enlarge an arbitrary tile. */
@@ -697,23 +717,39 @@
   }, { passive: true });
 
   /* Capture runs before the figure's bubble-phase click handler in script.js.
-     The block is heap-specific, and pointerdown/touchstart/keydown clears it
-     before any genuinely separate action, so later taps cannot be swallowed. */
+     The touch block is heap-specific, and pointerdown/touchstart/keydown clears
+     it before any genuinely separate action, so later taps cannot be swallowed.
+
+     The second guard is deliberately input-agnostic: if a visible strip from
+     ANOTHER retracted pile peeks through the open explosion, its first click
+     belongs to that pile, not to the lightbox. Touchstart normally switches it
+     first; this is the final authority for browsers with unusual touch targets
+     and gives a mouse the same understandable first-click rule. */
   document.addEventListener("click", function (e) {
-    if (!blockedClickSc) return;
-    var blocked = blockedClickSc;
-    blockedClickSc = null;
     var sc = e.target && e.target.closest ? e.target.closest(".scatter") : null;
-    if (sc !== blocked) return;
-    e.preventDefault();
-    e.stopImmediatePropagation();
+    if (blockedClickSc) {
+      var blocked = blockedClickSc;
+      blockedClickSc = null;
+      if (sc === blocked) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        return;
+      }
+    }
+
+    if (root.classList.contains("is-exploded") && !reduced &&
+        !lightboxIsOpen() && sc && sc !== openSc) {
+      setOpen(sc);
+      e.preventDefault();
+      e.stopImmediatePropagation();
+    }
   }, true);
 
   /* Keyboard: tabbing into a gallery opens it. No focusout handler is needed
      any more -- the next thing focused sets the open one, and if that is
      outside every gallery, setOpen(null) heaps them all. */
   document.addEventListener("focusin", function (e) {
-    if (!root.classList.contains("is-exploded") || reduced) return;
+    if (!root.classList.contains("is-exploded") || reduced || lightboxIsOpen()) return;
     setOpen(e.target.closest ? e.target.closest(".scatter") : null);
   });
 
