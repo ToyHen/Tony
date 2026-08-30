@@ -155,27 +155,34 @@ html { scrollbar-gutter: stable; }
    straightening is the part that reads as "picked up" rather than "grown", and
    it costs nothing because the tilt was a transform to begin with.
 
-   :focus-visible as well as :hover, so this is not a pointer-only affordance
-   -- initMediaGrid makes every figure tabbable with role="button".
+   Real hover as well as keyboard-visible focus, so this is not a pointer-only
+   affordance -- initMediaGrid makes every figure tabbable with role="button".
 
    :focus-within IS DELIBERATELY NOT IN THIS LIST, and used to be. It looks
    like the safer, more generous choice and it is the one that breaks: closeBox
-   hands focus back to the tile it opened from, and :focus-within has no
-   visibility heuristic, so it matches a programmatic restore that :focus-visible
-   correctly ignores. Measured after closing the lightbox on a heaped strip:
-   :focus-visible false, :focus-within TRUE -- so the strip kept the lift's
-   scale(1.06) while every neighbour sat at its heap scale of 0.459, and stayed
-   that way indefinitely. Tony: "the clicked media stays at its exploded size
-   when returning to cluster."
+   hands focus back to the tile it opened from, so :focus-within matches that
+   programmatic restore and can leave one heaped strip at scale(1.06).
 
-   :focus-visible covers the keyboard, which is the only thing the lift was
-   opened up for; these figures have no focusable children, so :focus-within
-   was buying nothing and costing this. */
-.scatter figure:hover,
-.scatter figure:focus-visible {
+   Some browsers preserve :focus-visible across that return as well. mini.js
+   therefore records the actual input modality: .is-keyboard-nav keeps this
+   lift for keyboard navigation, while pointer and touch input clear it before
+   focus is restored. These figures have no focusable children, so
+   :focus-within was buying nothing and costing this. */
+.is-keyboard-nav .scatter figure:focus-visible {
   transform: translateY(calc(var(--drop, 0px) - 7px)) rotate(0deg) scale(1.035);
   box-shadow: 0 16px 38px rgb(var(--bg-rgb) / 0.85);
   z-index: 3;             /* .mediagrid figure is already position: relative */
+}
+
+/* Phones can leave :hover matched after a tap or long press. Keep the visual
+   lift for a pointer that really hovers, while :focus-visible above continues
+   to give the keyboard the same treatment on every device. */
+@media (hover: hover) and (pointer: fine) {
+  .scatter figure:hover {
+    transform: translateY(calc(var(--drop, 0px) - 7px)) rotate(0deg) scale(1.035);
+    box-shadow: 0 16px 38px rgb(var(--bg-rgb) / 0.85);
+    z-index: 3;
+  }
 }
 
 /* prefers-reduced-motion is honoured by turning off the TRANSITION, not the
@@ -572,12 +579,20 @@ html { scrollbar-gutter: stable; }
   --dr: var(--dr0, 0deg);
 }
 
-.is-exploded .scatter figure:hover,
-.is-exploded .scatter figure:focus-visible {
+.is-keyboard-nav .is-exploded .scatter figure:focus-visible {
   animation-play-state: paused;
   --dx: 0px;
   --dy: 0px;
   --dr: 0deg;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .is-exploded .scatter figure:hover {
+    animation-play-state: paused;
+    --dx: 0px;
+    --dy: 0px;
+    --dr: 0deg;
+  }
 }
 
 /* A RE-MEASURE MUST NOT ANIMATE. .is-measuring below neutralises left/top/
@@ -620,8 +635,11 @@ html { scrollbar-gutter: stable; }
 /* Hovering one strip still lifts it clear of the rest -- in the pile that is
    the only way to see what is underneath, so the z-index matters more here
    than anywhere else in the file. */
-.is-exploded .scatter figure:hover,
-.is-exploded .scatter figure:focus-visible { z-index: 6; }
+.is-keyboard-nav .is-exploded .scatter figure:focus-visible { z-index: 6; }
+
+@media (hover: hover) and (pointer: fine) {
+  .is-exploded .scatter figure:hover { z-index: 6; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   /* Never heaped: an explosion the visitor cannot opt out of is exactly what
@@ -632,13 +650,19 @@ html { scrollbar-gutter: stable; }
   }
 }
 
-.is-exploded .scatter figure:hover,
-.is-exploded .scatter figure:focus-visible {
+.is-keyboard-nav .is-exploded .scatter figure:focus-visible {
   /* The lift is a translateY inside `transform` rather than an adjustment to
      `top`, so one rule covers both states -- heaped or open, the strip rises
      12px from wherever left/top have put it. */
   transform: rotate(0deg) scale(1.06) translateY(-12px);
   box-shadow: 0 22px 55px rgb(var(--bg-rgb) / 0.9);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .is-exploded .scatter figure:hover {
+    transform: rotate(0deg) scale(1.06) translateY(-12px);
+    box-shadow: 0 22px 55px rgb(var(--bg-rgb) / 0.9);
+  }
 }
 
 /* THE SCROLL-IN ENTRANCE THAT USED TO BE HERE IS GONE, and its
@@ -667,9 +691,12 @@ html { scrollbar-gutter: stable; }
 
 /* Reaching for a single strip must not wait behind the stagger -- it is a
    direct response to the pointer, so it happens at once. */
-.is-exploded .scatter figure:hover,
-.is-exploded .scatter figure:focus-visible {
+.is-keyboard-nav .is-exploded .scatter figure:focus-visible {
   transition-delay: 0s;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .is-exploded .scatter figure:hover { transition-delay: 0s; }
 }
 
 @media (max-width: 640px) {

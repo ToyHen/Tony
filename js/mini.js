@@ -10,6 +10,26 @@
 
   var root = document.documentElement;
   var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var touchGesture = null;
+  var blockedClickSc = null;
+
+  /* :focus-visible normally distinguishes keyboard focus from pointer focus,
+     but a programmatic return from the lightbox inherits the close button's
+     visible-focus state in some browsers. Track the actual input modality as
+     well, so a mouse or finger can never leave a heaped strip carrying the
+     keyboard-only lift. */
+  document.addEventListener("keydown", function (e) {
+    if (!e.metaKey && !e.ctrlKey && !e.altKey) {
+      root.classList.add("is-keyboard-nav");
+      blockedClickSc = null;
+    }
+  }, true);
+  document.addEventListener("pointerdown", function (e) {
+    root.classList.remove("is-keyboard-nav");
+    /* touchstart owns touch suppression; a mouse or pen begins a separate
+       action and can safely discard anything an earlier touch left behind. */
+    if (e.pointerType !== "touch") blockedClickSc = null;
+  }, true);
 
   /* ------------------------------------------------- the variant, locked to F
      THIS IS THE SHIPPED COPY AND IT HAS NO SWITCH. mini-lab/mini.js carries
@@ -602,14 +622,92 @@
     setOpen(fromPoint(lastX, lastY));
   }, { passive: true });
 
-  /* A finger opens the one it lands on, so a phone unpacks one section at a
-     time. Nothing closes on touchend, matching the shared touch tracker's
-     rule: the section you lifted on is the one you stopped to look at. */
+  /* TOUCH KEEPS THE ORIGINAL "PRESS AND DRAG THROUGH THE PILES" DESIGN.
+     First contact opens the pile under the finger, and touchmove keeps handing
+     the open state to whichever pile the finger reaches. None of the touch
+     events preventDefault, so the same vertical drag still scrolls the page.
+
+     The bug was that the browser could follow that opening gesture with a
+     synthetic click. initMediaGrid then treated the click as a second action
+     and opened a tile in the lightbox. Remember when this gesture opened or
+     dragged a pile and consume only that follow-up click. A clean tap inside
+     an ALREADY-open pile remains unblocked and opens the chosen tile normally.
+     Beginning any new physical action clears the old block, so a scroll that
+     produces no click cannot poison the next tap. */
+  var TOUCH_SLOP = 12;
+
+  function findTouch(list, id) {
+    if (!list) return null;
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].identifier === id) return list[i];
+    }
+    return null;
+  }
+
   document.addEventListener("touchstart", function (e) {
-    if (!root.classList.contains("is-exploded") || reduced) return;
-    var t = e.touches && e.touches[0];
-    if (t) setOpen(fromPoint(t.clientX, t.clientY));
+    /* Also clear explicitly for older touch implementations that do not emit
+       Pointer Events before their Touch Events. */
+    root.classList.remove("is-keyboard-nav");
+    blockedClickSc = null;
+    if (!root.classList.contains("is-exploded") || reduced ||
+        !e.touches || e.touches.length !== 1) {
+      touchGesture = null;
+      return;
+    }
+
+    var t = e.touches[0];
+    var next = fromPoint(t.clientX, t.clientY);
+    var switched = next !== openSc;
+    setOpen(next);
+    touchGesture = {
+      id: t.identifier,
+      x: t.clientX,
+      y: t.clientY,
+      moved: false
+    };
+    if (switched && next) blockedClickSc = next;
   }, { passive: true });
+
+  document.addEventListener("touchmove", function (e) {
+    if (!touchGesture) return;
+    if (!e.touches || e.touches.length !== 1) {
+      touchGesture.moved = true;
+      return;
+    }
+    var t = findTouch(e.touches, touchGesture.id);
+    if (!t) { touchGesture.moved = true; return; }
+    var dx = t.clientX - touchGesture.x;
+    var dy = t.clientY - touchGesture.y;
+    if (dx * dx + dy * dy > TOUCH_SLOP * TOUCH_SLOP) touchGesture.moved = true;
+
+    var next = fromPoint(t.clientX, t.clientY);
+    if (next !== openSc) setOpen(next);
+    /* A real drag is a cluster/scroll gesture even if it finishes in the same
+       pile it began in. Do not let its release enlarge an arbitrary tile. */
+    if (touchGesture.moved && next) blockedClickSc = next;
+  }, { passive: true });
+
+  document.addEventListener("touchend", function () {
+    touchGesture = null;
+  }, { passive: true });
+
+  document.addEventListener("touchcancel", function () {
+    touchGesture = null;
+    blockedClickSc = null;
+  }, { passive: true });
+
+  /* Capture runs before the figure's bubble-phase click handler in script.js.
+     The block is heap-specific, and pointerdown/touchstart/keydown clears it
+     before any genuinely separate action, so later taps cannot be swallowed. */
+  document.addEventListener("click", function (e) {
+    if (!blockedClickSc) return;
+    var blocked = blockedClickSc;
+    blockedClickSc = null;
+    var sc = e.target && e.target.closest ? e.target.closest(".scatter") : null;
+    if (sc !== blocked) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+  }, true);
 
   /* Keyboard: tabbing into a gallery opens it. No focusout handler is needed
      any more -- the next thing focused sets the open one, and if that is
