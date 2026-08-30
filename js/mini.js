@@ -11,6 +11,7 @@
   var root = document.documentElement;
   var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var touchGesture = null;
+  var touchLiftFig = null;
   var blockedClickSc = null;
 
   /* :focus-visible normally distinguishes keyboard focus from pointer focus,
@@ -22,13 +23,17 @@
     if (!e.metaKey && !e.ctrlKey && !e.altKey) {
       root.classList.add("is-keyboard-nav");
       blockedClickSc = null;
+      setTouchLift(null);
     }
   }, true);
   document.addEventListener("pointerdown", function (e) {
     root.classList.remove("is-keyboard-nav");
     /* touchstart owns touch suppression; a mouse or pen begins a separate
        action and can safely discard anything an earlier touch left behind. */
-    if (e.pointerType !== "touch") blockedClickSc = null;
+    if (e.pointerType !== "touch") {
+      blockedClickSc = null;
+      setTouchLift(null);
+    }
   }, true);
 
   /* ------------------------------------------------- the variant, locked to F
@@ -499,6 +504,7 @@
 
   function setOpen(sc) {
     if (sc === openSc) return;
+    if (touchLiftFig && touchLiftFig.closest(".scatter") !== sc) setTouchLift(null);
     if (openSc) openSc.classList.add("is-cluster");
     openSc = sc;
     if (sc) sc.classList.remove("is-cluster");
@@ -512,6 +518,17 @@
   function lightboxIsOpen() {
     var lightbox = document.querySelector(".lightbox");
     return !!(lightbox && !lightbox.hidden);
+  }
+
+  /* Phone :hover used to provide this lift accidentally, and could remain
+     matched after the finger left. An explicit class gives touch the same
+     tactile straightening while the gesture is active, with one owner and a
+     definite release path. */
+  function setTouchLift(fig) {
+    if (fig === touchLiftFig) return;
+    if (touchLiftFig) touchLiftFig.classList.remove("is-touch-lift");
+    touchLiftFig = fig;
+    if (fig) fig.classList.add("is-touch-lift");
   }
 
   /* WHICH GALLERY IS UNDER THE POINTER -- and for the stacked variants that is
@@ -658,9 +675,13 @@
      deliberate signal: the rendered media strip it actually landed on. Let
      that strip win first, even when it belongs to a different pile peeking
      through the open one; fall back to the stable broad hit-test in a gap. */
-  function fromTouchPoint(x, y, target) {
+  function touchFigureAt(x, y, target) {
     var el = target || document.elementFromPoint(x, y);
-    var fig = el && el.closest ? el.closest(".scatter figure") : null;
+    return el && el.closest ? el.closest(".scatter figure") : null;
+  }
+
+  function fromTouchPoint(x, y, target) {
+    var fig = touchFigureAt(x, y, target);
     return fig ? fig.closest(".scatter") : fromPoint(x, y);
   }
 
@@ -669,6 +690,7 @@
        Pointer Events before their Touch Events. */
     root.classList.remove("is-keyboard-nav");
     blockedClickSc = null;
+    setTouchLift(null);
     if (!root.classList.contains("is-exploded") || reduced || lightboxIsOpen() ||
         !e.touches || e.touches.length !== 1) {
       touchGesture = null;
@@ -676,6 +698,7 @@
     }
 
     var t = e.touches[0];
+    var touchedFig = touchFigureAt(t.clientX, t.clientY, e.target);
     var next = fromTouchPoint(t.clientX, t.clientY, e.target);
     var switched = next !== openSc;
     setOpen(next);
@@ -685,6 +708,7 @@
       y: t.clientY,
       moved: false
     };
+    setTouchLift(touchedFig && touchedFig.closest(".scatter") === next ? touchedFig : null);
     if (switched && next) blockedClickSc = next;
   }, { passive: true });
 
@@ -700,21 +724,27 @@
     var dy = t.clientY - touchGesture.y;
     if (dx * dx + dy * dy > TOUCH_SLOP * TOUCH_SLOP) touchGesture.moved = true;
 
+    var touchedFig = touchFigureAt(t.clientX, t.clientY);
     var next = fromTouchPoint(t.clientX, t.clientY);
     if (next !== openSc) setOpen(next);
+    setTouchLift(touchedFig && touchedFig.closest(".scatter") === next ? touchedFig : null);
     /* A real drag is a cluster/scroll gesture even if it finishes in the same
        pile it began in. Do not let its release enlarge an arbitrary tile. */
     if (touchGesture.moved && next) blockedClickSc = next;
   }, { passive: true });
 
   document.addEventListener("touchend", function () {
+    setTouchLift(null);
     touchGesture = null;
   }, { passive: true });
 
   document.addEventListener("touchcancel", function () {
+    setTouchLift(null);
     touchGesture = null;
     blockedClickSc = null;
   }, { passive: true });
+
+  window.addEventListener("blur", function () { setTouchLift(null); });
 
   /* Capture runs before the figure's bubble-phase click handler in script.js.
      The touch block is heap-specific, and pointerdown/touchstart/keydown clears

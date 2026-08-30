@@ -166,8 +166,10 @@ html { scrollbar-gutter: stable; }
    Some browsers preserve :focus-visible across that return as well. mini.js
    therefore records the actual input modality: .is-keyboard-nav keeps this
    lift for keyboard navigation, while pointer and touch input clear it before
-   focus is restored. These figures have no focusable children, so
-   :focus-within was buying nothing and costing this. */
+   focus is restored. .is-touch-lift restores the same tactile response only
+   for the strip currently under an active finger. These figures have no
+   focusable children, so :focus-within was buying nothing and costing this. */
+.scatter figure.is-touch-lift,
 .is-keyboard-nav .scatter figure:focus-visible {
   transform: translateY(calc(var(--drop, 0px) - 7px)) rotate(0deg) scale(1.035);
   box-shadow: 0 16px 38px rgb(var(--bg-rgb) / 0.85);
@@ -579,6 +581,7 @@ html { scrollbar-gutter: stable; }
   --dr: var(--dr0, 0deg);
 }
 
+.is-exploded .scatter figure.is-touch-lift,
 .is-keyboard-nav .is-exploded .scatter figure:focus-visible {
   animation-play-state: paused;
   --dx: 0px;
@@ -635,6 +638,7 @@ html { scrollbar-gutter: stable; }
 /* Hovering one strip still lifts it clear of the rest -- in the pile that is
    the only way to see what is underneath, so the z-index matters more here
    than anywhere else in the file. */
+.is-exploded .scatter figure.is-touch-lift,
 .is-keyboard-nav .is-exploded .scatter figure:focus-visible { z-index: 6; }
 
 @media (hover: hover) and (pointer: fine) {
@@ -650,6 +654,7 @@ html { scrollbar-gutter: stable; }
   }
 }
 
+.is-exploded .scatter figure.is-touch-lift,
 .is-keyboard-nav .is-exploded .scatter figure:focus-visible {
   /* The lift is a translateY inside `transform` rather than an adjustment to
      `top`, so one rule covers both states -- heaped or open, the strip rises
@@ -691,6 +696,7 @@ html { scrollbar-gutter: stable; }
 
 /* Reaching for a single strip must not wait behind the stagger -- it is a
    direct response to the pointer, so it happens at once. */
+.is-exploded .scatter figure.is-touch-lift,
 .is-keyboard-nav .is-exploded .scatter figure:focus-visible {
   transition-delay: 0s;
 }
