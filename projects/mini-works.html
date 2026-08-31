@@ -47,11 +47,61 @@
 
 <section class="section-tight">
   <div class="container">
-    <div class="section-head">
-      <p class="eyebrow"><a href="../projects.html">&larr; All Projects</a></p>
-      <h1>Assorted Works &amp; Studies</h1>
-      <p>My smaller projects and various selected stand alone personal works.</p>
+    <!-- THE SAME OPENING THE OTHER FIVE PROJECT PAGES USE: the eyebrow, the h1
+         and the meta slate sit DIRECTLY in the container. This page used to
+         wrap all of it in a .section-head, which is reel.html's pattern, not
+         its own siblings' -- and .section-head caps its contents at 60ch, so
+         "Assorted Works & Studies" wrapped onto two lines while every other
+         project page's title sits on one. Arriving here from projects.html
+         changed the page grammar as well as the scale (Tony, 31 Aug 2026).
+
+         The intro sentence moved BELOW the slate -- see the note down there --
+         and keeps its measure through .page-lede, which caps the paragraph
+         WITHOUT capping the heading, the way .section-head did. -->
+    <p class="eyebrow"><a href="../projects.html">&larr; All Projects</a></p>
+    <h1>Assorted Works &amp; Studies</h1>
+
+    <!-- EVERY VALUE HERE IS COPIED FROM THIS WORK'S OWN CARD ON projects.html,
+         not restated from memory -- including the August 2022 date, which that
+         card's comment records as measured (the earliest file in any of the six
+         is 11 Aug 2022, in Breakout). Nothing on this page is a new claim. The
+         five rows are the same five the film pages carry, so the slate reads
+         identically wherever you land. -->
+    <div class="meta-grid">
+      <div class="meta-item">
+        <span class="eyebrow">Project Type</span>
+        <p>Various Disciplines</p>
+      </div>
+      <div class="meta-item">
+        <span class="eyebrow">Role</span>
+        <p>Varies</p>
+      </div>
+      <div class="meta-item">
+        <span class="eyebrow">Date</span>
+        <p>August 2022 &mdash; ongoing</p>
+      </div>
+      <div class="meta-item">
+        <span class="eyebrow">Location</span>
+        <p>Sydney NSW Australia</p>
+      </div>
+      <div class="meta-item">
+        <span class="eyebrow">AI Use</span>
+        <p>None</p>
+      </div>
     </div>
+
+    <!-- BELOW THE SLATE, NOT ABOVE IT (Tony, 31 Aug 2026: "odd location for
+         this intro line to be there"). It sat between the h1 and the slate,
+         which is a slot that exists nowhere else on the site: on all five film
+         pages the h1 is followed IMMEDIATELY by the meta grid, and the two
+         places that do put a sentence under a heading -- .hero-tagline on
+         index.html and .page-hero-tagline on projects.html -- are both inside
+         a hero band over an image, never on a flat page above a panel. A dim
+         line wedged between the title and the slate read as orphaned.
+
+         Down here it introduces the galleries it is actually describing, and
+         the h1-to-slate adjacency matches the sibling pages. -->
+    <p class="page-lede">My smaller projects and various selected stand alone personal works.</p>
 
     <!-- One shared page, six sections, and the sections are NOT the same size.
          Weight is --sc-scale on each gallery: 1 / 1.15 / 1 / 0.85 / 1 / 1 in

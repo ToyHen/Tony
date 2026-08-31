@@ -1042,30 +1042,96 @@ html { scrollbar-gutter: stable; }
    from small heaps plus horizontal anchoring, and pays nothing for it.
    ========================================================================== */
 
-/* MUCH smaller. B rests at 0.36 of the band capped at 230px; a heap here is a
-   third of that, which is about the size the pile's own strips read at rather
-   than the size of the pictures in them. */
+/* SMALLER THAN B, BUT NOT A THUMBNAIL OF A PILE. B rests at 0.36 of the band
+   capped at 230px.
+
+   THIS WAS 0.13 / 90 AND IT WAS TOO SMALL (Tony, 31 Aug 2026: "everything
+   feels a bit small ... the content feels a bit out of place to read"). At 90
+   every one of the 38 items rendered 62-104px wide, and media covered 6.5% of
+   the first screen against 42% on a film page and 70.8% on projects.html --
+   i.e. about a tenth of the picture area per screen that the rest of the site
+   shows. The page was not reading as quiet, it was reading as unfinished.
+
+   BOTH NUMBERS HAVE TO MOVE TOGETHER, and that is the trap. mini.js computes
+   `target = min(band * frac, cap)`, so whichever is smaller binds. At a 1052px
+   band, 0.13 * 1052 = 137, so raising the cap alone tops out there: measured,
+   --heap-max 150 and 220 give an IDENTICAL page (largest item 157px both
+   times). Raising the cap and leaving the fraction is a no-op you cannot see.
+
+   SIZE AND SPREAD ARE TWO DIFFERENT COMPLAINTS AND NEED TWO DIFFERENT KNOBS.
+   0.22 / 190 was tried first and Tony's read was "a little too big, and
+   doesn't feel like they are clustered up before exploding" -- both at once.
+   The second half is the interesting one: OVERLAP DID NOT CHANGE. Measured as
+   ink area over heap-box area, the pile ran 1.45 at 0.13/90 and 1.42 at
+   0.22/190, because spreadX/spreadY are both `target * heap-wide|tall`, so
+   raising the target scales the strips AND the gaps between them by the same
+   factor. A uniform scale-up cannot make a pile looser.
+
+   What actually changed is the heap against the BAND: 25% of its width at
+   0.13/90, 54% at 0.22/190. At half the band a heap stops reading as an object
+   sitting in space and starts reading as a row of content -- so it is size
+   relative to the page that says "pile", not overlap. Fixing it needs the
+   spread pulled in SEPARATELY from the strip size, which is what --heap-wide
+   and --heap-tall are for.
+
+   0.20 / 150 with wide 0.90 / tall 0.24, measured at 1440x900 against the two
+   earlier settings:
+
+              strip    heap w   % of band   density   screens
+     0.13/90   104px    267px      25%        1.45      1.63
+     0.22/190  218px    570px      54%        1.42      2.49
+     THIS      173px    335px      32%        1.95      2.17
+
+   So the strips stay 66% bigger than they were, the heap comes back to near
+   its old footprint, and the pile is MORE stacked than the original ever was.
+   No horizontal overflow and no title running into a pile at any width.
+
+   THE FRACTION IS 0.20 RATHER THAN THE 0.17 THAT WAS TUNED HERE, AND DESKTOP
+   CANNOT TELL. The cap binds from a band of 750 (a ~798px viewport) upward, so
+   every desktop width is min()'d to 150 either way -- verified identical at
+   1440: strip 173, heap 335, density 1.95, 2.17 screens. What it buys is the
+   range between 640 and 798, where the fraction still governs and 0.17 left
+   the strips noticeably small, and it halves the step at the 640 breakpoint
+   below (160 -> 137px instead of 160 -> 116). */
 .is-constellation .scatter {
-  --heap-frac: 0.13;
-  --heap-max: 90;
-  /* WIDE AND FLAT, not merely small. Getting four heaps into one screen by
-     shrinking the strips further costs legibility in every state; flattening
-     the spiral costs only height, which is the thing that is short, and a
-     1000px band has room across it going spare. At 0.30 the pile is a drift
-     of strips along a line rather than a mound, which also reads better at
-     this size -- a mound this small is a smudge. */
-  --heap-wide: 1.34;
-  --heap-tall: 0.30;
+  --heap-frac: 0.20;
+  --heap-max: 150;
+  /* Flat rather than wide, now. These were 1.34 / 0.30, and that pairing was
+     tuned against 90px strips: at that size the pile needed spreading or it
+     was a smudge, and a 1000px band had room across it going spare. At 173px
+     strips the same numbers put the heap across half the band, where it reads
+     as a row rather than a pile -- see the note above.
+
+     Pulled in on BOTH axes, and the horizontal one is the bigger move (1.34 ->
+     0.90) because that is the axis the band has to spare and therefore the one
+     that was quietly eating it. Density 1.42 -> 1.95. Still flatter than it is
+     wide, which is the part of the original reasoning that holds: height is
+     what this layout is short of, so the spiral spends its room sideways. */
+  --heap-wide: 0.90;
+  --heap-tall: 0.24;
   /* Every strip the same size in its own longest dimension. At a common WIDTH
      the portrait items are the tallest things in the pile by a factor of five
      and they, not the spiral, set the heap's height -- which is the one
      measurement F has to keep down. See the note in mini.js. */
   --heap-fit: long;
-  /* How far the open state may reach ABOVE its heap. B allows 60px; here the
-     first heap is 190px from the top of the document and 60 put the head of
-     the explosion behind the sticky header. The rest of the spill goes
-     downward, over the next heap, where nothing is chrome. */
-  --heap-rise: 16;
+  /* How far the open state may reach ABOVE its heap. B allows 60px; here 60
+     put the head of the explosion behind the sticky header, so F capped it.
+     The rest of the spill goes downward, over the next heap, where nothing is
+     chrome.
+
+     16 WAS TUNED AGAINST 90px HEAPS AND DID NOT SURVIVE THEM GROWING -- the
+     third time on this page that a number measured against one layout turned
+     out not to be a constant. With a gallery parked just under the header and
+     then opened, four of the six pushed 4-18px behind it. (Two already did at
+     the old heap size, worst case 24px, so this is an old fault the resize
+     spread rather than a new one.) At 2 the same test reads 0 / +3 / +2 and
+     clear, clear.
+
+     THE RESIDUAL 10px ON THE FIRST GALLERY IS TILT, NOT RISE, so there is
+     nothing below 2 worth having: --heap-rise caps the layout shift, but a
+     218px strip turned 5.8deg puts its own corner ~11px past the box the cap
+     measured. Going to 0 would not buy that back. */
+  --heap-rise: 2;
 }
 
 /* The heaps are the whole page now, so the space above the first one is a
@@ -1262,9 +1328,47 @@ html { scrollbar-gutter: stable; }
    At 88 the basis lands near 101px and three fit per row, so the same eight
    items are three rows and about 300px. The heaps are untouched -- they are
    sized by --heap-max, not by the row target -- so what changes is only how
-   the open state uses the width it has. */
+   the open state uses the width it has.
+
+   THE HEAP TOKENS COME IN HERE TOO, because --heap-max never binds on a phone
+   and --heap-frac alone therefore shrinks the pile in step with the viewport:
+   at the desktop fraction the strips run 173px at 1440 but only 64px at 375
+   and 53px at 320.
+   Tony liked the bigger clusters an earlier desktop setting happened to give
+   here (0.22, strips 83px) -- so the size is deliberate now rather than a side
+   effect of whatever desktop is tuned to.
+
+   A PHONE WANTS A BIGGER FRACTION AND A TIGHTER SPIRAL THAN A DESKTOP. The
+   fraction is of a band that is a third of the width, so the same 0.17 buys a
+   third of the pile; and the spread has to come in with it or the heap simply
+   runs across the whole band. Measured at 375 (band 327):
+
+                        strip   heap w   % of band   density
+     desktop tokens      64px    122px      37%        2.00
+     the one he liked    83px    203px      62%        1.47
+     THIS 0.24/0.80      91px    162px      49%        2.16
+
+   So the strips beat the setting he liked and the pile is half again as
+   stacked. Tightening the spiral is what buys BOTH: --heap-fit caps the long
+   edge at `target`, so a bigger fraction grows the strips, while the smaller
+   --heap-wide keeps the footprint from growing with them.
+
+   0.28 / 0.62 was tried and cut -- at density 2.53 the top strip covers most
+   of what is under it, and a pile that hides the work is not showing it.
+
+   KNOWN AND ACCEPTED: crossing 640 upward the strips step 160 -> 137px, since
+   0.24 and the base 0.20 cannot agree at a shared edge. Raising the base from
+   0.17 halved that step already; closing it entirely would need the fraction
+   to vary continuously with the viewport, which a unitless custom property
+   read through parseFloat cannot do. Both sides look right and the seam is one
+   window width nobody sits at. */
 @media (max-width: 640px) {
-  .is-constellation .scatter { --sc-base: 88; }
+  .is-constellation .scatter {
+    --sc-base: 88;
+    --heap-frac: 0.24;
+    --heap-wide: 0.80;
+    --heap-tall: 0.22;
+  }
 }
 
 
@@ -1316,15 +1420,33 @@ html { scrollbar-gutter: stable; }
   pointer-events: none;
 }
 
-/* Small and quiet. It is a label on a shelf, not a heading on a page. */
+/* Quiet, but ON THE SITE'S SCALE. It was 0.62rem / 1.15rem -- "a label on a
+   shelf, not a heading on a page" -- and the shelf label had ended up smaller
+   than anything else the site sets: 9.92px against the sitewide .eyebrow's
+   12px, and an 18.4px h2 against 35.2px everywhere else, which is BELOW the
+   site's own h3 (20px). Three of the six works are named in type smaller than
+   their own picture captions would be on a film page. Tony, 31 Aug 2026, on
+   arriving here from projects.html: "suddenly the content feels a bit of out
+   of place to read."
+
+   The eyebrow goes back to the sitewide 0.75rem exactly -- there is no reason
+   for this page to have its own. The name lands between the site's h3 (1.25rem)
+   and its h2 clamp (1.6-2.2rem): it is naming a work, which is what a project
+   CARD title does on projects.html (21.6px), not introducing a section.
+
+   RAISING IT DOES NOT WIDEN THE BLOCK. max-width is 32ch on .work-head, whose
+   own font-size is the inherited 16px, so the ch unit does not follow the h2 --
+   a longer name wraps instead of reaching further across the band, which is
+   what keeps it clear of the pile. Verified: block width is unchanged at 323px
+   and "Reminiscence Reverie" wraps to two lines. */
 .is-constellation .work-head .eyebrow {
-  font-size: 0.62rem;
+  font-size: 0.75rem;
   letter-spacing: 0.14em;
-  margin-bottom: 0.15rem;
+  margin-bottom: 0.2rem;
 }
 .is-constellation .work-head h2 {
-  font-size: 1.15rem;
-  line-height: 1.25;
+  font-size: clamp(1.4rem, 1.9vw, 1.9rem);
+  line-height: 1.2;
   margin-bottom: 0.3rem;
 }
 /* NO NAMED CREDITS ON THIS PAGE (Tony, 27 Aug 2026). Hidden, not deleted: the
@@ -1382,6 +1504,16 @@ html { scrollbar-gutter: stable; }
      static fallback COSTS HEIGHT -- four blocks in the flow took the page from
      1.12 screens to 1.28 at that width. Push the fallback as late as it will
      go. */
+  /* AND THE HEAP CENTRES WITH IT. Once the title is centred above its own
+     pile there is no clear half for the pile to be anchored away from, so an
+     off-centre heap just reads as misaligned under a centred name. Read by
+     measure() in mini.js -- it CANNOT be done by overriding --heap-ax here,
+     because that one is authored inline per gallery and an inline custom
+     property beats a media query at any specificity. Hence a separate flag
+     nothing authors inline. Same breakpoint as the title on purpose: the two
+     have to agree, so they are declared together. */
+  .is-constellation .scatter { --heap-center: 1; }
+
   .is-constellation .work-head {
     position: static;
     translate: none;

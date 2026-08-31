@@ -23,6 +23,14 @@
   --card-well: #0d0e10;    /* project-card media placeholder ground          */
   --max-width: 1100px;
   --radius: 4px;
+  /* Gap above a .section-head that opens a new block partway down a long page.
+     This was written inline 24 times across five pages as margin-top: 3rem,
+     with two 2.75rem outliers on vincis-voyage and tramsheds-joyride that were
+     drift rather than intent. One number now, and .is-spaced says which heads
+     it applies to -- it cannot be a sibling selector, because on a project page
+     the FIRST head in the container needs the gap (it follows the film) while
+     on about.html it does not (it follows the portrait). */
+  --section-gap: 3rem;
   font-size: 16px;
 }
 
@@ -265,11 +273,20 @@ section { padding: 4rem 0; }
   margin-bottom: 2.5rem;
   max-width: 60ch;
 }
+/* Opens a new block partway down a long page. See --section-gap. */
+.section-head.is-spaced { margin-top: var(--section-gap); }
 /* The block's own margin owns the spacing below it. Without this the trailing
    paragraph adds its 1rem on top of that 2.5rem, so a section head sat 56px
    clear of its first body paragraph while paragraphs after it sat 16px apart —
    the head read as detached from the section it introduces. */
 .section-head > p:last-child { margin-bottom: 0; }
+
+/* A one-sentence lede under a page h1 that sits DIRECTLY in the container --
+   the opening the five project pages use -- rather than inside a .section-head.
+   .section-head caps everything in it at 60ch, heading included, which is what
+   wrapped "Assorted Works & Studies" onto two lines on mini-works.html while
+   every sibling title stayed on one. This caps the paragraph only. */
+.page-lede { max-width: 60ch; }
 
 /* ---------- Video embed ---------- */
 .video-frame {
@@ -902,6 +919,33 @@ section { padding: 4rem 0; }
 }
 .meta-item .eyebrow { display: block; margin-bottom: 0.3rem; }
 .meta-item p { margin: 0; color: var(--text); }
+
+/* TWO UP ON A PHONE, NOT FIVE STACKED. minmax(160px) needs 344px of inner
+   width for a second column, and a 375px screen leaves 279 -- so the slate
+   collapsed to one item per row and ran 394px tall, 48% of an 812px screen,
+   before a visitor saw any work at all. That is every project page, not just
+   mini-works: measured identically on vincis-voyage.
+
+   100px is set by the NARROWEST phone, not by 375. At 320px the slate has only
+   235.2px inside it, so two columns leave 109.6 each -- a 120px floor collapsed
+   them to one (measured: 349px tall) and even 110 missed by 0.4px. 100 clears
+   it with room to spare and changes nothing higher up: three columns at 375
+   would need 332px against 290.4 available, so it stays two, and 480 keeps its
+   three. The gap and padding come in with it because at this width they were
+   sized for a single column and read as a lot of air around very little.
+
+   KNOWN AND ACCEPTED: crossing 480 upward the slate gets ~69px TALLER, because
+   the base 160px floor gives only two columns until about 624px. Both sides
+   are fine to look at and nobody meets the seam without dragging a window
+   across that exact pixel; the alternative is a second floor for tablets,
+   which is more machinery than the problem deserves. */
+@media (max-width: 480px) {
+  .meta-grid {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 1rem;
+    padding: 1.1rem;
+  }
+}
 
 .gallery {
   display: grid;

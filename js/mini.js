@@ -243,6 +243,31 @@
        nowhere to go. The cycle repeats the four authored values, so a fifth
        section picks up the rhythm rather than breaking it. */
     if (!isFinite(ax)) ax = AX_CYCLE[(seed / 37) % AX_CYCLE.length];
+
+    /* NARROW SCREENS CENTRE EVERY HEAP, and the stylesheet decides where that
+       starts by setting --heap-center. Below that width the title block drops
+       out of the clear half and sits static and CENTRED above its own pile, so
+       a heap anchored off to one side no longer has anything to be off to the
+       side OF -- it just reads as misaligned under a centred name. Tony,
+       31 Aug 2026: "before the clusters were centered somehow actually looked
+       nice for mobile, since the texts are pretty much centered".
+
+       IT USED TO HAPPEN BY ACCIDENT, which is why this is new code for old
+       behaviour. A wide pile on a narrow band trips the guard below -- the heap
+       is too wide to sit anywhere but the middle -- so while the spiral was
+       spread at --heap-wide 1.34 every phone heap centred itself. Tightening
+       the spiral for the bigger mobile clusters stopped tripping it, and the
+       authored --heap-ax started being honoured at widths it was never meant
+       for: measured at 375, heaps sat -65 to +85px off centre under centred
+       titles.
+
+       IT HAS TO BE A SEPARATE FLAG, NOT AN OVERRIDE OF --heap-ax. That one is
+       authored inline on each gallery, and an inline custom property beats a
+       media query at any specificity -- the trap this component's stylesheet
+       already documents twice. So the query sets a property nothing authors
+       inline, and this reads it. */
+    if (parseFloat(scs.getPropertyValue("--heap-center")) === 1) ax = 0.5;
+
     var anchorX = Math.max(half, Math.min(box.width - half, box.width * ax));
     if (box.width < half * 2) anchorX = box.width / 2;
 
