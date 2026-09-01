@@ -15,6 +15,23 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
+<!-- TAILORED VIEW — the READ half. `?for=<preset>` reorders the bands below
+     (see "Band order" in css/style.css) and is remembered, so the link can be
+     sent to the HOME page and still apply by the time the visitor clicks
+     through to here: a query string on its own dies on the first nav click.
+     This is INLINE and in <head> deliberately — js/script.js loads at the end
+     of the body, which would paint the authored order first and visibly jump.
+     The WRITE half lives in script.js, which every page loads, so no other
+     page needs a copy of this. `?for=default` clears it. -->
+<script>
+(function () {
+  try {
+    var q = new URLSearchParams(location.search).get("for");
+    var v = q !== null ? q : localStorage.getItem("tc:projects-for");
+    if (v && v !== "default") document.documentElement.setAttribute("data-for", v);
+  } catch (e) { /* storage blocked — fall through to the authored order */ }
+})();
+</script>
 </head>
 <body>
 
@@ -46,149 +63,177 @@
 <section class="section-tight projects-ground">
   <div class="container">
 
-    <h2 class="project-band">Selected Work</h2>
+    <!-- THE TAILORED-VIEW NOTICE. Hidden unless a preset is active. A curated
+         order that says nothing about being curated is the page lying by
+         omission, so the reset link is not decoration — it is the thing that
+         makes the reorder honest. One <span> per preset, shown by CSS, so the
+         label needs no JS and cannot flash the wrong text. -->
+    <p class="projects-cut">
+      <span class="projects-cut-tag">Tailored view</span>
+      <span data-cut="uiux">Design &amp; front-end work first.</span>
+    </p>
 
-    <!-- Four films, two up. The count divides evenly at 2 and 1 columns, so
-         adding a fifth card here re-opens the hole this layout closed. -->
-    <div class="project-grid">
+    <!-- BANDS ARE ORDERED BY CSS, NOT BY DOM ORDER — see the head script above
+         and the .projects-bands block in css/style.css. Each band is wrapped so
+         a preset moves a heading and its cards together with one `order`, and
+         so the spacing between bands survives a reorder: the old
+         `.project-grid + .project-band` rule matched DOM order and would have
+         left the gap on whichever band happened to be written second. -->
+    <div class="projects-bands">
 
-      <article class="project-card">
+      <section class="bandgroup" data-band="film">
+      <h2 class="project-band">Selected Work</h2>
+
+      <!-- Four films, two up. The count divides evenly at 2 and 1 columns, so
+           adding a fifth card here re-opens the hole this layout closed. -->
+      <div class="project-grid">
+
+        <article class="project-card">
+          <div class="project-card-thumb">
+            <div class="project-card-media" style="background-image:url('images/projects/vincis-voyage.jpg');"></div>
+          </div>
+          <div class="project-card-body">
+            <p class="eyebrow">Practical Set Design</p>
+            <h3><a class="card-link" href="projects/vincis-voyage.html">Vinci&rsquo;s Voyage</a></h3>
+            <dl class="project-meta">
+              <div><dt>Role</dt><dd>Director</dd></div>
+              <div><dt>Date</dt><dd>May 2024</dd></div>
+              <div><dt>Location</dt><dd>Narraweena NSW Australia</dd></div>
+              <div><dt>AI Use</dt><dd>None</dd></div>
+            </dl>
+          </div>
+        </article>
+
+        <article class="project-card">
+          <div class="project-card-thumb">
+            <div class="project-card-media" style="background-image:url('images/projects/night-vision.jpg');" data-clip="images/projects/nv-card-loop.mp4"></div>
+          </div>
+          <div class="project-card-body">
+            <p class="eyebrow">Stop Motion &amp; 2D Animation</p>
+            <h3><a class="card-link" href="projects/night-vision.html">Night Vision (while we sleep)</a></h3>
+            <dl class="project-meta">
+              <div><dt>Role</dt><dd>Project Leader, Direction &amp; Production</dd></div>
+              <div><dt>Date</dt><dd>August 2023</dd></div>
+              <div><dt>Location</dt><dd>Sydney NSW Australia</dd></div>
+              <div><dt>AI Use</dt><dd>None</dd></div>
+            </dl>
+          </div>
+        </article>
+
+        <article class="project-card">
+          <div class="project-card-thumb">
+            <div class="project-card-media" style="background-image:url('images/projects/tramsheds-joyride.jpg');" data-clip="images/projects/tj-card-loop.mp4"></div>
+          </div>
+          <div class="project-card-body">
+            <p class="eyebrow">2D Animation &amp; Live Footage</p>
+            <h3><a class="card-link" href="projects/tramsheds-joyride.html">Tramsheds Joy Ride</a></h3>
+            <dl class="project-meta">
+              <div><dt>Role</dt><dd>Project Leader, Direction &amp; Production</dd></div>
+              <div><dt>Date</dt><dd>August 2024</dd></div>
+              <div><dt>Location</dt><dd>Tramsheds Glebe NSW Australia</dd></div>
+              <div><dt>AI Use</dt><dd>None</dd></div>
+            </dl>
+          </div>
+        </article>
+
+        <article class="project-card">
+          <div class="project-card-thumb">
+            <div class="project-card-media" style="background-image:url('images/projects/piece-it-together.jpg');" data-clip="images/projects/pit-card-once.mp4" data-clip-once></div>
+          </div>
+          <div class="project-card-body">
+            <p class="eyebrow">Stop Motion &amp; 2D Animation</p>
+            <h3><a class="card-link" href="projects/piece-it-together.html">Piece It Together!</a></h3>
+            <dl class="project-meta">
+              <div><dt>Role</dt><dd>Director &amp; Animator</dd></div>
+              <div><dt>Date</dt><dd>November 2024</dd></div>
+              <div><dt>Location</dt><dd>Surry Hills NSW Australia</dd></div>
+              <div><dt>AI Use</dt><dd>None</dd></div>
+            </dl>
+          </div>
+        </article>
+
+      </div>
+      </section>
+
+      <section class="bandgroup" data-band="personal">
+      <h2 class="project-band">Personal Work</h2>
+
+      <!-- Full width for the same reason the case study is: one card alone in a
+           band would sit stranded on a 2-up row. .is-wide, not .is-case — it
+           shares that card's layout but not its contained-on-a-panel thumb,
+           because this image is a collage of frames and drawings rather than a
+           screenshot. The media div must stay EMPTY with project-card-media as
+           its whole class attribute, or asset-scan.ps1 silently drops the slot. -->
+      <article class="project-card is-wide">
         <div class="project-card-thumb">
-          <div class="project-card-media" style="background-image:url('images/projects/vincis-voyage.jpg');"></div>
+          <div class="project-card-media" style="background-image:url('images/projects/mini-works.jpg');"></div>
         </div>
         <div class="project-card-body">
-          <p class="eyebrow">Practical Set Design</p>
-          <h3><a class="card-link" href="projects/vincis-voyage.html">Vinci&rsquo;s Voyage</a></h3>
+          <p class="eyebrow">Various Disciplines</p>
+          <h3><a class="card-link" href="projects/mini-works.html">Assorted Works &amp; Studies</a></h3>
           <dl class="project-meta">
-            <div><dt>Role</dt><dd>Director</dd></div>
-            <div><dt>Date</dt><dd>May 2024</dd></div>
-            <div><dt>Location</dt><dd>Narraweena NSW Australia</dd></div>
-            <div><dt>AI Use</dt><dd>None</dd></div>
-          </dl>
-        </div>
-      </article>
-
-      <article class="project-card">
-        <div class="project-card-thumb">
-          <div class="project-card-media" style="background-image:url('images/projects/night-vision.jpg');" data-clip="images/projects/nv-card-loop.mp4"></div>
-        </div>
-        <div class="project-card-body">
-          <p class="eyebrow">Stop Motion &amp; 2D Animation</p>
-          <h3><a class="card-link" href="projects/night-vision.html">Night Vision (while we sleep)</a></h3>
-          <dl class="project-meta">
-            <div><dt>Role</dt><dd>Project Leader, Direction &amp; Production</dd></div>
-            <div><dt>Date</dt><dd>August 2023</dd></div>
+            <div><dt>Role</dt><dd>Varies</dd></div>
+            <!-- August 2022 is measured, not estimated: the earliest file in any
+                 of the six is 11 Aug 2022 in Breakout, whose own PDF carries an
+                 internal CreationDate of 6 Sep 2022, and Glass Shatter's earliest
+                 is 11 Sep 2022. -->
+            <div><dt>Date</dt><dd>August 2022 &mdash; ongoing</dd></div>
             <div><dt>Location</dt><dd>Sydney NSW Australia</dd></div>
             <div><dt>AI Use</dt><dd>None</dd></div>
           </dl>
         </div>
       </article>
+      </section>
 
-      <article class="project-card">
+      <section class="bandgroup" data-band="web">
+      <h2 class="project-band">Design &amp; Web</h2>
+
+      <!-- Full width and on its side, because the site is not a fifth film. The
+           media div must stay empty with project-card-media as its whole class
+           attribute — see the note in css/style.css. -->
+      <article class="project-card is-case">
         <div class="project-card-thumb">
-          <div class="project-card-media" style="background-image:url('images/projects/tramsheds-joyride.jpg');" data-clip="images/projects/tj-card-loop.mp4"></div>
+          <div class="project-card-media" style="background-image:url('images/projects/portfolio-site-scrub-motion-poster.jpg');"></div>
         </div>
         <div class="project-card-body">
-          <p class="eyebrow">2D Animation &amp; Live Footage</p>
-          <h3><a class="card-link" href="projects/tramsheds-joyride.html">Tramsheds Joy Ride</a></h3>
+          <p class="eyebrow">UI/UX Design &amp; Front-End</p>
+          <h3><a class="card-link" href="projects/portfolio-site.html">This Portfolio Site</a></h3>
           <dl class="project-meta">
-            <div><dt>Role</dt><dd>Project Leader, Direction &amp; Production</dd></div>
-            <div><dt>Date</dt><dd>August 2024</dd></div>
-            <div><dt>Location</dt><dd>Tramsheds Glebe NSW Australia</dd></div>
-            <div><dt>AI Use</dt><dd>None</dd></div>
+            <div><dt>Role</dt><dd>Design Direction, Art Direction &amp; Review</dd></div>
+            <div><dt>Date</dt><dd>July 2026 &mdash; ongoing</dd></div>
+            <div><dt>Location</dt><dd>Sydney NSW Australia</dd></div>
+            <div><dt>AI Use</dt><dd>Implementation, and the writing on the case study</dd></div>
           </dl>
         </div>
       </article>
+      </section>
 
-      <article class="project-card">
+      <section class="bandgroup" data-band="client">
+      <h2 class="project-band">Client Work</h2>
+
+      <!-- PLACEHOLDER. Panda Sports has no page yet, so this card carries no
+           link — a title that looks like the four above it but goes nowhere is
+           worse than one that plainly does not. It also carries no meta slate:
+           role, date and location are unrecorded for this project, and four rows
+           of "—" say less than one honest line. The media div must stay EMPTY
+           with project-card-media as its whole class attribute; the status pill
+           is a sibling, which asset-scan.ps1 does not mind. -->
+      <article class="project-card is-upcoming">
         <div class="project-card-thumb">
-          <div class="project-card-media" style="background-image:url('images/projects/piece-it-together.jpg');" data-clip="images/projects/pit-card-once.mp4" data-clip-once></div>
+          <div class="project-card-media" style="background-image:url('images/projects/ps-card.jpg');"></div>
+          <p class="card-status">In progress</p>
         </div>
         <div class="project-card-body">
-          <p class="eyebrow">Stop Motion &amp; 2D Animation</p>
-          <h3><a class="card-link" href="projects/piece-it-together.html">Piece It Together!</a></h3>
-          <dl class="project-meta">
-            <div><dt>Role</dt><dd>Director &amp; Animator</dd></div>
-            <div><dt>Date</dt><dd>November 2024</dd></div>
-            <div><dt>Location</dt><dd>Surry Hills NSW Australia</dd></div>
-            <div><dt>AI Use</dt><dd>None</dd></div>
-          </dl>
+          <p class="eyebrow">Graphics Design</p>
+          <h3>Panda Sports</h3>
+          <p class="project-note">AI assisted design works done for the
+            badminton label Panda Sports. The pieces are
+            still being finished, and this page will follow them.</p>
         </div>
       </article>
+      </section>
 
     </div>
-
-    <h2 class="project-band">Personal Work</h2>
-
-    <!-- Full width for the same reason the case study is: one card alone in a
-         band would sit stranded on a 2-up row. .is-wide, not .is-case — it
-         shares that card's layout but not its contained-on-a-panel thumb,
-         because this image is a collage of frames and drawings rather than a
-         screenshot. The media div must stay EMPTY with project-card-media as
-         its whole class attribute, or asset-scan.ps1 silently drops the slot. -->
-    <article class="project-card is-wide">
-      <div class="project-card-thumb">
-        <div class="project-card-media" style="background-image:url('images/projects/mini-works.jpg');"></div>
-      </div>
-      <div class="project-card-body">
-        <p class="eyebrow">Various Disciplines</p>
-        <h3><a class="card-link" href="projects/mini-works.html">Assorted Works &amp; Studies</a></h3>
-        <dl class="project-meta">
-          <div><dt>Role</dt><dd>Varies</dd></div>
-          <!-- August 2022 is measured, not estimated: the earliest file in any
-               of the six is 11 Aug 2022 in Breakout, whose own PDF carries an
-               internal CreationDate of 6 Sep 2022, and Glass Shatter's earliest
-               is 11 Sep 2022. -->
-          <div><dt>Date</dt><dd>August 2022 &mdash; ongoing</dd></div>
-          <div><dt>Location</dt><dd>Sydney NSW Australia</dd></div>
-          <div><dt>AI Use</dt><dd>None</dd></div>
-        </dl>
-      </div>
-    </article>
-
-    <h2 class="project-band">Design &amp; Web</h2>
-
-    <!-- Full width and on its side, because the site is not a fifth film. The
-         media div must stay empty with project-card-media as its whole class
-         attribute — see the note in css/style.css. -->
-    <article class="project-card is-case">
-      <div class="project-card-thumb">
-        <div class="project-card-media" style="background-image:url('images/projects/portfolio-site-scrub-motion-poster.jpg');"></div>
-      </div>
-      <div class="project-card-body">
-        <p class="eyebrow">UI/UX Design &amp; Front-End</p>
-        <h3><a class="card-link" href="projects/portfolio-site.html">This Portfolio Site</a></h3>
-        <dl class="project-meta">
-          <div><dt>Role</dt><dd>Design Direction, Art Direction &amp; Review</dd></div>
-          <div><dt>Date</dt><dd>July 2026 &mdash; ongoing</dd></div>
-          <div><dt>Location</dt><dd>Sydney NSW Australia</dd></div>
-          <div><dt>AI Use</dt><dd>Implementation, and the writing on the case study</dd></div>
-        </dl>
-      </div>
-    </article>
-
-    <h2 class="project-band">Client Work</h2>
-
-    <!-- PLACEHOLDER. Panda Sports has no page yet, so this card carries no
-         link — a title that looks like the four above it but goes nowhere is
-         worse than one that plainly does not. It also carries no meta slate:
-         role, date and location are unrecorded for this project, and four rows
-         of "—" say less than one honest line. The media div must stay EMPTY
-         with project-card-media as its whole class attribute; the status pill
-         is a sibling, which asset-scan.ps1 does not mind. -->
-    <article class="project-card is-upcoming">
-      <div class="project-card-thumb">
-        <div class="project-card-media" style="background-image:url('images/projects/ps-card.jpg');"></div>
-        <p class="card-status">In progress</p>
-      </div>
-      <div class="project-card-body">
-        <p class="eyebrow">Graphics Design</p>
-        <h3>Panda Sports</h3>
-        <p class="project-note">AI assisted design works done for the
-          badminton label Panda Sports. The pieces are
-          still being finished, and this page will follow them.</p>
-      </div>
-    </article>
   </div>
 </section>
 

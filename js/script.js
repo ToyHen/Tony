@@ -1,4 +1,31 @@
 function initSite() {
+  /* ---------- tailored view ----------
+     The WRITE half of the `?for=` preset. The READ half is an inline script in
+     projects.html's <head>, because that one has to run before first paint or
+     the authored band order flashes on its way to the tailored one. This half
+     runs on EVERY page, which is the whole point: the link that gets sent is
+     usually the HOME page, so the preference has to be captured wherever the
+     visitor lands and still be there when they click through to Projects.
+     `?for=default` clears it, and is deliberately the ONLY way back — the
+     on-page reset button was removed on purpose; see the .projects-cut block
+     in css/style.css before adding one.
+
+     The key is namespaced because localStorage is scoped to the ORIGIN, not
+     the path — https://toyhen.github.io is shared with every other GitHub
+     Pages project on the account, so a bare key like "for" would collide.
+
+     Nothing here touches the DOM: the reorder is entirely CSS. */
+  try {
+    const want = new URLSearchParams(location.search).get("for");
+    if (want !== null) {
+      if (want && want !== "default") {
+        localStorage.setItem("tc:projects-for", want);
+      } else {
+        localStorage.removeItem("tc:projects-for");
+      }
+    }
+  } catch (e) { /* storage blocked — the preset still applies to this page */ }
+
   /* ---------- mobile nav ---------- */
   const toggle = document.querySelector(".nav-toggle");
   const links = document.querySelector(".nav-links");
