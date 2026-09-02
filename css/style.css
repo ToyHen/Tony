@@ -423,6 +423,19 @@ section { padding: 4rem 0; }
    and two of those back to back read as a template rather than an arrival. */
 .page-hero {
   position: relative;
+  /* THE BARE `section { padding: 4rem 0 }` LANDS ON THIS TOO, and it made the
+     banner 65px taller than it is written to be: 64 + 276 + 64 + 1 = 405px, so
+     `min-height` never even engaged and the band was 55% empty. Tony, 1 Sep
+     2026: "this banner feels a little bit too tall?"
+
+     Same fault `.bandgroup` on this page already documents -- anything wrapped
+     in a <section> inherits that padding whether or not it wants it, and here
+     it stacked on top of .page-hero-inner's own padding-block. The tell was
+     105px of dead space UNDER the tagline against the 40px the inner asks for.
+
+     Zeroing it hands the height back to min-height, which is the number the
+     scrim and the contrast sweep below were tuned against. */
+  padding: 0;
   min-height: 340px;
   display: flex;
   align-items: flex-end;
@@ -444,15 +457,27 @@ section { padding: 4rem 0; }
    across the band, so it is the one that meets a window. Measuring the headings
    alone would have shipped a page whose body copy sat at 2:1.
 
-   Worst case per element, real glyph boxes, over the composited pixels:
-     414   eyebrow 8.35   h1 15.12   tagline 6.80
-     600   eyebrow 8.23   h1 16.90   tagline 7.12
-     720   eyebrow 9.07   h1 16.91   tagline 7.24
-     890   eyebrow 9.08   h1 16.90   tagline 7.98
-     906   eyebrow 8.97   h1 16.27   tagline 7.65
-     1100  eyebrow 8.98   h1 16.27   tagline 7.91
-     1440  eyebrow 8.86   h1 16.25   tagline 7.73
-     1920  eyebrow 9.08   h1 16.82   tagline 7.70
+   Worst case per element, real glyph boxes, over the composited pixels.
+   RE-SWEPT 1 SEP 2026 after the stray `section` padding was zeroed above: that
+   changed the band's height, which changes the `cover` crop, which moves the
+   lit windows relative to the copy — so the previous table was measured against
+   a 405px band that no longer exists and could not be carried over. Run
+   redesign-lab/measure-banner.js to reproduce.
+
+     px    band   eyebrow   h1      tagline
+     375   280    6.82      8.64    5.89     <- worst tagline on the page
+     414   280    6.72      14.31   5.90     <- worst eyebrow
+     600   280    12.04     14.32   6.32
+     720   340    11.91     14.72   7.89
+     890   340    11.78     14.72   7.89
+     906   340    11.52     14.86   7.89
+     1100  340    11.89     14.85   7.87
+     1440  340    11.52     14.85   7.91
+     1920  340    12.56     14.85   7.75
+
+   Every figure clears AA (4.5 for the eyebrow and tagline, 3.0 for the large
+   h1) and the band got SAFER, not tighter, because losing 65px of the vertical
+   scrim's run means the copy now sits deeper into its dark end.
 
    The horizontal pass runs strong to 46% and only lets go after 78% because
    that is where the copy column ends at the WIDEST viewports — above
