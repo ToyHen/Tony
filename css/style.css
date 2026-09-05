@@ -611,66 +611,28 @@ section { padding: 4rem 0; }
 
 /* A PRESET IS ONE RULE. `?for=<preset>` is stamped on <html> by the inline
    script in projects.html's <head> — before first paint, so the default order
-   never flashes on its way to the tailored one. Adding a preset is a rule here
-   plus a <span data-cut> label in the page; nothing in js/script.js changes.
+   never flashes on its way to the tailored one. Adding a preset is one rule
+   here and nothing else — no markup, and nothing in js/script.js changes.
    Order values are negative so an unlisted band keeps its authored position at
    the default 0 — a preset only ever PROMOTES, it never hides a card, because
-   a recruiter holding a CV that names a project has to be able to find it. */
+   a recruiter holding a CV that names a project has to be able to find it.
+
+   NO NOTICE AND NO RESET CONTROL. BOTH WERE BUILT AND BOTH WERE REMOVED, AND
+   NEITHER SHOULD COME BACK (Tony, 1 and 2 Sep 2026). The reset button went
+   first: it read "Show everything", which contradicted the never-hides rule
+   above — nothing is hidden, so it named a problem that does not exist — and
+   it was a one-way door, since a visitor who clicked without thinking lost the
+   order the link was sent to give them. The "Tailored view" line went next, for
+   a better reason than the button did: choosing an ORDER is editing, not
+   hiding, so it needs no disclosure any more than a tailored CV does. Saying
+   "this is a special version" also puts back the separate-portfolio framing
+   that this whole mechanism exists to avoid, and it spent the top of the page
+   on the site's own plumbing instead of the work under it.
+
+   So a preset is now genuinely one rule and nothing else — no label markup, no
+   JS change. `?for=default` resets, and is the only way back. The matching
+   note is in projects.html where the markup used to be. */
 html[data-for="uiux"] .bandgroup[data-band="web"] { order: -1; }
-
-/* The notice sits above the bands and outside their flex flow, so its own
-   spacing does not inherit the 3.25rem band gap. Display is toggled here
-   rather than with the `hidden` attribute on purpose: `[hidden]` loses to any
-   class rule setting a display value, which is the most repeated bug in this
-   stylesheet — see .figure-grid and .framestrip. No attribute, no clash. */
-/* A LINE, NOT A BOX, AND DELIBERATELY NOT A CONTROL.
-
-   THERE IS NO RESET BUTTON HERE AND ONE MUST NOT BE ADDED BACK (Tony, 1 Sep
-   2026). It read "Show everything", which contradicted the rule the whole
-   feature rests on — a preset only ever PROMOTES a band, it never hides a
-   card, so everything is already shown and the label described a problem that
-   does not exist. Worse, it was a one-way door: a visitor who clicked it
-   without thinking lost the order the link was sent to give them, and the only
-   way back is a URL they would have to be told about. The escape hatch existed
-   to undo a state that costs the visitor nothing, so deleting it is the fix.
-   `?for=default` still resets, and stays the documented way for Tony to do it.
-
-   With no control, it takes no box. A bordered chip invites a click; this is a
-   statement of fact, so it is a quiet line — which also took it from 95px and
-   three stacked lines on a 375px phone to one line, before any work shows.
-
-   The tag is accent and the description dim, rather than both dim, so it does
-   not read as a second .project-band: that label is also small uppercase dim
-   and sits ~30px below this one. Same reason it borrows .eyebrow rather than
-   inventing a treatment — an accent micro-label is what this site already
-   uses for "small label naming the thing under it". */
-.projects-cut {
-  display: none;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 0.1rem 0.7rem;
-  /* 2.25rem, not the 1.6rem this started at: .project-band is also a small
-     uppercase label, so at 26px the two lines crowded and read as one stack.
-     This one belongs to the page, that one to the section under it. */
-  margin: 0 0 2.25rem;
-  font-size: 0.8rem;
-  color: var(--text-dim);
-}
-html[data-for] .projects-cut { display: flex; }
-
-.projects-cut-tag {
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  font-size: 0.66rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--accent);
-  white-space: nowrap;
-}
-
-/* Scoped to [data-cut] so the tag above is not swept up by it. */
-.projects-cut span[data-cut] { display: none; }
-html[data-for="uiux"] .projects-cut span[data-cut="uiux"] { display: inline; }
 
 /* TWO UP, NEVER THREE. Four cards divide evenly at 2 and 1 columns, so this
    grid has no hole at any width — the five-card grid it replaced stranded the

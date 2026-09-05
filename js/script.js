@@ -7,8 +7,9 @@ function initSite() {
      usually the HOME page, so the preference has to be captured wherever the
      visitor lands and still be there when they click through to Projects.
      `?for=default` clears it, and is deliberately the ONLY way back — the
-     on-page reset button was removed on purpose; see the .projects-cut block
-     in css/style.css before adding one.
+     on-page reset button was removed on purpose, and so was the "Tailored view"
+     notice that explained it. See the `html[data-for=...]` block in
+     css/style.css before adding either back.
 
      The key is namespaced because localStorage is scoped to the ORIGIN, not
      the path — https://toyhen.github.io is shared with every other GitHub
