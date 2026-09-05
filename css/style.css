@@ -634,6 +634,46 @@ section { padding: 4rem 0; }
    note is in projects.html where the markup used to be. */
 html[data-for="uiux"] .bandgroup[data-band="web"] { order: -1; }
 
+/* ITEM ORDER WITHIN A BAND. The same `order` trick one level down: `.project-grid`
+   is already a grid, so its cards take `order` with no structural change at all.
+   A preset can therefore promote a single CARD as well as a whole band.
+
+   EVERY CARD CARRIES `data-project`, AND THAT IS WHAT MADE THIS POSSIBLE. Before
+   2 Sep 2026 the four films were bare `<article class="project-card">`, identical
+   and addressable only by `:nth-child` — which silently points at the wrong card
+   the moment one is added or reordered. The keys are the registry's own prefixes
+   from `picker-projects.json` with the hyphen dropped (`vv`, `nv`, `tj`, `pit`,
+   `mini`, `portfolio-site`, `ps`), so the markup and the registry cannot drift
+   into two different vocabularies.
+
+   THE COUNT MUST NOT CHANGE. Reordering four cards keeps four, so the
+   two-up-never-three guarantee below survives untouched. Moving a card INTO this
+   grid from another band is a different and much more expensive feature — it
+   takes the count to five and strands one on a row. Don't do it with `order`.
+
+   ONE CAVEAT, ACCEPTED: `order` moves the cards visually but not in the DOM, so
+   tab and screen-reader order stay in the authored sequence. That is fine here
+   and would not be everywhere — the cards are independent siblings with no
+   meaning carried by their sequence, so nothing is lost by reading them in a
+   different order. The band-level rule above has the same property. */
+
+/* 2D-animation roles: Tramsheds leads (its Type row is the only "2D Animation &
+   Live Footage" on the page) and Vinci's goes last (its Type is "Practical Set
+   Design", the least 2D of the four). Night Vision and Piece It Together keep
+   their authored order in the middle at the default 0. Derived from the Type
+   labels on the cards themselves — adjust to taste, it is two lines. */
+html[data-for="2d"] [data-project="tj"] { order: -1; }
+html[data-for="2d"] [data-project="vv"] { order: 1; }
+
+/* Stop-motion roles: Piece It Together, Vinci's Voyage, Night Vision, Tramsheds.
+   THIS ORDER IS TONY'S OWN CALL (2 Sep 2026), not derived from the cards the way
+   the 2D one above is — do not "correct" it to match some reading of the Type
+   labels. Left as one rule on purpose: the other three are already in his order
+   in the DOM (vv, nv, tj), so moving Piece It Together to the front is the whole
+   change. Adding rules for the other three would be three chances to disagree
+   with the markup later for no gain. */
+html[data-for="stopmotion"] [data-project="pit"] { order: -1; }
+
 /* TWO UP, NEVER THREE. Four cards divide evenly at 2 and 1 columns, so this
    grid has no hole at any width — the five-card grid it replaced stranded the
    last card alone on a row of its own at 3 up, which is what the layout looked

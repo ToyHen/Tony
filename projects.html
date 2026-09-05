@@ -86,7 +86,7 @@
            adding a fifth card here re-opens the hole this layout closed. -->
       <div class="project-grid">
 
-        <article class="project-card">
+        <article class="project-card" data-project="vv">
           <div class="project-card-thumb">
             <div class="project-card-media" style="background-image:url('images/projects/vincis-voyage.jpg');"></div>
           </div>
@@ -102,7 +102,7 @@
           </div>
         </article>
 
-        <article class="project-card">
+        <article class="project-card" data-project="nv">
           <div class="project-card-thumb">
             <div class="project-card-media" style="background-image:url('images/projects/night-vision.jpg');" data-clip="images/projects/nv-card-loop.mp4"></div>
           </div>
@@ -118,7 +118,7 @@
           </div>
         </article>
 
-        <article class="project-card">
+        <article class="project-card" data-project="tj">
           <div class="project-card-thumb">
             <div class="project-card-media" style="background-image:url('images/projects/tramsheds-joyride.jpg');" data-clip="images/projects/tj-card-loop.mp4"></div>
           </div>
@@ -134,7 +134,7 @@
           </div>
         </article>
 
-        <article class="project-card">
+        <article class="project-card" data-project="pit">
           <div class="project-card-thumb">
             <div class="project-card-media" style="background-image:url('images/projects/piece-it-together.jpg');" data-clip="images/projects/pit-card-once.mp4" data-clip-once></div>
           </div>
@@ -162,7 +162,7 @@
            because this image is a collage of frames and drawings rather than a
            screenshot. The media div must stay EMPTY with project-card-media as
            its whole class attribute, or asset-scan.ps1 silently drops the slot. -->
-      <article class="project-card is-wide">
+      <article class="project-card is-wide" data-project="mini">
         <div class="project-card-thumb">
           <div class="project-card-media" style="background-image:url('images/projects/mini-works.jpg');"></div>
         </div>
@@ -189,7 +189,7 @@
       <!-- Full width and on its side, because the site is not a fifth film. The
            media div must stay empty with project-card-media as its whole class
            attribute — see the note in css/style.css. -->
-      <article class="project-card is-case">
+      <article class="project-card is-case" data-project="portfolio-site">
         <div class="project-card-thumb">
           <div class="project-card-media" style="background-image:url('images/projects/portfolio-site-scrub-motion-poster.jpg');"></div>
         </div>
@@ -216,7 +216,7 @@
            of "—" say less than one honest line. The media div must stay EMPTY
            with project-card-media as its whole class attribute; the status pill
            is a sibling, which asset-scan.ps1 does not mind. -->
-      <article class="project-card is-upcoming">
+      <article class="project-card is-upcoming" data-project="ps">
         <div class="project-card-thumb">
           <div class="project-card-media" style="background-image:url('images/projects/ps-card.jpg');"></div>
           <p class="card-status">In progress</p>
