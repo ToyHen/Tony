@@ -34,8 +34,21 @@
 <section class="section-tight">
   <div class="container">
     <div class="section-head">
-      <p class="eyebrow">Showreel</p>
-      <h1>2025 Showreel</h1>
+      <!-- The eyebrow was "Showreel" over an h1 of "2025 Showreel" — a pure
+           prefix of the heading. Swapped so each carries one thing: the year
+           above, the name below (Tony, 1 Sep 2026).
+
+           `<title>` and og:title deliberately KEEP "2025 Showreel" — a browser
+           tab and a shared link have no eyebrow to supply the year, and
+           "Showreel — Tony Chen" alone is vague out of context. So the heading
+           and the document title differ here on purpose; do not "fix" one to
+           match the other.
+
+           The year is also in the meta slate below (Year 2025). That overlap is
+           accepted: the eyebrow is a display label and the slate is the spec
+           row for the film, the same way a project page repeats its date. -->
+      <p class="eyebrow">2025</p>
+      <h1>Showreel</h1>
       <p>One minute showreel of some of my highlighted projects through out the years from practical hand made sets, to stop motion, and 2D animations.</p>
     </div>
 
@@ -80,9 +93,46 @@
       <li><span class="credit-role">Compositor</span>2D over live footage</li>
     </ul>
 
-    <div class="project-nav">
-      <a href="projects.html">&larr; All Projects</a>
-      <a href="about.html">About &amp; contact &rarr;</a>
+  </div>
+</section>
+
+<!-- THIS ENDS LIKE ITS PEERS, NOT LIKE A PROJECT PAGE (1 Sep 2026). It used to
+     carry a .project-nav, and that component is a SEQUENCE control: on the five
+     project pages every one of its links is a step in the prev/next chain
+     through the work. Here neither was -- it read "&larr; All Projects" /
+     "About &amp; contact &rarr;", two lateral jumps wearing arrows that imply a
+     previous and a next which do not exist. The back arrow was the worst of it:
+     Showreel is a top-level nav item, so visitors arrive from the header, never
+     from projects.html, and there is nothing to go "back" to.
+
+     It was also duplicating a header that never leaves. The site header is
+     position: sticky and this page is only 1.94 screens tall, so the nav sat
+     ~170px under two links that were already on screen.
+
+     index.html, projects.html and about.html all end on this .contact band;
+     reel.html was the only top-level page ending like a film page. It is also
+     the page that most earns the band -- somebody who has just watched a
+     60-second reel to the end is the most likely person on the site to want to
+     get in touch. (mini-works.html is precedent for the other direction: it
+     lives in projects/ and carries no .project-nav at all.)
+
+     The compact band, not about.html's: that page owns the actual Formspree
+     form, and a second copy of it here would split the funnel for no gain. -->
+<section class="contact">
+  <div class="container">
+    <div class="contact-grid">
+      <div class="contact-details">
+        <p class="eyebrow">Contact</p>
+        <h2>Tony Chen</h2>
+        <p><a href="mailto:tonyc.cn.au@gmail.com">tonyc.cn.au@gmail.com</a></p>
+        <div class="social-links">
+          <a href="https://www.instagram.com/toy.hen/" target="_blank" rel="noopener">Instagram &mdash; @toy.hen</a>
+        </div>
+      </div>
+      <div>
+        <p>Have a project in mind? Reach out and let's talk.</p>
+        <a href="about.html#contact" class="btn btn-primary">Send a Message</a>
+      </div>
     </div>
   </div>
 </section>

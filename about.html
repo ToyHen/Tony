@@ -133,15 +133,26 @@
 
 <section class="contact" id="contact">
   <div class="container">
-    <div class="section-head">
-      <p class="eyebrow">Get in touch</p>
-      <h2>Contact</h2>
-      <p>Have a project, collaboration, or just want to say hi? Send a message
-        below or reach out directly.</p>
-    </div>
+    <!-- THE HEADING LIVES IN THE LEFT COLUMN, which is where index.html,
+         projects.html and reel.html have always kept it — their eyebrow and h2
+         sit inside .contact-details. about.html was the only page hoisting it
+         into a .section-head above the grid, and that is what made this block
+         read as an awkward shape: the head is capped at 60ch, so it left a
+         494x140 hole to its right, while the short details column left another
+         260x305 hole below it. Two voids, diagonal from each other.
 
+         Putting it back in the column lets the form rise beside it and fills
+         both. It is a structural fix, not a new layout — the other three pages
+         are the pattern. -->
     <div class="contact-grid">
       <div class="contact-details">
+        <div class="section-head">
+          <p class="eyebrow">Get in touch</p>
+          <h2>Contact</h2>
+          <p>Have a project, collaboration, or just want to say hi? Send a
+            message below or reach out directly.</p>
+        </div>
+
         <p><strong>Tony Chen</strong></p>
         <p><a href="mailto:tonyc.cn.au@gmail.com">tonyc.cn.au@gmail.com</a></p>
         <div class="social-links">
@@ -175,7 +186,6 @@
                any submission that arrives with _gotcha set. -->
           <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true" style="display:none">
           <button type="submit" class="btn btn-primary">Send Message</button>
-          <p class="form-note">Goes straight to my inbox &mdash; I&rsquo;ll reply as soon as I can.</p>
         </form>
       </div>
     </div>

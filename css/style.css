@@ -2251,8 +2251,66 @@ html[data-for="stopmotion"] [data-project="pit"] { order: -1; }
   gap: 3rem;
 }
 
+/* THE BAND THAT HOLDS THE FORM WANTS A DIFFERENT SPLIT TO THE ONE THAT DOES
+   NOT, and 1fr 1fr was only ever right for the second. Two shapes share this
+   class:
+
+   - The COMPACT band (index, projects, reel): left is an eyebrow, a 35px h2,
+     an email and the Instagram link; right is one line and a button. Measured
+     on index.html, the LEFT is the taller of the two (163px against 92px of
+     ink), so an even split is balanced and stays.
+   - The FORM band (about.html): left is three short lines, right is a 421px
+     form. At 1fr 1fr that put 115px of content in a 502px column -- 73% of
+     that half empty -- and the block read as an L with a hole in the bottom
+     left. The details are only 185px wide at their natural size, so the column
+     was 2.7x wider than its contents needed as well.
+
+   260px is that 185px plus room for a longer address later; the form takes the
+   rest, which its Message box is the better home for anyway. `align-items:
+   start` lines the details up with the first field's label, which reads as
+   deliberate -- centring them was tried and floats them in the middle of the
+   form with nothing to anchor to.
+
+   :has() rather than a modifier class so a page that GAINS a form gets the
+   right layout without anyone remembering to add one; this is the stylesheet's
+   second use of it, after .step-shots. A browser without :has() falls back to
+   the even split, which is what shipped before, so the failure mode is the
+   status quo rather than a broken block. */
+.contact-grid:has(.contact-form) {
+  grid-template-columns: minmax(300px, 0.92fr) minmax(0, 1.08fr);
+}
+
+/* THE DETAILS SIT AT THE FOOT OF THEIR COLUMN, opposite the button. With the
+   heading now in this column (see about.html) the block is anchored at both
+   ends and the slack falls in the middle, which reads as composition rather
+   than as the hole it was. Top-aligning instead leaves everything bunched at
+   the top with ~140px of dead column under it — better than the 50/50 it
+   replaced, but still visibly a gap.
+
+   `margin-top: auto` on the first line rather than `justify-content:
+   space-between`, because space-between distributes ALL the children: the name,
+   the address and the Instagram link drifted apart from each other and the
+   detail block stopped reading as one thing. This pushes the group as a unit
+   and needs no wrapper element.
+
+   It also degrades correctly. When the column is taller than the form — narrow
+   widths, before the 720px collapse — the auto margin resolves to 0 and the
+   section head's own margin-bottom is the floor, so nothing collides. */
+.contact-grid:has(.contact-form) .contact-details {
+  display: flex;
+  flex-direction: column;
+}
+.contact-grid:has(.contact-form) .contact-details .section-head {
+  max-width: none;      /* the column is already the measure */
+  margin-bottom: 1.75rem;
+}
+.contact-grid:has(.contact-form) .contact-details .section-head + p {
+  margin-top: auto;
+}
+
 @media (max-width: 720px) {
-  .contact-grid { grid-template-columns: 1fr; gap: 2rem; }
+  .contact-grid,
+  .contact-grid:has(.contact-form) { grid-template-columns: 1fr; gap: 2rem; }
 }
 
 .contact-details p { margin-bottom: 0.5rem; }
@@ -2301,11 +2359,12 @@ form.contact-form { display: flex; flex-direction: column; gap: 1rem; }
 
 .contact-form textarea { resize: vertical; min-height: 110px; }
 
-.form-note {
-  font-size: 0.8rem;
-  color: var(--text-dim);
-  margin-top: -0.25rem;
-}
+/* .form-note is GONE (Tony, 1 Sep 2026) — the line under the Send button that
+   read "Goes straight to my inbox…". Its rule went with it rather than being
+   left as dead CSS; about.html was the only page that ever carried one, so
+   there is nothing else to keep it for. Restoring it means the <p> plus a rule
+   here, and note that the button is now the form's last element, which is what
+   the opposite column's details align to. */
 
 /* ---------- Footer ---------- */
 .site-footer {
