@@ -1640,13 +1640,21 @@ html[data-for="stopmotion"] [data-project="pit"] { order: -1; }
 .lightbox {
   position: fixed;
   inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  border: 0;
+  color: inherit;
   z-index: 200;
   display: grid;
   place-items: center;
   background: rgb(var(--bg-rgb) / 0.93);
   padding: 6vmin 5vmin;
 }
-.lightbox[hidden] { display: none; }
+.lightbox[hidden], .lightbox:not([open]) { display: none; }
+.lightbox::backdrop { background: transparent; }
 .lightbox-inner { max-width: min(1100px, 92vw); }
 .lightbox-inner video,
 .lightbox-inner img {
