@@ -486,17 +486,19 @@ function initSite() {
 
   function closeBox() {
     if (!box || box.hidden) return;
+    // Native close can restore focus before our own cleanup runs.
+    restoringFocus = true;
+    box.close();
     box.hidden = true;
     box.querySelector(".lightbox-inner").innerHTML = "";
     box.querySelector(".lightbox-count").textContent = "";
     boxFig = null;
     document.body.style.overflow = "";
     if (boxReturnFocus) {
-      restoringFocus = true;
       boxReturnFocus.focus();
-      // let the focus event land before tiles are allowed to preview again
-      setTimeout(() => { restoringFocus = false; }, 0);
     }
+    // let the focus event land before tiles are allowed to preview again
+    setTimeout(() => { restoringFocus = false; }, 0);
   }
 
   /* Step through a multi-frame tile without leaving the lightbox — click the
@@ -522,20 +524,33 @@ function initSite() {
     tileLeavers.forEach((fn) => fn());
 
     if (!box) {
-      box = document.createElement("div");
+      // A native modal also keeps focus in the video's built-in controls and
+      // makes the page behind it inert, without changing the gallery state.
+      box = document.createElement("dialog");
       box.className = "lightbox";
       box.hidden = true;
       box.innerHTML =
-        '<button type="button" class="lightbox-close">Close</button>' +
+        '<button type="button" class="lightbox-close" autofocus>Close</button>' +
         '<div><div class="lightbox-inner"></div>' +
         '<p class="lightbox-cap"></p><p class="lightbox-count"></p></div>';
       box.addEventListener("click", (e) => {
         // backdrop only — clicks on the media itself shouldn't dismiss it
         if (e.target === box || e.target.classList.contains("lightbox-close")) closeBox();
       });
+      box.addEventListener("cancel", (e) => {
+        e.preventDefault();
+        closeBox();
+      });
       document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") { closeBox(); return; }
-        if (box.hidden || !boxFig) return;
+        if (box.hidden) return;
+        // An image has only Close to tab to. Video controls keep their native
+        // tab sequence; showModal prevents reaching the page behind either.
+        if (e.key === "Tab" && !box.querySelector("video")) {
+          e.preventDefault();
+          box.querySelector(".lightbox-close").focus();
+          return;
+        }
+        if (!boxFig) return;
         if (e.key === "ArrowRight") { e.preventDefault(); stepBox(1); }
         if (e.key === "ArrowLeft") { e.preventDefault(); stepBox(-1); }
       });
@@ -580,6 +595,7 @@ function initSite() {
 
     const name = fig.querySelector("strong");
     const note = fig.querySelector("figcaption span");
+    box.setAttribute("aria-label", name ? name.textContent : "Enlarged media");
     box.querySelector(".lightbox-cap").textContent =
       [name && name.textContent, note && note.textContent].filter(Boolean).join(" — ");
     box.querySelector(".lightbox-count").textContent =
@@ -588,6 +604,7 @@ function initSite() {
     boxReturnFocus = fig;
     box.hidden = false;
     document.body.style.overflow = "hidden";
+    box.showModal();
     box.querySelector(".lightbox-close").focus();
   }
 
@@ -886,7 +903,7 @@ function initSite() {
         '<button type="button" class="step-play">Play</button>' +
       "</div>" +
       '<p class="step-hint"></p>' +
-      '<div class="step-shots" role="tablist" aria-label="Shots"></div>';
+      '<div class="step-shots" role="group" aria-label="Shots"></div>';
 
     const video = wrap.querySelector(".step-video");
     const stamp = wrap.querySelector(".step-stamp");
@@ -900,12 +917,12 @@ function initSite() {
     let fps = shots[0].fps;
     let current = -1;
 
-    const tabs = shots.map((s, i) => {
+    const shotButtons = shots.map((s, i) => {
       const b = document.createElement("button");
       b.type = "button";
       b.className = "step-shot";
-      b.setAttribute("role", "tab");
       b.setAttribute("aria-label", "Shot " + (i + 1) + ": " + s.label);
+      b.setAttribute("aria-pressed", "false");
       b.innerHTML = '<img alt=""><span></span>';
       b.querySelector("img").src = s.poster;
       b.querySelector("span").textContent = s.label;
@@ -922,6 +939,7 @@ function initSite() {
     /* Seek to the middle of a frame, not its edge: currentTime lands on a
        boundary otherwise and rounding can show the neighbour. */
     function seek(i) {
+      if (!total) return;
       frame = Math.max(0, Math.min(total - 1, i));
       video.currentTime = (frame + 0.5) / fps;
       range.value = frame;
@@ -934,6 +952,16 @@ function initSite() {
       video.pause();
       playing = false;
       play.textContent = "Play";
+    }
+
+    function step(delta) {
+      if (!total) return;
+      if (playing) {
+        // timeupdate can lag behind the frame currently on screen.
+        frame = Math.floor(video.currentTime * fps);
+        stopPlayback();
+      }
+      seek(frame + delta);
     }
 
     video.addEventListener("loadedmetadata", () => {
@@ -968,9 +996,8 @@ function initSite() {
       video.setAttribute("preload", "auto");
       video.setAttribute("src", s.src);
       video.load();
-      tabs.forEach((b, j) => {
-        b.setAttribute("aria-selected", i === j ? "true" : "false");
-        b.tabIndex = i === j ? 0 : -1;
+      shotButtons.forEach((b, j) => {
+        b.setAttribute("aria-pressed", i === j ? "true" : "false");
       });
     }
 
@@ -980,10 +1007,19 @@ function initSite() {
     });
 
     steps.forEach((b) => {
-      b.addEventListener("click", () => {
-        if (playing) stopPlayback();
-        seek(frame + parseInt(b.dataset.dir, 10));
-      });
+      b.addEventListener("click", () => step(parseInt(b.dataset.dir, 10)));
+    });
+
+    /* Left/Right always steps the current shot. Thumbnails are ordinary
+       buttons: Tab reaches each one, and Enter/Space selects a different shot.
+       Leave the range's native keys alone so each press moves just once. */
+    wrap.addEventListener("keydown", (e) => {
+      if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || e.target === range) return;
+      if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+      e.preventDefault();
+      step(e.key === "ArrowRight" ? 1 : -1);
+      // An end-frame button becomes disabled; keep keyboard focus in the player.
+      if (e.target.disabled) play.focus();
     });
 
     play.addEventListener("click", () => {
@@ -1100,12 +1136,23 @@ function initSite() {
       load();
       // stepping means the visitor is driving by hand now
       wantsPlay = false;
-      if (playing) pause();
+      if (playing) {
+        frame = Math.floor(vids[0].currentTime * fps);
+        pause();
+      }
       const last = total > 0 ? total - 1 : frame + delta;
       frame = Math.max(0, Math.min(last, frame + delta));
       vids.forEach((v) => { v.currentTime = (frame + 0.5) / fps; });
       syncSteps();
     }
+
+    root.addEventListener("keydown", (e) => {
+      if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;
+      if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+      e.preventDefault();
+      step(e.key === "ArrowRight" ? 1 : -1);
+      if (e.target.disabled && toggle) toggle.focus();
+    });
 
     const toggle = root.querySelector(".compare-toggle");
     if (toggle) {
