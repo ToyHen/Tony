@@ -486,19 +486,17 @@ function initSite() {
 
   function closeBox() {
     if (!box || box.hidden) return;
-    // Native close can restore focus before our own cleanup runs.
-    restoringFocus = true;
-    box.close();
     box.hidden = true;
     box.querySelector(".lightbox-inner").innerHTML = "";
     box.querySelector(".lightbox-count").textContent = "";
     boxFig = null;
     document.body.style.overflow = "";
     if (boxReturnFocus) {
+      restoringFocus = true;
       boxReturnFocus.focus();
+      // let the focus event land before tiles are allowed to preview again
+      setTimeout(() => { restoringFocus = false; }, 0);
     }
-    // let the focus event land before tiles are allowed to preview again
-    setTimeout(() => { restoringFocus = false; }, 0);
   }
 
   /* Step through a multi-frame tile without leaving the lightbox — click the
@@ -524,33 +522,20 @@ function initSite() {
     tileLeavers.forEach((fn) => fn());
 
     if (!box) {
-      // A native modal also keeps focus in the video's built-in controls and
-      // makes the page behind it inert, without changing the gallery state.
-      box = document.createElement("dialog");
+      box = document.createElement("div");
       box.className = "lightbox";
       box.hidden = true;
       box.innerHTML =
-        '<button type="button" class="lightbox-close" autofocus>Close</button>' +
+        '<button type="button" class="lightbox-close">Close</button>' +
         '<div><div class="lightbox-inner"></div>' +
         '<p class="lightbox-cap"></p><p class="lightbox-count"></p></div>';
       box.addEventListener("click", (e) => {
         // backdrop only — clicks on the media itself shouldn't dismiss it
         if (e.target === box || e.target.classList.contains("lightbox-close")) closeBox();
       });
-      box.addEventListener("cancel", (e) => {
-        e.preventDefault();
-        closeBox();
-      });
       document.addEventListener("keydown", (e) => {
-        if (box.hidden) return;
-        // An image has only Close to tab to. Video controls keep their native
-        // tab sequence; showModal prevents reaching the page behind either.
-        if (e.key === "Tab" && !box.querySelector("video")) {
-          e.preventDefault();
-          box.querySelector(".lightbox-close").focus();
-          return;
-        }
-        if (!boxFig) return;
+        if (e.key === "Escape") { closeBox(); return; }
+        if (box.hidden || !boxFig) return;
         if (e.key === "ArrowRight") { e.preventDefault(); stepBox(1); }
         if (e.key === "ArrowLeft") { e.preventDefault(); stepBox(-1); }
       });
@@ -595,7 +580,6 @@ function initSite() {
 
     const name = fig.querySelector("strong");
     const note = fig.querySelector("figcaption span");
-    box.setAttribute("aria-label", name ? name.textContent : "Enlarged media");
     box.querySelector(".lightbox-cap").textContent =
       [name && name.textContent, note && note.textContent].filter(Boolean).join(" — ");
     box.querySelector(".lightbox-count").textContent =
@@ -604,7 +588,6 @@ function initSite() {
     boxReturnFocus = fig;
     box.hidden = false;
     document.body.style.overflow = "hidden";
-    box.showModal();
     box.querySelector(".lightbox-close").focus();
   }
 
