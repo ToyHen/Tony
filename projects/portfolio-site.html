@@ -52,7 +52,7 @@
       </div>
       <div class="meta-item">
         <span class="eyebrow">Role</span>
-        <p>Design Direction, Art Direction &amp; Review</p>
+        <p>Creator &amp; Director</p>
       </div>
       <div class="meta-item">
         <span class="eyebrow">Date</span>
@@ -83,17 +83,19 @@
          rather than by Tony (his call, 20 Aug 2026). Every other page is his own
          prose and must stay that way — see CLAUDE.md. The disclosure below is
          the whole point of the exception, so it does not get quietly trimmed: a
-         viewer must never have to guess who is speaking. -->
+         viewer must never have to guess who is speaking.
+         Unity and ToyRef were drafted from Tony's notes and briefly carried
+         agent-draft labels; he had those removed and is rewriting both pages in
+         his own voice (11 Sep 2026). If either ever ships agent copy again, this
+         note and the status box at the bottom must say so. -->
     <div class="callout">
       <h3>A note on who is writing</h3>
       <p>This page is written by the agent. Every other page on this site is Tony Chen&rsquo;s own prose, and this one is deliberately the exception &mdash; a case study about directing an AI reads dishonestly if the AI&rsquo;s half of it is ghost-written into his voice. So: where this page says <em>I</em>, that is the agent. Where it says <em>Tony</em>, that is Tony. He set the direction, supplied every fact in here that isn&rsquo;t verifiable from the code, and holds the final say on this page as he did on everything else he had me build.</p>
     </div>
 
-    <p>The site you&rsquo;re reading is the project, and the reason it exists is narrow. A template could show a finished film and a caption. It could not show nine stages of a build, or 109 separate exposures of one shot, or a take running beside the same take with the wire rig removed. So Tony had it rebuilt around components that can.</p>
+    <p>The site you&rsquo;re reading is the project. A template could show a finished film and a caption, but not nine stages of a build, 109 separate exposures of one shot, or a take running beside the same take with the wire rig removed. So Tony had it rebuilt around components that can, as a hand-coded static site with no page builder, framework or build step.</p>
 
-    <p>It is hand-coded and static &mdash; no page builder, no framework, no build step. I did the implementation: reading his source drives, cutting the media, writing the HTML, CSS and JavaScript, and testing the result in a real browser. He held the design decisions, the source material and the final say on what shipped.</p>
-
-    <p>The interesting part was never the code. It was the line between us &mdash; which calls were actually his: which images represent the work, whether a caption is true, when a pattern is right for the content, and when something I had called a fix had quietly made the page worse.</p>
+    <p>I did the implementation: cutting the media, writing the HTML, CSS and JavaScript, and testing it in a real browser. The interesting part was never the code. It was the line between us &mdash; which calls were actually his: which images represent the work, whether a caption is true, when a pattern is right for the content, and when something I had called a fix had quietly made the page worse.</p>
 
     <!--
       MEDIA: the hero is the showcase video, in the same slot the film pages
@@ -113,9 +115,8 @@
       <p class="eyebrow">Before</p>
       <h2>What the template could hold</h2>
       <p>Four films on a Wix site, and one problem behind everything wrong with it: a page could only hold what the template already had a slot for.</p>
+      <p>Every project got a title, four or five metadata rows, one paragraph and the finished film, with a Wix advert above Tony&rsquo;s own header on every page. There was nowhere to put an animatic, a set being built or a rig test, so the Night Vision page had a row headed <em>Project details</em> and, under it, a link reading <em>Coming soon</em>. <a href="https://tonyccnau.wixsite.com/tony-c-portfolio/projects" target="_blank" rel="noopener">The old site is still up</a> if you want to compare.</p>
     </div>
-
-    <p>Every project got the same thing &mdash; a title, four or five metadata rows, one paragraph and the finished film. There was nowhere to put an animatic, a set being built, a rig test, or the 109 exposures behind one shot of an owl walking, so none of it went anywhere: the Night Vision page had a row headed <em>Project details</em> and, under it, a link reading <em>Coming soon</em>. Above Tony&rsquo;s own header sat a strip advertising Wix, on every page, with no setting that removes it. <a href="https://tonyccnau.wixsite.com/tony-c-portfolio/projects" target="_blank" rel="noopener">The old site is still up</a> if you want to compare it against this one.</p>
 
     <!-- One column, not the usual two: this is a screenshot of a real page rather
          than a component mockup, and at half width neither the Wix strip nor the
@@ -133,15 +134,9 @@
       <p class="eyebrow">Component Study</p>
       <h2>Designing the progression scrubber</h2>
       <p>The hardest interface problem on the site: how do you let someone understand a project&rsquo;s evolution without making them read nine captioned cards?</p>
+      <p>I prototyped three patterns on real Vinci&rsquo;s Voyage stages: a timeline scrubber, an all-at-once progression strip and a conventional filmstrip viewer. Tony threw out the filmstrip <em>because</em> it was the most familiar &mdash; a thumbnail rail reads as &ldquo;pick an image&rdquo;, the gallery framing he was trying to escape. I recommended shipping the other two together. He overruled me and had the scrubber built alone, because the stage <em>names</em> already carry the story and a timeline is the native metaphor for animation work.</p>
+      <p>It then took five rounds of refinement, most of them prompted by Tony spotting something wrong on screen that I had not. The track below is the real control, stripped of the viewer it normally drives. Drag it: on a project page it changes the picture above it, and here it has only its own caption to change.</p>
     </div>
-
-    <p>I prototyped three patterns against real Vinci&rsquo;s Voyage stages rather than placeholder boxes, so Tony could judge them on material he already knew &mdash; a timeline scrubber, an all-at-once progression strip, and a conventional filmstrip viewer. He threw out the filmstrip precisely <em>because</em> it was the most familiar: a thumbnail rail reads as &ldquo;pick an image&rdquo;, which is the gallery framing he was trying to escape.</p>
-
-    <p>I recommended shipping two of them &mdash; the strip as an instant summary, the scrubber underneath it for the detail. Tony overruled me and had the scrubber built on its own. His argument was that the stage <em>names</em> already carry the story before you touch anything, and that a timeline is the native metaphor for animation work; a second component would have said the same thing twice. It then took five rounds of refinement, most of them prompted by him spotting something wrong on screen that I had not.</p>
-
-    <p>One idea survived the prototype intact. A stage with no photograph yet renders as a marked gap rather than quietly disappearing &mdash; the prototype used an empty slot to show what a missing stage costs, and every project page still works that way.</p>
-
-    <p>What shipped is not what the prototype was. The track below is the real control, stripped of the viewer it normally drives so that the control is the thing you look at. Drag it. On a project page the same track sits under a picture and changes it; here it has only its own caption to change.</p>
 
     <!-- `data-scrub-bare` is used on this instance and nowhere else: it drops the
          viewer and skips loading any stage media. So the stages carry captions
@@ -163,9 +158,8 @@
       <p class="eyebrow">Component</p>
       <h2>The media grid</h2>
       <p>For a set of things that belong together but are not in step and not in order &mdash; a reference clip, a printed guide, two angles on the same build.</p>
+      <p>A scrubber would imply a sequence, and a shared play button would claim the clips run together, so this grid has neither. Each tile previews on its own when you reach it, and nothing downloads until you do.</p>
     </div>
-
-    <p>The scrubber would be wrong here: it implies a sequence. A before/after would be wrong too, because a shared play button claims the clips run together. So this one has no shared transport at all, deliberately. Each tile previews on its own when you reach it, and nothing downloads until you do.</p>
 
     <div class="figure-grid">
       <figure>
@@ -182,11 +176,9 @@
       <p class="eyebrow">Component</p>
       <h2>The frame stepper</h2>
       <p>Some shots have nothing to pull apart. The Night Vision day set is pure stop motion &mdash; no layers, no passes, nothing composited on top. The only thing worth showing is that the shot <em>is</em> 109 separate exposures.</p>
+      <p>So this one moves a frame at a time, and the count is the caption. The frames come from a video rather than a folder of stills: 109 JPGs at display size run to several megabytes, and the same frames as h264 come to 668KB.</p>
+      <p>The rule it rests on is that one video frame must be one exposure, and I nearly shipped a version that broke it. I had encoded Piece It Together&rsquo;s shot 4010 at 12fps from a take shot at 25, so it held 60 frames under a caption claiming 125. Nothing looked wrong: it stepped smoothly through frames that were never photographed, exactly the kind of error that survives a review. The clip is now cut at the source&rsquo;s own frame rate.</p>
     </div>
-
-    <p>So this one moves a frame at a time, and the count is the caption. Six shots sit under the viewer as thumbnails and only the one you pick is ever fetched, so a seventh costs storage and not load time. The frames come from a video rather than a folder of stills &mdash; 109 JPGs at display size run to several megabytes, the same frames as h264 come to 668KB &mdash; and each step seeks to the middle of a frame rather than its edge, because landing on the boundary lets rounding show you the neighbour instead.</p>
-
-    <p>The rule the whole component rests on is that one video frame must be one exposure, and I nearly shipped a version that broke it. I had encoded Piece It Together&rsquo;s shot 4010 at 12fps &mdash; the convention I was using for small clips elsewhere &mdash; from a take shot at 25, so it held 60 frames while the caption I had written under it claimed 125. Nothing looked wrong. It stepped smoothly through frames that were never photographed, which is exactly the kind of error that survives a review, and it is why the clip is now cut from the original at the source&rsquo;s own rate with no frame-rate filter at all.</p>
 
     <div class="figure-grid">
       <figure>
@@ -199,9 +191,8 @@
       <p class="eyebrow">Tooling</p>
       <h2>Choosing what goes on the page</h2>
       <p>Four films came to about 173 candidate frames. Picking twelve of them by scrolling a folder was the bottleneck, so Tony had me build a tool for it.</p>
+      <p>The question is not whether a photograph is good but whether it still reads at 260 pixels, and most of the library is multi-panel collages built for a 1600&times;1000 viewer, which turn to mush that small. So the picker renders every asset at exactly the size it will ship at; the larger preview is what an image earns by surviving that test.</p>
     </div>
-
-    <p>The problem is not &ldquo;is this a good photograph&rdquo;. It is &ldquo;does this still read at 260 pixels&rdquo; &mdash; and most of the library are multi-panel collages built for a 1600&times;1000 viewer, which turn to mush that small. Neither of us can tell which from a filename. So the picker renders every asset at exactly the size it will ship at, and nothing bigger; the larger preview is what an image earns by surviving that test.</p>
 
     <div class="figure-grid">
       <figure>
@@ -214,7 +205,7 @@
       </figure>
     </div>
 
-    <p>It never crawls Tony&rsquo;s drives, and that is a rule rather than an oversight: they hold other people&rsquo;s coursework and a great deal of footage that isn&rsquo;t his to publish. Anything dug out by hand gets dragged onto the page and staged in a holding folder, phone photos converted on arrival, and bringing one into the site stays a deliberate second step. Raw footage is the exception: a 281MB camera original is cut to a clip by giving the tool a path, so 99.9% of the file never moves.</p>
+    <p>It never crawls Tony&rsquo;s drives, and that is a rule rather than an oversight: they hold other people&rsquo;s coursework and footage that isn&rsquo;t his to publish. Anything dug out by hand is dragged onto the page and staged first, and bringing it into the site stays a deliberate second step.</p>
 
     <div class="section-head is-spaced">
       <p class="eyebrow">Build</p>
@@ -232,7 +223,7 @@
       <span class="chip">Formspree</span>
     </div>
 
-    <p style="margin-top: 1.75rem;">That is the most useful constraint he gave me. It rules out the entire class of answers where I reach for a dependency, and it means he can open any file here and change it without me. The progression scrubber ships as a plain captioned grid and is upgraded by JavaScript, so every stage stays readable with scripting off. Video lives on YouTube rather than in the repo &mdash; GitHub Pages is a poor host for 80MB files.</p>
+    <p style="margin-top: 1.75rem;">That is the most useful constraint he gave me. It rules out reaching for a dependency, and it means he can open any file here and change it without me. The components ship as plain HTML that JavaScript upgrades, so they still read with scripting off, and the films live on YouTube rather than in the repo.</p>
 
     <div class="section-head is-spaced">
       <p class="eyebrow">Method</p>
@@ -261,8 +252,8 @@
 
     <div class="section-head is-spaced">
       <p class="eyebrow">Design Direction</p>
-      <h2>Three routes, one chosen</h2>
-      <p>Three visual worlds, built as working comps on the same copy so Tony could judge them side by side. Nothing here is settled &mdash; the direction is still open, and these are the terms it will be decided on.</p>
+      <h2>Three routes, no re-skin</h2>
+      <p>Three visual worlds, built as working comps on the same copy so Tony could judge them side by side. None was applied wholesale: after launch the site kept improving one piece at a time &mdash; a projects banner, hover clips on the project cards, a new colour palette &mdash; so on 31 August Tony called off the redesign and kept working that way.</p>
     </div>
 
     <div class="dir-grid">
@@ -276,7 +267,7 @@
         </div>
         <h3>Dragonframe</h3>
         <p>Built from the capture software Tony actually shoots on &mdash; charcoal ground, recording-orange accent, monospace frame counters, a viewfinder hero and projects as a contact sheet.</p>
-        <span class="dir-verdict">Front runner</span>
+        <span class="dir-verdict">Front runner, set aside</span>
       </div>
       <div class="dir-card">
         <div class="dir-swatches">
@@ -288,7 +279,7 @@
         </div>
         <h3>Workshop Bench</h3>
         <p>The materials instead of the tools &mdash; kraft card, painter&rsquo;s-tape labels, stencilled headlines.</p>
-        <span class="dir-verdict">Still open</span>
+        <span class="dir-verdict">Set aside</span>
       </div>
       <div class="dir-card">
         <div class="dir-swatches">
@@ -300,18 +291,18 @@
         </div>
         <h3>Premiere Night</h3>
         <p>The outcome instead of the making &mdash; letterboxed black, projector glow, projects as a festival programme.</p>
-        <span class="dir-verdict">Still open</span>
+        <span class="dir-verdict">Set aside</span>
       </div>
     </div>
 
     <div class="callout">
       <h3>Status: live, still moving</h3>
-      <p>The site went live on 16 August 2026, three days ahead of the date Tony had set. Every project page now carries its own process story, and the copy on those pages is his own writing &mdash; this page is the single exception, as the note at the top says. What the site doesn&rsquo;t have yet is the Dragonframe direction: what you&rsquo;re looking at is still the first hand-coded design, and re-skinning it is the next piece of work. This page gets updated as that lands.</p>
+      <p>The site went live on 16 August 2026, three days ahead of the date Tony had set. Every project page now carries its own process story, and the copy on those pages is his own writing &mdash; this page is the single exception, as the note at the top says. Since launch it has kept changing one piece at a time rather than waiting for a re-skin.</p>
     </div>
 
     <div class="project-nav">
       <a href="piece-it-together.html">&larr; Previous: Piece It Together!</a>
-      <a href="../projects.html">Back to Projects &rarr;</a>
+      <a href="unity-game.html">Next: Unity 2D Game &rarr;</a>
     </div>
   </div>
 </section>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ToyRef — Tony Chen</title>
+<meta name="description" content="A media referencing tool for artists and designers. Each image is a self-contained floating sticky note. I designed this tool with minimal UI, mostly to boost my personal productivity.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://toyhen.github.io/Tony/projects/toyref.html">
+<meta property="og:title" content="ToyRef — Tony Chen">
+<meta property="og:description" content="A simple media referencing tool, with minimal UI.">
+<meta property="og:image" content="https://toyhen.github.io/Tony/images/projects/tr-card.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to content</a>
+
+<header class="site-header">
+  <nav class="nav">
+    <a href="../index.html" class="nav-brand">Tony Chen</a>
+    <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">&#9776;</button>
+    <ul class="nav-links">
+      <li><a href="../index.html">Home</a></li>
+      <li><a href="../reel.html">Showreel</a></li>
+      <li><a href="../projects.html" aria-current="page">Projects</a></li>
+      <li><a href="../about.html">About Me</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main id="main-content" tabindex="-1">
+<section class="section-tight">
+  <div class="container">
+    <p class="eyebrow"><a href="../projects.html">&larr; All Projects</a></p>
+    <h1>ToyRef</h1>
+
+    <div class="meta-grid">
+      <div class="meta-item"><span class="eyebrow">Project Type</span><p>Windows Reference Tool</p></div>
+      <div class="meta-item"><span class="eyebrow">Role</span><p>Creator &amp; Director</p></div>
+      <div class="meta-item"><span class="eyebrow">Date</span><p>September 2026 &mdash; ongoing</p></div>
+      <div class="meta-item"><span class="eyebrow">Location</span><p>Sydney NSW Australia</p></div>
+      <div class="meta-item"><span class="eyebrow">AI Use</span><p>Programming</p></div>
+    </div>
+
+    <!-- The ToyRef product demo (HyperFrames, approved by Tony 13 Sep 2026), in
+         the slot a film page gives its film. A local file rather than YouTube
+         because the demo will be updated once the colour-palette feature is
+         done, and a YouTube upload cannot be replaced in place. Set up like the
+         Unity page's hero: native controls and preload="none", so nothing
+         downloads until play is pressed. The video has no sound.
+         Web copy of Little Flare/ToyRef/demo-video/renders/toyref-demo-v1.mp4
+         at 1600x900, crf 28 (1.5MB), checked against the master on the
+         captions, the title and the timelapse's pencil lines. The poster is the
+         00:04 title hold, not frame 0, because the video opens on a dark frame.
+         When the demo is re-rendered, re-cut both files under the same names. -->
+    <div class="project-hero-media">
+      <video src="../images/projects/tr-demo.mp4"
+             poster="../images/projects/tr-demo-poster.jpg"
+             controls playsinline preload="none"
+             aria-label="The product demonstration video, showcasing the simple design and ease of use. The referencing tool is showcased with a quick live sketch session I did."></video>
+    </div>
+
+    <!-- Tony's own copy, rewritten through caption-sheets/toyref.md on
+         17 Sep 2026. Claude fixed spelling and grammar only; the marked sheet
+         is kept as caption-sheets/toyref.applied-2026-09-17.md. -->
+    <p>A borderless-window media referencing tool. Each reference item acts like an independent sticky note, inspired by the way I used to collage things and draw in my physical art journal. Currently, it is a working prototype for Windows and under active development.</p>
+
+    <!-- Tony's wording (17 Sep 2026). Kuadro is deliberately left out of this
+         list: his ToyRef session notes record first testing it on 6 Sep 2026. -->
+    <div class="section-head is-spaced">
+      <p class="eyebrow">Background</p>
+      <h2>Why ToyRef?</h2>
+      <p>During my animation degree, I had tried multiple different image referencing applications, the likes of PureRef, BeeRef, even default image viewers, etc. However, in the end, I noticed I just started dumping random references directly into the working art software, like Photoshop. The benefits of such referencing apps were clear: we won&rsquo;t inflate the file size of our working art save files. But I was puzzled by why simple solutions like PureRef did not feel very natural to use for me. Which brings me to finally designing ToyRef. With the help and capabilities of AI for programming, I am able to test and rapidly develop the prototype.</p>
+    </div>
+
+    <div class="section-head is-spaced">
+      <p class="eyebrow">Workflow</p>
+      <h2>Built around how I draw</h2>
+      <p>I designed ToyRef around how I normally draw and work. I pinned down the actions I tend to do with reference images when drawing, like dropping opacity, resizing, putting them into a cluster, then pulling one out when needed, hiding them, etc. I built the features and controls around my habits to support them.</p>
+    </div>
+
+    <div class="section-head is-spaced">
+      <p class="eyebrow">Interaction</p>
+      <h2>Drawing through references</h2>
+      <p>References by default are always on top, and they can be locked in place or hidden. Most reference apps stop there. However, I added a feature to allow clicking through the reference, to draw and interact with things directly underneath it.</p>
+    </div>
+
+    <div class="section-head is-spaced">
+      <p class="eyebrow">Continued development</p>
+      <h2>What&rsquo;s next</h2>
+      <p>Currently, ToyRef is already a substantially feature-rich working prototype. I am using it actively for various art and design works. The upcoming feature under development will be the colour tools, dragging a colour palette card directly out of a reference, which then can be placed directly into any art software. Eventually, ToyRef will be turned into a properly built app, maybe with cross-platform support for macOS.</p>
+    </div>
+
+    <div class="project-nav">
+      <a href="unity-game.html">&larr; Previous: Unity 2D Game</a>
+      <a href="../projects.html">Back to Projects &rarr;</a>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="site-footer">
+  <p><a href="mailto:tonyc.cn.au@gmail.com">tonyc.cn.au@gmail.com</a> &middot; &copy; <span id="year"></span> Tony Chen</p>
+</footer>
+
+<script src="../js/script.js"></script>
+<script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+</body>
+</html>

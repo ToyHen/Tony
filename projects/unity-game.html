@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unity 2D Game — Tony Chen</title>
+<meta name="description" content="A small hand-drawn 2D game made while learning Unity C#.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://toyhen.github.io/Tony/projects/unity-game.html">
+<meta property="og:title" content="Unity 2D Game — Tony Chen">
+<meta property="og:description" content="A small hand-drawn 2D game made while learning Unity C#.">
+<meta property="og:image" content="https://toyhen.github.io/Tony/images/projects/rp-card.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to content</a>
+
+<header class="site-header">
+  <nav class="nav">
+    <a href="../index.html" class="nav-brand">Tony Chen</a>
+    <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">&#9776;</button>
+    <ul class="nav-links">
+      <li><a href="../index.html">Home</a></li>
+      <li><a href="../reel.html">Showreel</a></li>
+      <li><a href="../projects.html" aria-current="page">Projects</a></li>
+      <li><a href="../about.html">About Me</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main id="main-content" tabindex="-1">
+<section class="section-tight">
+  <div class="container">
+    <p class="eyebrow"><a href="../projects.html">&larr; All Projects</a></p>
+    <h1>Unity 2D Game</h1>
+
+    <div class="meta-grid">
+      <div class="meta-item"><span class="eyebrow">Project Type</span><p>Unity 2D Learning Project</p></div>
+      <div class="meta-item"><span class="eyebrow">Role</span><p>Creator &amp; Developer</p></div>
+      <div class="meta-item"><span class="eyebrow">Date</span><p>December 2025 &mdash; ongoing</p></div>
+      <div class="meta-item"><span class="eyebrow">Location</span><p>Sydney NSW Australia</p></div>
+      <div class="meta-item"><span class="eyebrow">AI Use</span><p>Teaching and code review</p></div>
+    </div>
+
+    <!-- A play-mode recording of the saved scene (Unity Recorder, Movie_005,
+         10 Sep 2026), in the slot a film page gives its film. Native controls
+         and preload="none": nothing downloads until play is pressed, and it
+         still works with JS off -- which is what the site's data-src rule is
+         for, so this one video carries a plain src. The poster is frame 0 of
+         the recording, so pressing play does not visibly swap the picture. -->
+    <div class="project-hero-media">
+      <video src="../images/projects/rp-gameplay.mp4"
+             poster="../images/projects/rp-gameplay-poster.jpg"
+             controls playsinline preload="none"
+             aria-label="A live recording of the gameplay. The character runs around and interacts with the environment while collecting carrots."></video>
+    </div>
+
+    <p>A 2D game made while learning Unity C#. The art and designs were all hand drawn and scanned in to be cleaned up digitally into sprites.</p>
+
+    <!-- Checked against Main_Scene.unity (11 Sep 2026): the log and the 60 small
+         rocks carry a dynamic Rigidbody2D and a collider; puddles are triggers. -->
+    <div class="section-head is-spaced">
+      <p class="eyebrow">Game design</p>
+      <h2>A world to interact with</h2>
+      <p>The environment was designed with intent to be highly interactable. The heaviness of the log, slowness of a muddy puddle, and little rocks to be pushed around, etc. All these carefully placed elements are what makes a world come alive and feel natural.</p>
+    </div>
+
+    <div class="section-head is-spaced">
+      <p class="eyebrow">Learning method</p>
+      <h2>Planned with Codex</h2>
+      <p>My game development journey originally kicked off from some self-paced online courses. Later, I had agentic AI running in Codex to help plan and schedule the concepts for me to learn. The lessons were then designed and planned around this project itself. Codex would explain one concept at a time and review my coding attempts to check my understanding.</p>
+    </div>
+
+    <div class="section-head is-spaced">
+      <p class="eyebrow">Visual development</p>
+      <h2>From pencil sheet to sprite</h2>
+      <p>My scanned-in physical sketches next to the digitally cropped-out assets. I carefully left some of the edges on the artworks to create a paper cut-out or tear feel when they are used as sprites in the final game.</p>
+    </div>
+
+    <!-- PAIRS, NOT A SEQUENCE. Each row is a raw scan (left) beside its clean-up
+         (right), framed identically. This was a scrubber first and became a grid
+         the same day (Tony, 10 Sep 2026): a pair wants to be seen at once, and
+         scrubbing between cream paper and a black ground flashed. The plants
+         pair is a 4:3 crop of its sheet, padded with each picture's own ground
+         so the padding does not show. -->
+    <div class="mediagrid" data-mediagrid
+         style="--tile-ratio: 4 / 3; grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr));">
+      <figure>
+        <img src="../images/projects/rp-plants-scan.jpg" alt="The first set of assets I drew, with no references, just random ideas I had inside my head at the time." loading="lazy">
+        <figcaption><strong>Set 1</strong><span>Pencil sheet</span></figcaption>
+      </figure>
+      <figure>
+        <img src="../images/projects/rp-plants-clean.jpg" alt="The same drawings cut out from the page, set against black for visibility." loading="lazy">
+        <figcaption><strong>Set 1 sprites</strong><span>Photoshop clean-up</span></figcaption>
+      </figure>
+    </div>
+
+    <!-- The next sheet, whole, at its own 2:3: one grid holds one tile ratio, so
+         this is a second grid with the same columns and a 1rem margin to match
+         the gap, and it reads as the next row. Its clean-up is Tony's cut-out
+         in progress: edges not fully cleaned, items not yet split into sprite
+         files (11 Sep 2026). -->
+    <div class="mediagrid" data-mediagrid
+         style="--tile-ratio: 2 / 3; margin-top: 1rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr));">
+      <figure>
+        <img src="../images/projects/rp-props-scan.jpg" alt="The second set of assets I drew, also with no references, just random ideas I had inside my head again." loading="lazy">
+        <figcaption><strong>Set 2</strong><span>Pencil sheet</span></figcaption>
+      </figure>
+      <figure>
+        <img src="../images/projects/rp-props-clean.jpg" alt="The same drawings cut out from the page, still refining the edges to make them all feel like paper cut-outs/tears. Set against black for visibility." loading="lazy">
+        <figcaption><strong>Set 2 sprites</strong><span>Currently refining the edges to make them all feel like paper cut-outs/tears.</span></figcaption>
+      </figure>
+    </div>
+
+    <!-- Every string on this page is Tony's own wording from his caption-sheet
+         pass (17 Sep 2026), with only spelling and grammar fixed. -->
+    <div class="section-head is-spaced">
+      <p class="eyebrow">Continued development</p>
+      <h2>What&rsquo;s next</h2>
+      <p>I am still actively learning and working on the development of this game. I will finish converting my second set of assets into usable game sprites. Learning new programming or Unity concepts is challenging and rewarding at the same time.</p>
+    </div>
+
+    <div class="project-nav">
+      <a href="portfolio-site.html">&larr; Previous: This Portfolio Site</a>
+      <a href="toyref.html">Next: ToyRef &rarr;</a>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="site-footer">
+  <p><a href="mailto:tonyc.cn.au@gmail.com">tonyc.cn.au@gmail.com</a> &middot; &copy; <span id="year"></span> Tony Chen</p>
+</footer>
+
+<script src="../js/script.js"></script>
+<script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+</body>
+</html>

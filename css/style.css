@@ -296,6 +296,14 @@ section { padding: 4rem 0; }
    clear of its first body paragraph while paragraphs after it sat 16px apart —
    the head read as detached from the section it introduces. */
 .section-head > p:last-child { margin-bottom: 0; }
+/* Text that carries on AFTER a heading block -- below a grid, a stepper or a
+   row of chips -- keeps the block's 60ch column. A bare p has no cap, so it ran
+   the full container width (Piece It Together and the case study, 11 Sep
+   2026). A page's opening paragraph comes before its first head, so it is left
+   alone, and only .container's direct children match, so the contact band's
+   own columns are untouched. Text directly under a heading still belongs
+   INSIDE the block: that is what keeps it 18px below the heading, not 40px. */
+.container > .section-head ~ p { max-width: 60ch; }
 
 /* A one-sentence lede under a page h1 that sits DIRECTLY in the container --
    the opening the five project pages use -- rather than inside a .section-head.
@@ -648,7 +656,31 @@ section { padding: 4rem 0; }
    So a preset is now genuinely one rule and nothing else — no label markup, no
    JS change. `?for=default` resets, and is the only way back. The matching
    note is in projects.html where the markup used to be. */
-html[data-for="uiux"] .bandgroup[data-band="web"] { order: -1; }
+
+/* UI/UX roles: Web & Software, Personal Work, Graphic Design, Short Films.
+   A FULL BAND ORDER, NOT JUST A PROMOTION (Tony, 10 Sep 2026). It was one rule
+   lifting Web & Software to the top and leaving the rest authored, which put the
+   films second; he wants them last for this audience. The values run -3..-1 and
+   Short Films is left at the default 0 rather than given a positive number, so
+   "every rule promotes" still holds literally — the films land last because
+   everything else was lifted above them, and nothing is hidden. Note the
+   Graphic Design band's key is still `client`: the heading was renamed, the
+   attribute deliberately was not. */
+html[data-for="uiux"] .bandgroup[data-band="web"]      { order: -3; }
+html[data-for="uiux"] .bandgroup[data-band="personal"] { order: -2; }
+html[data-for="uiux"] .bandgroup[data-band="client"]   { order: -1; }
+
+/* Graphic-design roles: Graphic Design, Personal Work, Web & Software, Short
+   Films — Tony's order, 10 Sep 2026. Two item rules ride with it: Assorted Works
+   & Studies leads Personal Work (it is the drawing, print and illustration work,
+   which is what this audience is looking for), and Tramsheds leads the films.
+   The rest of each band keeps its authored order at the default 0. Same shape as
+   the UI/UX preset above: films at 0, everything else lifted. */
+html[data-for="graphics"] .bandgroup[data-band="client"]   { order: -3; }
+html[data-for="graphics"] .bandgroup[data-band="personal"] { order: -2; }
+html[data-for="graphics"] .bandgroup[data-band="web"]      { order: -1; }
+html[data-for="graphics"] [data-project="mini"]            { order: -1; }
+html[data-for="graphics"] [data-project="tj"]              { order: -1; }
 
 /* ITEM ORDER WITHIN A BAND. The same `order` trick one level down: `.project-grid`
    is already a grid, so its cards take `order` with no structural change at all.
@@ -658,9 +690,9 @@ html[data-for="uiux"] .bandgroup[data-band="web"] { order: -1; }
    2 Sep 2026 the four films were bare `<article class="project-card">`, identical
    and addressable only by `:nth-child` — which silently points at the wrong card
    the moment one is added or reordered. The keys are the registry's own prefixes
-   from `picker-projects.json` with the hyphen dropped (`vv`, `nv`, `tj`, `pit`,
-   `mini`, `portfolio-site`, `ps`), so the markup and the registry cannot drift
-   into two different vocabularies.
+   from the established card registry (`vv`, `nv`, `tj`, `pit`, `mini`,
+   `portfolio-site`, `unity-game`, `toyref`, `ps`), so a card is never addressed
+   by a position that changes when another project is added.
 
    THE COUNT MUST NOT CHANGE. Reordering four cards keeps four, so the
    two-up-never-three guarantee below survives untouched. Moving a card INTO this
@@ -760,11 +792,6 @@ html[data-for="stopmotion"] [data-project="pit"] { order: -1; }
 }
 .project-card-media video.is-playing { opacity: 1; }
 
-/* The case card presents its screenshot `contain` on a panel rather than
-   cover-cropped, so a clip there has to match or it would jump shape the
-   moment it started. No card uses this yet; it is here so the first one that
-   does not have to rediscover it. */
-.project-card.is-case .project-card-media video { object-fit: contain; }
 
 .project-card-media.no-image {
   display: flex;
@@ -870,18 +897,21 @@ html[data-for="stopmotion"] [data-project="pit"] { order: -1; }
    the fifth card in a row of four. Full width and laid on its side, it reads as
    an appendix to the work instead of a fifth piece of it — and the four films
    above it tile with no hole. */
-/* THIS LAYOUT IS SHARED BY TWO BANDS, not just the case study — .is-upcoming
-   uses it too. A band holding ONE card cannot use .project-grid: auto-fit
-   collapses the empty track and the lone card stretches to full width anyway,
-   with none of the panel treatment. So a lone card is wide by construction and
-   the modifier that makes it lone is what carries the meaning. */
-/* .is-wide is the same full-width, two-column card as .is-case and
-   .is-upcoming, and deliberately NOT either of them: it takes the layout and
-   leaves the contained-on-a-panel thumb treatment below, because a mini-works
-   card is a collage of film frames and drawings rather than a screenshot or a
-   product sheet. A card alone in its own band has to be full width — dropped
-   into .project-grid it would sit stranded on a 2-up row, which is the hole
-   the four-film grid exists to avoid. */
+/* THE LONE-CARD LAYOUT: full width, picture and text side by side. A band
+   holding ONE card cannot use .project-grid -- auto-fit collapses the empty
+   track and the card stretches to full width anyway, with none of the
+   side-by-side arrangement -- so a lone card is wide by construction and the
+   modifier that makes it lone is what carries the meaning.
+
+   ONLY .is-upcoming (Panda Sports) USES THIS NOW, since 9 Sep 2026. The bands
+   were reshaped that day and both Personal Work and Web & Software went to two
+   cards, which is a .project-grid: 2 divides evenly at 2 and 1 columns, so
+   there is no hole at any width and the reason for the wide treatment is gone.
+   .is-case and .is-wide are kept BECAUSE THEY ARE THE PATTERN, not by accident
+   -- reach for .is-wide the next time a band holds a single card. The three are
+   identical in layout; .is-upcoming adds the dashed border, the inert hover and
+   the dimmed media further down, which is about being a placeholder rather than
+   about being wide. */
 .project-card.is-case,
 .project-card.is-upcoming,
 .project-card.is-wide {
@@ -889,18 +919,57 @@ html[data-for="stopmotion"] [data-project="pit"] { order: -1; }
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   align-items: stretch;
 }
-/* A UI screenshot is not a film frame: contained on a panel it reads as a
-   screenshot, where a cover-crop reads as a badly framed photograph. The same
-   is true of a product sheet — Panda Sports' card is a garment mockup on white,
-   which cover-cropped would read as a badly framed photograph of a shirt. */
-.project-card.is-case .project-card-thumb,
-.project-card.is-upcoming .project-card-thumb {
-  background: var(--bg-alt);
-  padding: 1.3rem;
-  border-right: 1px solid var(--card-border);
-}
+/* THE THUMB IS FULL BLEED ON ALL THREE WIDE CARDS. This used to mount the case
+   study and Panda Sports on a --bg-alt panel with 1.3rem of padding, on the
+   argument that a UI screenshot or a product sheet contained on a panel reads
+   as a screenshot, where a cover-crop reads as a badly framed photograph.
+
+   Dropped 9 Sep 2026, because the panel was not doing that job. BOTH images are
+   already 16:10 (1.601 and 1.599 against the box's 1.6), so `contain` fills
+   99.9% of the media box and letterboxes nothing — the padding was the whole
+   visible difference, guarding against a crop that never happens. The four films
+   ARE cropped (1.777, 90% fill) and read fine, and .is-wide has always been full
+   bleed in this same side-by-side layout, so the panel was the odd one of three
+   rather than the rule. Tony's call.
+
+   It also retires a real inconsistency: `position: absolute` resolves against the
+   PADDING box, so the panel's 1.3rem cancelled .card-status's own 1.3rem and the
+   badge sat flush on Panda's picture corner while sitting 20.8px inside the
+   picture everywhere else. One number now means one thing.
+
+   THE PICTURE FILLS ITS HALF AT EVERY WIDTH, and `min-height: 100%` is what
+   guarantees it. The two columns size independently: the media holds a 16:10
+   `aspect-ratio` while the body is as tall as its text, so whenever the body
+   wins the row, the thumb stretches and the media does NOT -- leaving a dead
+   band under the picture. Tony found it, 9 Sep 2026: the AI Use value on the
+   case study wraps to THREE lines where every other value takes two, which
+   pins the body at 254.1px while the media keeps shrinking with the card.
+   Measured, the band opens at a card width of 780 and reaches 35.8px, i.e.
+   roughly a 821-836px viewport -- a narrow strip just above the stack
+   breakpoint below, which is exactly where his window sits.
+
+   `min-height: 100%` lets the media take the stretched thumb's height instead
+   of holding its ratio, so the band cannot open however long a value runs. The
+   cost is a cover-crop in that strip and nowhere else: the box goes to 1.489
+   at its narrowest against the image's 1.603, so at most ~7% off the width,
+   against the 10% the four film cards already take. Everywhere else it is 0.2%.
+
+   `width: 100%` IS NOT OPTIONAL. With the width left auto, `aspect-ratio` runs
+   the other way and derives the WIDTH from the forced height: measured, the
+   media came out 406.5px inside a 383.6px thumb and `overflow: hidden` clipped
+   22.9px off its right edge -- an off-centre crop that looks like a mis-framed
+   picture rather than a cover. Pinned, the box goes to 1.51 and the background
+   centre-crops properly.
+
+   `background-size` is therefore NOT overridden here any more -- these cards
+   cover like every other one. Both images are already 16:10, so cut a future
+   one to 16:10 as well and it costs nothing. */
 .project-card.is-case .project-card-media,
-.project-card.is-upcoming .project-card-media { background-size: contain; }
+.project-card.is-upcoming .project-card-media,
+.project-card.is-wide .project-card-media {
+  width: 100%;        /* pin it, or aspect-ratio grows the WIDTH off the height */
+  min-height: 100%;
+}
 .project-card.is-case .project-card-body,
 .project-card.is-upcoming .project-card-body { justify-content: center; }
 .project-card.is-case .project-meta { margin-top: 1.25rem; }
@@ -909,11 +978,6 @@ html[data-for="stopmotion"] [data-project="pit"] { order: -1; }
   .project-card.is-case,
   .project-card.is-upcoming,
   .project-card.is-wide { grid-template-columns: 1fr; }
-  .project-card.is-case .project-card-thumb,
-  .project-card.is-upcoming .project-card-thumb {
-    border-right: 0;
-    border-bottom: 1px solid var(--card-border);
-  }
 }
 
 /* ---------- A project that has no page yet ---------- */
@@ -941,11 +1005,19 @@ html[data-for="stopmotion"] [data-project="pit"] { order: -1; }
 .project-card.is-upcoming:hover .project-card-media,
 .project-card.is-upcoming:focus-within .project-card-media { transform: none; }
 
-/* The mockup is a white product sheet — full strength it is the brightest
-   thing on the page by a distance, and it would pull the eye straight past
-   four finished films to the one piece of work that is not ready. Settling it
-   toward the panel is what keeps a placeholder reading as a placeholder. */
-.project-card.is-upcoming .project-card-media { opacity: 0.85; }
+/* The mockup is a white product sheet -- at full strength it is the brightest
+   thing on the page by a distance, and it would pull the eye straight past four
+   finished films to the one piece of work that is not ready. Settling it back is
+   what keeps a placeholder reading as a placeholder.
+
+   0.66, NOT 0.85, SINCE THE PANEL CAME OFF (9 Sep 2026). 0.85 was measured
+   against the old inset-on-a-panel thumb, where the sheet covered the middle of
+   the half and --bg-alt framed it. Full bleed the same alpha reads 206.3 mean
+   luma against that arrangement's 163.9 -- 26% brighter, from the same
+   declaration, because the picture simply got bigger. 0.66 lands on 162.8, i.e.
+   back where it was. If this ever goes full strength again, re-cut ps-card.jpg
+   on a darker ground rather than raising the alpha. */
+.project-card.is-upcoming .project-card-media { opacity: 0.66; }
 
 /* Same corner-badge vocabulary as .sheet-motion: the marker belongs on the
    picture, where the eye lands first, not buried in the body copy. */
@@ -991,6 +1063,19 @@ html[data-for="stopmotion"] [data-project="pit"] { order: -1; }
 .project-hero-media { margin-bottom: 2rem; }
 .project-hero-media img {
   width: 100%;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+}
+/* A local recording in the hero slot, where the film pages put a YouTube
+   embed (Unity page, 10 Sep 2026). It ships with native controls and
+   preload="none", so nothing downloads until the visitor presses play. The
+   home hero is still the only clip that plays unasked. The aspect-ratio holds
+   the box before the poster arrives. */
+.project-hero-media video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: var(--media-well);
   border: 1px solid var(--card-border);
   border-radius: var(--radius);
 }

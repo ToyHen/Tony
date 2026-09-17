@@ -4,12 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Projects — Tony Chen</title>
-<meta name="description" content="Stop motion, 2D animation and hybrid film projects by Tony Chen.">
+<meta name="description" content="Stop motion, 2D animation, hybrid film, game and creative-tool projects by Tony Chen.">
 <!-- og: URLs are ABSOLUTE and must stay that way — see the note in index.html. -->
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://toyhen.github.io/Tony/projects.html">
 <meta property="og:title" content="Projects — Tony Chen">
-<meta property="og:description" content="Stop motion, 2D animation and hybrid film projects, with the process behind each one.">
+<meta property="og:description" content="Stop motion, 2D animation, hybrid film, game and creative-tool projects, with the process behind each one.">
 <meta property="og:image" content="https://toyhen.github.io/Tony/images/projects/vincis-voyage.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -101,8 +101,32 @@
          left the gap on whichever band happened to be written second. -->
     <div class="projects-bands">
 
+      <!-- "SHORT FILMS", NOT "SELECTED WORK" (Tony, 10 Sep 2026). "Selected" was
+           the only word on the page that RANKED anything: Personal Work and
+           Client Work describe a relationship, so nothing above them is demoted,
+           but "these are the chosen ones" is a claim about every band that is
+           not this one. Harmless while it sat first and authored -- and an
+           insult the moment ?for=uiux lifts Web & Software above it, which is
+           the link sent to the person it insults.
+
+           Naming the FORMAT is what makes it order-proof, and it also stays
+           clear of the four cards below: their eyebrows carry the technique
+           (Practical Set Design, Stop Motion & 2D Animation, 2D Animation &
+           Live Footage), so heading and card complement rather than repeat --
+           the same test that picked "Design & Web" in August and "Web &
+           Software" on 9 Sep.
+
+           `data-band="film"` is UNCHANGED: the preset targets the attribute, so
+           the heading is free to change and the key is not.
+
+           index.html KEEPS "Selected Work", as the EYEBROW over a heading of
+           "Four Short Films". That is on purpose and the two pages are not to be
+           synced: its sheet is a wall of frames rather than a list of projects,
+           no preset reorders it, and its own intro line calls them "some of my
+           favourite works" -- so the curation claim is honest and self-contained
+           there, where here it ranked every band below it. -->
       <section class="bandgroup" data-band="film">
-      <h2 class="project-band">Selected Work</h2>
+      <h2 class="project-band">Short Films</h2>
 
       <!-- Four films, two up. The count divides evenly at 2 and 1 columns, so
            adding a fifth card here re-opens the hole this layout closed. -->
@@ -116,7 +140,7 @@
             <p class="eyebrow">Practical Set Design</p>
             <h3><a class="card-link" href="projects/vincis-voyage.html">Vinci&rsquo;s Voyage</a></h3>
             <dl class="project-meta">
-              <div><dt>Role</dt><dd>Director</dd></div>
+              <div><dt>Role</dt><dd>Director, Project Leader &amp; Production</dd></div>
               <div><dt>Date</dt><dd>May 2024</dd></div>
               <div><dt>Location</dt><dd>Narraweena NSW Australia</dd></div>
               <div><dt>AI Use</dt><dd>None</dd></div>
@@ -132,7 +156,7 @@
             <p class="eyebrow">Stop Motion &amp; 2D Animation</p>
             <h3><a class="card-link" href="projects/night-vision.html">Night Vision (while we sleep)</a></h3>
             <dl class="project-meta">
-              <div><dt>Role</dt><dd>Project Leader, Direction &amp; Production</dd></div>
+              <div><dt>Role</dt><dd>Director, Project Leader &amp; Production</dd></div>
               <div><dt>Date</dt><dd>August 2023</dd></div>
               <div><dt>Location</dt><dd>Sydney NSW Australia</dd></div>
               <div><dt>AI Use</dt><dd>None</dd></div>
@@ -148,7 +172,7 @@
             <p class="eyebrow">2D Animation &amp; Live Footage</p>
             <h3><a class="card-link" href="projects/tramsheds-joyride.html">Tramsheds Joy Ride</a></h3>
             <dl class="project-meta">
-              <div><dt>Role</dt><dd>Project Leader, Direction &amp; Production</dd></div>
+              <div><dt>Role</dt><dd>Director, Project Leader &amp; Production</dd></div>
               <div><dt>Date</dt><dd>August 2024</dd></div>
               <div><dt>Location</dt><dd>Tramsheds Glebe NSW Australia</dd></div>
               <div><dt>AI Use</dt><dd>None</dd></div>
@@ -175,61 +199,168 @@
       </div>
       </section>
 
+      <!-- THE BANDS NAME WHO THE WORK WAS FOR, EXCEPT WHERE THEY CANNOT.
+           Reshaped 9 Sep 2026. There were five bands classifying on THREE
+           different axes at once -- Selected / Personal / Client said who it was
+           for, "Design & Web" said discipline, "Games & Creative Tools" said
+           output medium -- and every project has all three properties, so more
+           than one band could claim the same card. ToyRef was the card with no
+           obvious home. Tony: "Design essentially includes everything", which is
+           that discipline axis collapsing, since every project here is design.
+
+           The two offending bands are gone. ToyRef joins the portfolio site
+           under "Web & Software", which names both halves without leaning on
+           "design" and without repeating the site card's own "UI/UX Design &
+           Front-End" eyebrow two lines below it. Unity 2D moves into Personal
+           Work, where it belongs on its own page's terms: it is a learning
+           project, not a shipped game. -->
       <section class="bandgroup" data-band="personal">
       <h2 class="project-band">Personal Work</h2>
 
-      <!-- Full width for the same reason the case study is: one card alone in a
-           band would sit stranded on a 2-up row. .is-wide, not .is-case — it
-           shares that card's layout but not its contained-on-a-panel thumb,
-           because this image is a collage of frames and drawings rather than a
-           screenshot. The media div must stay EMPTY with project-card-media as
-           its whole class attribute, or asset-scan.ps1 silently drops the slot. -->
-      <article class="project-card is-wide" data-project="mini">
-        <div class="project-card-thumb">
-          <div class="project-card-media" style="background-image:url('images/projects/mini-works.jpg');"></div>
-        </div>
-        <div class="project-card-body">
-          <p class="eyebrow">Various Disciplines</p>
-          <h3><a class="card-link" href="projects/mini-works.html">Assorted Works &amp; Studies</a></h3>
-          <dl class="project-meta">
-            <div><dt>Role</dt><dd>Varies</dd></div>
-            <!-- August 2022 is measured, not estimated: the earliest file in any
-                 of the six is 11 Aug 2022 in Breakout, whose own PDF carries an
-                 internal CreationDate of 6 Sep 2022, and Glass Shatter's earliest
-                 is 11 Sep 2022. -->
-            <div><dt>Date</dt><dd>August 2022 &mdash; ongoing</dd></div>
-            <div><dt>Location</dt><dd>Sydney NSW Australia</dd></div>
-            <div><dt>AI Use</dt><dd>None</dd></div>
-          </dl>
-        </div>
-      </article>
+      <!-- TWO CARDS, SO THIS IS A .project-grid AND NEITHER IS FULL WIDTH. The
+           .is-wide / .is-case treatment exists only because a band holding ONE
+           card cannot use the grid: auto-fit collapses the empty track and the
+           lone card stretches anyway, with none of the side-by-side layout. That
+           reason is gone the moment a band has two, and 2 divides evenly at both
+           2 and 1 columns, so there is no hole at any width. Only Client Work is
+           still a lone card, and it is still full width. -->
+      <div class="project-grid">
+
+        <article class="project-card" data-project="unity-game">
+          <div class="project-card-thumb">
+            <div class="project-card-media" style="background-image:url('images/projects/rp-card.jpg');" data-clip="images/projects/rp-card-once.mp4" data-clip-once></div>
+          </div>
+          <div class="project-card-body">
+            <p class="eyebrow">Development &amp; Learning</p>
+            <h3><a class="card-link" href="projects/unity-game.html">Unity 2D Game</a></h3>
+            <dl class="project-meta">
+              <div><dt>Role</dt><dd>Creator &amp; Developer</dd></div>
+              <div><dt>Date</dt><dd>December 2025 &mdash; ongoing</dd></div>
+              <div><dt>Location</dt><dd>Sydney NSW Australia</dd></div>
+              <div><dt>AI Use</dt><dd>Teaching and code review</dd></div>
+            </dl>
+          </div>
+        </article>
+
+        <article class="project-card" data-project="mini">
+          <div class="project-card-thumb">
+            <div class="project-card-media" style="background-image:url('images/projects/mini-works.jpg');"></div>
+          </div>
+          <div class="project-card-body">
+            <p class="eyebrow">Various Disciplines</p>
+            <h3><a class="card-link" href="projects/mini-works.html">Assorted Works &amp; Studies</a></h3>
+            <dl class="project-meta">
+              <div><dt>Role</dt><dd>Varies</dd></div>
+              <!-- August 2022 is measured, not estimated: the earliest file in any
+                   of the six is 11 Aug 2022 in Breakout, whose own PDF carries an
+                   internal CreationDate of 6 Sep 2022, and Glass Shatter's earliest
+                   is 11 Sep 2022. -->
+              <div><dt>Date</dt><dd>August 2022 &mdash; ongoing</dd></div>
+              <div><dt>Location</dt><dd>Varies</dd></div>
+              <div><dt>AI Use</dt><dd>None</dd></div>
+            </dl>
+          </div>
+        </article>
+
+      </div>
       </section>
 
       <section class="bandgroup" data-band="web">
-      <h2 class="project-band">Design &amp; Web</h2>
+      <h2 class="project-band">Web &amp; Software</h2>
 
-      <!-- Full width and on its side, because the site is not a fifth film. The
-           media div must stay empty with project-card-media as its whole class
-           attribute — see the note in css/style.css. -->
-      <article class="project-card is-case" data-project="portfolio-site">
-        <div class="project-card-thumb">
-          <div class="project-card-media" style="background-image:url('images/projects/portfolio-site-scrub-motion-poster.jpg');"></div>
-        </div>
-        <div class="project-card-body">
-          <p class="eyebrow">UI/UX Design &amp; Front-End</p>
-          <h3><a class="card-link" href="projects/portfolio-site.html">This Portfolio Site</a></h3>
-          <dl class="project-meta">
-            <div><dt>Role</dt><dd>Design Direction, Art Direction &amp; Review</dd></div>
-            <div><dt>Date</dt><dd>July 2026 &mdash; ongoing</dd></div>
-            <div><dt>Location</dt><dd>Sydney NSW Australia</dd></div>
-            <div><dt>AI Use</dt><dd>Implementation, and the writing on the case study</dd></div>
-          </dl>
-        </div>
-      </article>
+      <!-- data-band STAYS "web" -- the ?for=uiux preset promotes this band by
+           that attribute, so renaming the heading is free and renaming the key
+           would silently break the tailored link. -->
+      <div class="project-grid">
+
+        <article class="project-card" data-project="toyref">
+          <!-- THE STILL IS THE DEMO VIDEO'S HOLD FRAME AT 00:04 (Tony, 13 Sep 2026):
+               the ten references with the title and its line, so the picture says
+               "ToyRef" as the h3 below does. Before this the well was empty; before
+               that it held a 4rem wordmark over a gradient, taken out partly for
+               printing the title twice and carrying a tagline.
+
+               The clip is the whole opening beat, rotated to start on that same
+               frame: 00:04 to the end, then from the opening dark frames round to
+               00:04 again. The beat ends and starts on the dark ground, so the loop
+               has no seam. Both are cut from
+               Little Flare/ToyRef/demo-video/renders/toyref-opening-v1.mp4 and
+               centre-cropped from 16:9 to 16:10.
+
+               Still no status pill (Tony, 11 Sep 2026): the slate's "ongoing" date
+               already says the work is unfinished. -->
+          <div class="project-card-thumb">
+            <div class="project-card-media" style="background-image:url('images/projects/tr-card.jpg');" data-clip="images/projects/tr-card-loop.mp4"></div>
+          </div>
+          <div class="project-card-body">
+            <p class="eyebrow">Windows Reference Tool</p>
+            <h3><a class="card-link" href="projects/toyref.html">ToyRef</a></h3>
+            <dl class="project-meta">
+              <div><dt>Role</dt><dd>Creator &amp; Director</dd></div>
+              <div><dt>Date</dt><dd>September 2026 &mdash; ongoing</dd></div>
+              <div><dt>Location</dt><dd>Sydney NSW Australia</dd></div>
+              <div><dt>AI Use</dt><dd>Programming</dd></div>
+            </dl>
+          </div>
+        </article>
+
+        <!-- The media div must stay empty with project-card-media as its whole
+             class attribute — see the note in css/style.css.
+  
+             THE CARD IMAGE IS CROPPED, AND THAT IS THE POINT. It used to be
+             portfolio-site-scrub-motion-poster.jpg, the scrubber mockup as
+             rendered — which carries a baked-in matte of 62px either side and
+             39px top and bottom of near-black (luma 12.1) around the browser
+             window. On a dark card that matte does not read as matting, it reads
+             as the picture failing to fill its frame, and it was the last card
+             doing that once the CSS panel came off. Tony flagged it, 9 Sep 2026.
+  
+             The window inside it measures 776x484 — ratio 1.603, i.e. already
+             16:10 — so cutting the matte off lands exactly on the card box with
+             nothing lost and no rescale:
+  
+               ffmpeg -i portfolio-site-scrub-motion-poster.jpg \
+                      -vf "crop=776:484:62:39" -q:v 3 portfolio-site-card.jpg
+  
+             The uncropped render is still in retired-assets/images/projects/ under
+             its old name, and stays there: it is one of the four mockups on hold
+             because rebuilding them means re-running the headless-Chrome and
+             ffmpeg pipeline. Re-cut from THAT file, not from this one. -->
+        <article class="project-card" data-project="portfolio-site">
+          <div class="project-card-thumb">
+            <div class="project-card-media" style="background-image:url('images/projects/portfolio-site-card.jpg');"></div>
+          </div>
+          <div class="project-card-body">
+            <p class="eyebrow">UI/UX Design &amp; Front-End</p>
+            <h3><a class="card-link" href="projects/portfolio-site.html">This Portfolio Site</a></h3>
+            <dl class="project-meta">
+              <div><dt>Role</dt><dd>Creator &amp; Director</dd></div>
+              <div><dt>Date</dt><dd>July 2026 &mdash; ongoing</dd></div>
+              <div><dt>Location</dt><dd>Sydney NSW Australia</dd></div>
+              <div><dt>AI Use</dt><dd>Implementation, and the writing on the case study</dd></div>
+            </dl>
+          </div>
+        </article>
+
+      </div>
       </section>
 
+      <!-- THE BAND NAMES THE DISCIPLINE AND THE CARD'S EYEBROW NAMES THE
+           RELATIONSHIP -- they swapped on 10 Sep 2026 (Tony). Naming the band
+           "Graphic Design" would otherwise repeat the card's own eyebrow two
+           lines below it, which is the exact trap that picked "Design & Web"
+           over "UI/UX Design" in August and "Web & Software" on 9 Sep. Moving
+           "Client Work" down keeps the fact on the page and clears the repeat.
+
+           ACCEPTED COST: this is now the only card whose eyebrow states a
+           relationship rather than a medium -- the other eight all say what the
+           work IS. Worth knowing before copying this card as a template.
+
+           `data-band="client"` is UNCHANGED. No preset targets it today, but the
+           key is the stable handle and the heading is the free part, same as
+           `film` and `web`. The eyebrow still makes the key true. -->
       <section class="bandgroup" data-band="client">
-      <h2 class="project-band">Client Work</h2>
+      <h2 class="project-band">Graphic Design</h2>
 
       <!-- PLACEHOLDER. Panda Sports has no page yet, so this card carries no
            link — a title that looks like the four above it but goes nowhere is
@@ -244,7 +375,7 @@
           <p class="card-status">In progress</p>
         </div>
         <div class="project-card-body">
-          <p class="eyebrow">Graphics Design</p>
+          <p class="eyebrow">Client Work</p>
           <h3>Panda Sports</h3>
           <p class="project-note">AI assisted design works done for the
             badminton label Panda Sports. The pieces are

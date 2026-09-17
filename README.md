@@ -16,6 +16,8 @@ portfolio-site/
     tramsheds-joyride.html
     piece-it-together.html
     portfolio-site.html
+    unity-game.html
+    toyref.html
   css/style.css
   js/script.js
   images/                   Site images (already compressed/resized)
@@ -25,7 +27,7 @@ portfolio-site/
 
 There is no `contact.html` — it was retired on 13 Aug 2026 and the contact
 form moved to the bottom of `about.html`. Nav is Home / Reel / Projects /
-About, hand-duplicated across all 9 pages.
+About, hand-duplicated across the static HTML pages.
 
 ## 1. Videos
 
@@ -45,11 +47,11 @@ src="https://www.youtube.com/embed/VIDEO_ID" ...>` in the `.video-frame`
 block, and replace `VIDEO_ID` with the new one from the video's YouTube URL
 (`https://youtube.com/watch?v=VIDEO_ID`).
 
-## 2. Project thumbnails — done
+## 2. Project thumbnails
 
-All four projects have a thumbnail. They are set as a `background-image` on
-the `.project-card-media` div in `projects.html`, not as `<img>` tags, so
-that is the place to swap one.
+Project-card thumbnails are set on the `.project-card-media` div in
+`projects.html`, so that is the place to swap one. ToyRef currently uses a
+deliberate typographic prototype cover until a real product capture exists.
 
 ## 3. The contact form — done
 
