@@ -744,6 +744,21 @@ html[data-for="stopmotion"] .project-card[data-project="toyref"]         { order
 html[data-for="stopmotion"] .project-card[data-project="portfolio-site"] { order: -1; }
 html[data-for="stopmotion"] .project-card[data-project="ps"]             { order: -1; }
 
+/* ?for=props */
+html[data-for="props"] .bandgroup[data-band="film"]                 { order: -4; }
+html[data-for="props"] .bandgroup[data-band="web"]                  { order: -3; }
+html[data-for="props"] .bandgroup[data-band="personal"]             { order: -2; }
+html[data-for="props"] .bandgroup[data-band="client"]               { order: -1; }
+html[data-for="props"] .project-card[data-project="vv"]             { order: -4; }
+html[data-for="props"] .project-card[data-project="pit"]            { order: -3; }
+html[data-for="props"] .project-card[data-project="nv"]             { order: -2; }
+html[data-for="props"] .project-card[data-project="tj"]             { order: -1; }
+html[data-for="props"] .project-card[data-project="toyref"]         { order: -2; }
+html[data-for="props"] .project-card[data-project="portfolio-site"] { order: -1; }
+html[data-for="props"] .project-card[data-project="unity-game"]     { order: -2; }
+html[data-for="props"] .project-card[data-project="mini"]           { order: -1; }
+html[data-for="props"] .project-card[data-project="ps"]             { order: -1; }
+
 /* ==== TAILORED LINKS: END ==== */
 
 /* TWO UP, NEVER THREE. Four cards divide evenly at 2 and 1 columns, so this
@@ -2313,37 +2328,12 @@ html[data-for="stopmotion"] .project-card[data-project="ps"]             { order
 .step-list strong { display: block; color: var(--text); margin-bottom: 0.15rem; }
 .step-list span { color: var(--text-dim); font-size: 0.9rem; }
 
-/* design-direction previews — the palette is the preview */
-.dir-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-  gap: 1.25rem;
-  margin-top: 1.5rem;
-}
-.dir-card {
-  border: 1px solid var(--card-border);
-  border-radius: var(--radius);
-  background: var(--card);
-  padding: 1.2rem 1.3rem 1.4rem;
-  display: flex;
-  flex-direction: column;
-}
-.dir-card.is-chosen { border-color: var(--accent-dim); }
-.dir-swatches { display: flex; height: 42px; border-radius: 3px; overflow: hidden; margin-bottom: 1rem; }
-.dir-swatches span { flex: 1; }
-.dir-card h3 { font-size: 1rem; margin: 0 0 0.3rem; }
-.dir-card p { font-size: 0.85rem; margin: 0 0 1rem; }
-.dir-verdict {
-  margin-top: auto;
-  font-size: 0.66rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  font-weight: 600;
-  color: var(--text-dim);
-}
-.dir-card.is-chosen .dir-verdict { color: var(--accent); }
+/* The .dir-* rules (design-direction swatch cards) were deleted on 21 Sep 2026
+   with the case study section that was their only user — same reasoning as
+   .form-note: a rule with nothing to style is weight in a file whose point is
+   being hand-editable. They are in git if the section ever comes back. */
 
-/* tech chips */
+/* chips — the workbench strip on the case study */
 .chip-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.25rem; }
 .chip {
   font-size: 0.75rem;

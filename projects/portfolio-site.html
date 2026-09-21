@@ -118,17 +118,12 @@
       <p>Every project got a title, four or five metadata rows, one paragraph and the finished film, with a Wix advert above Tony&rsquo;s own header on every page. There was nowhere to put an animatic, a set being built or a rig test, so the Night Vision page had a row headed <em>Project details</em> and, under it, a link reading <em>Coming soon</em>. <a href="https://tonyccnau.wixsite.com/tony-c-portfolio/projects" target="_blank" rel="noopener">The old site is still up</a> if you want to compare.</p>
     </div>
 
-    <!-- One column, not the usual two: this is a screenshot of a real page rather
-         than a component mockup, and at half width neither the Wix strip nor the
-         "Coming soon" link is legible &mdash; which is the whole of the evidence.
-         The matching capture of the old projects index is in retired-assets/;
-         the section was cut back to one figure on Tony's call, 20 Aug 2026. -->
-    <div class="figure-grid" style="grid-template-columns: 1fr;">
-      <figure>
-        <img src="../images/projects/portfolio-site-before-project.jpg" alt="The retired Wix site's Night Vision page: the title Red Room Poetry Short Film Adaptation, a paragraph of synopsis at the right, then five stacked metadata rows ending with Project details and a link reading Coming soon, with the top of a single still below" loading="lazy">
-        <figcaption><h3>A project page, in full</h3><p>That is the whole page. A synopsis, five rows, one still with the laurels burnt into it, and a link to the process that was never written. Every project page on the site now carries a track of its own build, and the process is the page.</p></figcaption>
-      </figure>
-    </div>
+    <!-- The screenshot of the old Night Vision page came off on Tony's call,
+         21 Sep 2026. The paragraph above says what the template held and the
+         link goes to the original, which is still live. Nothing was lost: the
+         full-page captures are in reference/wix-original/ and the crop that
+         shipped here is in retired-assets/. Section was already cut back to
+         that one figure on his call, 20 Aug 2026. -->
 
     <div class="section-head is-spaced">
       <p class="eyebrow">Component Study</p>
@@ -175,15 +170,44 @@
     <div class="section-head is-spaced">
       <p class="eyebrow">Component</p>
       <h2>The frame stepper</h2>
-      <p>Some shots have nothing to pull apart. The Night Vision day set is pure stop motion &mdash; no layers, no passes, nothing composited on top. The only thing worth showing is that the shot <em>is</em> 109 separate exposures.</p>
-      <p>So this one moves a frame at a time, and the count is the caption. The frames come from a video rather than a folder of stills: 109 JPGs at display size run to several megabytes, and the same frames as h264 come to 668KB.</p>
-      <p>The rule it rests on is that one video frame must be one exposure, and I nearly shipped a version that broke it. I had encoded Piece It Together&rsquo;s shot 4010 at 12fps from a take shot at 25, so it held 60 frames under a caption claiming 125. Nothing looked wrong: it stepped smoothly through frames that were never photographed, exactly the kind of error that survives a review. The clip is now cut at the source&rsquo;s own frame rate.</p>
+      <p>Some work has nothing to pull apart &mdash; no layers, no passes, nothing composited on top. What is worth showing is that it was made one frame at a time. So this one moves one frame at a time, and the count is the caption. On the Night Vision page it holds that film&rsquo;s day set: six shots, 1,055 separate exposures.</p>
+      <p>Here it holds a walk cycle Tony drew in 2022: seventeen drawings over thirty-four frames, animated on twos. The chart down the left edge is his own timing for them &mdash; odd numbers 1 to 33, contacts circled, breakdowns underlined &mdash; and every one of those numbers is a frame number. So the clip keeps all thirty-four rather than one per drawing, and the counter agrees with the chart while you scrub. Two presses to the next drawing is what being on twos looks like.</p>
+      <p>The rule underneath it is that one step must be one frame of the thing as it was made, and it breaks quietly. I encoded Piece It Together&rsquo;s shot 4010 at 12fps from a take shot at 25, so it held 60 frames under a caption claiming 125: nothing looked wrong, it just stepped smoothly through frames that were never photographed. Here the same trap runs the other way, and cutting the walk down to its seventeen drawings would have left the counter disagreeing with the chart in the picture.</p>
     </div>
 
-    <div class="figure-grid">
-      <figure>
-        <img src="../images/projects/portfolio-site-stepper.jpg" alt="The frame stepper: one frame of the Night Vision day set held large &mdash; paper trees against a painted orange sky, the drawn owl on the forest floor &mdash; with a shot label in the top corner, an orange frame counter in the bottom corner, a scrub track with an orange handle below it, and a row of six shot thumbnails underneath with the second one outlined in orange" loading="lazy">
-        <figcaption><h3>One frame is one exposure</h3><p>The arrows move a single exposure; the track crosses the shot; the counter reads position out of total. Picking a shot from the row swaps what the one viewer is pointed at, so only the clip you asked for is ever downloaded. Nothing plays until you press Play.</p></figcaption>
+    <!-- The real stepper, not a picture of one (Tony, 21 Sep 2026: the mockup
+         read as confusing). Same reasoning as the bare scrubber above &mdash; a
+         still cannot show stepping any more than a drawn cursor can show a
+         drag. ONE shot, so `.step-shots:has(.step-shot:only-child)` hides the
+         thumbnail row on its own and the viewer is all that draws. It loads on
+         an IntersectionObserver, so nothing is fetched until it is scrolled to.
+
+         THE CLIP IS TONY'S OWN 2022 WALK CYCLE, HIS PICK FOR THIS DEMO.
+         Source: Animation_UTS\Context\13289386_Xinyuan(Tony)_Chen_Generic_Walk.mov,
+         34 frames at 24fps holding SEVENTEEN drawings on twos (measured: the
+         frame-to-frame difference alternates 0.00 and 4-5, and source frames
+         17 and 18 are the same figure to the pixel, differing only in the
+         hand-drawn chart turning from its 1-17 page to its 17-33 page).
+
+         ALL 34 FRAMES ARE KEPT, AT 24fps - Tony's call: the numbers on his
+         chart ARE exposure numbers, so the counter and the chart agree while
+         you scrub, and two presses per drawing is what animating on twos
+         looks like. A one-frame-per-drawing cut was built first (17 frames at
+         12fps) and rejected for exactly that reason. Do not "fix" the
+         duplicate frames.
+
+         1200px wide, not the usual 900: this is line art rendered at about the
+         viewer's own width, where an upscale softens every line. 112KB at
+         crf 24 against 47KB at the house crf 30, measured at 43.0dB against
+         38.9dB on a decoded drawing. Held frames cost almost nothing - all 34
+         come to 8KB more than the 17 did. -->
+    <div class="framestrip" data-stepper="GENERIC WALK">
+      <figure data-shot-src="../images/projects/portfolio-site-walk.mp4"
+              data-shot-fps="24" data-shot-label="2022"
+              data-shot-note="seventeen drawings on twos, numbered to match the chart"
+              data-shot-alt="A walk cycle drawn as a jointed mannequin in black line on white, striding over a pale blue perspective grid, with a hand-drawn timing chart down the left edge">
+        <img src="../images/projects/portfolio-site-walk-poster.jpg" alt="The first drawing of the walk cycle: a jointed mannequin mid-stride in black line on white over a pale blue perspective grid, with a hand-drawn timing chart numbered 1 to 17 down the left edge, 1, 9 and 17 circled" loading="lazy">
+        <figcaption>Generic walk &middot; 34 frames, 17 drawings</figcaption>
       </figure>
     </div>
 
@@ -207,23 +231,46 @@
 
     <p>It never crawls Tony&rsquo;s drives, and that is a rule rather than an oversight: they hold other people&rsquo;s coursework and footage that isn&rsquo;t his to publish. Anything dug out by hand is dragged onto the page and staged first, and bringing it into the site stays a deliberate second step.</p>
 
+    <!-- Replaced the "Build / Stack & constraints" section on Tony's call,
+         21 Sep 2026: he wanted the tooling expanded rather than the stack
+         listed. The stack is now one sentence in the first paragraph; the old
+         chip row (HTML / CSS custom properties / Vanilla JS / No build step /
+         Progressive enhancement / GitHub Pages / YouTube embeds / Formspree)
+         is in git if it is ever wanted back. -->
     <div class="section-head is-spaced">
-      <p class="eyebrow">Build</p>
-      <h2>Stack &amp; constraints</h2>
-      <p>Tony chose plain HTML, CSS and JavaScript over a framework so the site stays hand-editable without a toolchain installed, and so it can be hosted free and indefinitely.</p>
+      <p class="eyebrow">Tooling</p>
+      <h2>A workbench beside the site</h2>
+      <p>The site itself is plain HTML, CSS and JavaScript with no build step, so Tony can open any file in it and change a line without installing anything first. Everything that helps make it therefore lives outside it, and none of it ships.</p>
+      <p>Visual decisions go through a lab: a copy of the real stylesheet, one page, several directions side by side, measured rather than argued about. There are three now &mdash; one for colour and layout, one that became the gallery in the next section, one for type. The site had already built a project grid, a hero zoom and a looping hero to completion and then cut all three, because none of them could be judged until they were finished. A lab is where that costs an evening instead of a week.</p>
+      <p>The rest is duller and gets used more. Caption sheets flatten every written string on a page into one flat list, so a copy pass happens in a text file rather than in the markup. Contrast harnesses sweep the type over the hero and the projects banner frame by frame, scoring it against the real glyph boxes rather than the blocks they sit in. Other scripts cut every clip and still to the same size budget, pull frames out of raw footage, and read what is actually inside a Photoshop file or a PDF before anyone spends time on it.</p>
     </div>
     <div class="chip-row">
-      <span class="chip">HTML</span>
-      <span class="chip">CSS custom properties</span>
-      <span class="chip">Vanilla JS</span>
-      <span class="chip">No build step</span>
-      <span class="chip">Progressive enhancement</span>
-      <span class="chip">GitHub Pages</span>
-      <span class="chip">YouTube embeds</span>
-      <span class="chip">Formspree</span>
+      <span class="chip">Design labs</span>
+      <span class="chip">Asset picker</span>
+      <span class="chip">Sheet editor</span>
+      <span class="chip">Caption sheets</span>
+      <span class="chip">Contrast harnesses</span>
+      <span class="chip">Media scripts</span>
     </div>
 
-    <p style="margin-top: 1.75rem;">That is the most useful constraint he gave me. It rules out reaching for a dependency, and it means he can open any file here and change it without me. The components ship as plain HTML that JavaScript upgrades, so they still read with scripting off, and the films live on YouTube rather than in the repo.</p>
+    <!-- This section had a picture for an hour on 21 Sep 2026 and Tony took it
+         out again: a survey sheet from the Vinci's build roll, 33 numbered
+         tiles, made by the tool the section describes. He judged it on the
+         page and it did not work there. **Not a gap to fill** &mdash; he wants
+         the section shorter first, in his own words, and the picture question
+         re-asked after that. The built file is in retired-assets/ and the
+         recipe is in CLAUDE.md. -->
+
+    <!-- Added 21 Sep 2026 on Tony's call. No mockup in this section yet; the
+         live page is projects/mini-works.html and the lab it came out of is
+         mini-lab/ at the project root. -->
+    <div class="section-head is-spaced">
+      <p class="eyebrow">Component Study</p>
+      <h2>A gallery with no common shape</h2>
+      <p><a href="mini-works.html">Assorted Works &amp; Studies</a> holds thirty-eight drawings, loops and studies across six small projects, and nothing about them agrees: seventeen different aspect ratios, from a three-to-one pencil study to portrait phone footage.</p>
+      <p>A uniform tile crops most of that away, and the first build &mdash; an ordinary wrapping gallery &mdash; ran to ten screens of scrolling. So seven layouts went into a lab and were measured by how much page each one costs at rest. Tony picked the one he named Constellation: every project sits as a heap of film strips and opens into a scatter when a visitor reaches it, by pointer, keyboard or finger.</p>
+      <p>The heap is the enhancement, not the page. With JavaScript off, or with reduced motion asked for, the scatter <em>is</em> the ordinary layout and every gallery is simply open. It is also the one page on the site that loads a second stylesheet and script: folding a gallery that size into the shared files would have made both of them worse to edit by hand, which is the thing the no-build-step rule exists to protect.</p>
+    </div>
 
     <div class="section-head is-spaced">
       <p class="eyebrow">Method</p>
@@ -250,51 +297,12 @@
       </li>
     </ol>
 
-    <div class="section-head is-spaced">
-      <p class="eyebrow">Design Direction</p>
-      <h2>Three routes, no re-skin</h2>
-      <p>Three visual worlds, built as working comps on the same copy so Tony could judge them side by side. None was applied wholesale: after launch the site kept improving one piece at a time &mdash; a projects banner, hover clips on the project cards, a new colour palette &mdash; so on 31 August Tony called off the redesign and kept working that way.</p>
-    </div>
-
-    <div class="dir-grid">
-      <div class="dir-card is-chosen">
-        <div class="dir-swatches">
-          <span style="background:#14161a"></span>
-          <span style="background:#1b1e23"></span>
-          <span style="background:#2d3138"></span>
-          <span style="background:#ff5a36"></span>
-          <span style="background:#eef0f2"></span>
-        </div>
-        <h3>Dragonframe</h3>
-        <p>Built from the capture software Tony actually shoots on &mdash; charcoal ground, recording-orange accent, monospace frame counters, a viewfinder hero and projects as a contact sheet.</p>
-        <span class="dir-verdict">Front runner, set aside</span>
-      </div>
-      <div class="dir-card">
-        <div class="dir-swatches">
-          <span style="background:#cbb896"></span>
-          <span style="background:#ded1b3"></span>
-          <span style="background:#3f6fa8"></span>
-          <span style="background:#2b241b"></span>
-          <span style="background:#6b5e49"></span>
-        </div>
-        <h3>Workshop Bench</h3>
-        <p>The materials instead of the tools &mdash; kraft card, painter&rsquo;s-tape labels, stencilled headlines.</p>
-        <span class="dir-verdict">Set aside</span>
-      </div>
-      <div class="dir-card">
-        <div class="dir-swatches">
-          <span style="background:#050505"></span>
-          <span style="background:#131313"></span>
-          <span style="background:#e3a548"></span>
-          <span style="background:#b8283f"></span>
-          <span style="background:#f2eee6"></span>
-        </div>
-        <h3>Premiere Night</h3>
-        <p>The outcome instead of the making &mdash; letterboxed black, projector glow, projects as a festival programme.</p>
-        <span class="dir-verdict">Set aside</span>
-      </div>
-    </div>
-
+    <!-- The "Design Direction / Three routes, no re-skin" section came off on
+         Tony's call, 21 Sep 2026 &mdash; three swatch cards for directions none
+         of which shipped. The fact it carried survives in the status box below
+         ("one piece at a time rather than waiting for a re-skin") and in the
+         labs paragraph above. The markup and the .dir-* rules it needed are in
+         git; redesign-lab/FINDINGS.md still holds the measurements. -->
     <div class="callout">
       <h3>Status: live, still moving</h3>
       <p>The site went live on 16 August 2026, three days ahead of the date Tony had set. Every project page now carries its own process story, and the copy on those pages is his own writing &mdash; this page is the single exception, as the note at the top says. Since launch it has kept changing one piece at a time rather than waiting for a re-skin.</p>
