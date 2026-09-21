@@ -31,6 +31,15 @@
      the FIRST head in the container needs the gap (it follows the film) while
      on about.html it does not (it follows the portrait). */
   --section-gap: 3rem;
+
+  /* How long a project card's hover clip takes to dissolve up over its still.
+     The DEFAULT, and what four of the six cards use. A card wanting its own
+     sets --card-clip-fade in its inline style; projects.html says why beside
+     each one. Tony set all three values on 21 Sep 2026 after seeing the
+     dissolve work for the first time -- until that day a bug meant it never
+     ran on a first hover at all, so 0.3s had never actually been seen.
+     The rule that consumes this is .project-card-media video. */
+  --card-clip-fade: 0.3s;
   font-size: 16px;
 }
 
@@ -826,7 +835,10 @@ html[data-for="props"] .project-card[data-project="ps"]             { order: -1;
   height: 100%;
   object-fit: cover;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  /* The dissolve from still to clip. The duration lives on :root as
+     --card-clip-fade; two cards override it inline. Change the default THERE,
+     not here -- this fallback only catches a card outside the cascade. */
+  transition: opacity var(--card-clip-fade, 0.3s) ease;
   pointer-events: none;
 }
 .project-card-media video.is-playing { opacity: 1; }

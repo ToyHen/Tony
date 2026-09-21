@@ -417,6 +417,15 @@ function initSite() {
         video.src = media.dataset.clip;
         media.appendChild(video);
         video.load();
+        /* Read a layout property to force a style flush, so the browser
+           computes this element's opacity:0 BEFORE .is-playing asks for 1.
+           Without it a newly inserted element has no "before" value, the
+           transition never starts, and the clip cuts in at full opacity --
+           only on the FIRST hover, because every later one re-uses an element
+           whose 0 is already computed. That is exactly how it shipped from
+           21 Aug 2026 until 21 Sep, so the dissolve had never once run on the
+           hover that matters. Same forced-reflow idiom as mini.js's .is-snap. */
+        void video.offsetWidth;
       }
       /* A play-once clip restarts from the top on every hover rather than
          resuming where the last one left off — otherwise a second visit to the

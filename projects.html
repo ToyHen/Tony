@@ -134,7 +134,12 @@
 
         <article class="project-card" data-project="vv">
           <div class="project-card-thumb">
-            <div class="project-card-media" style="background-image:url('images/projects/vincis-voyage.jpg');"></div>
+            <!-- 1.2s, the longest dissolve on the page (Tony, 21 Sep 2026). This
+                 is the only card that crosses from the set to the film: the still
+                 is a warm tungsten photograph of the converted room, the clip is
+                 the film's peach-graded opening wide. A long dissolve is what
+                 makes that read as a statement rather than a swap. -->
+            <div class="project-card-media" style="background-image:url('images/projects/vincis-voyage.jpg');--card-clip-fade:1.2s;" data-clip="images/projects/vv-card-loop.mp4"></div>
           </div>
           <div class="project-card-body">
             <p class="eyebrow">Practical Set Design</p>
@@ -182,7 +187,10 @@
 
         <article class="project-card" data-project="pit">
           <div class="project-card-thumb">
-            <div class="project-card-media" style="background-image:url('images/projects/piece-it-together.jpg');" data-clip="images/projects/pit-card-once.mp4" data-clip-once></div>
+            <!-- 0.8s (Tony, 21 Sep 2026). Its still is a Dragonframe plate, not a
+                 frame of the clip, so there is a real change of picture to ease
+                 across -- but the clip is only 1.96s, so it cannot afford 1.2s. -->
+            <div class="project-card-media" style="background-image:url('images/projects/piece-it-together.jpg');--card-clip-fade:0.8s;" data-clip="images/projects/pit-card-once.mp4" data-clip-once></div>
           </div>
           <div class="project-card-body">
             <p class="eyebrow">Stop Motion &amp; 2D Animation</p>
